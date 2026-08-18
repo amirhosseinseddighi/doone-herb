@@ -18,6 +18,7 @@ from sqlalchemy import (
 from datetime import UTC, datetime
 
 from app.models.category import Review
+from app.models.order import Cart
 
 
 class UserTier(str, enum.Enum):
@@ -56,6 +57,8 @@ class User(Base):
 
     addresses: Mapped[list["Address"]] = relationship("Address", back_populates="user")
     reviews: Mapped[list["Review"]] = relationship("Review", back_populates="user")
+    cart: Mapped["Cart"] = relationship("Cart", back_populates="user")
+    orders: Mapped[list["Order"]] = relationship("Order", back_populates="user")
 
 
 
@@ -85,6 +88,7 @@ class Address(Base):
     is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="addresses")
+    orders: Mapped[list["Order"]] = relationship("Order", back_populates="address")
 
 
 class AdminUser(Base):

@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, time, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -7,14 +8,28 @@ from app.db.database import engine
 from app.models.category import (
     Category,
     Product,
-    ProductVariant,
     ProductImage,
+    ProductVariant,
 )
 from app.models.identity import (
+    Address,
     AdminRole,
     AdminUser,
     User,
     UserTier,
+)
+from app.models.order import (
+    CourierType,
+    DeliverySlot,
+    DeliverySlotKind,
+    FulfillmentMethod,
+    Order,
+    OrderItem,
+    OrderStatus,
+    OrderStatusEvent,
+    OrderStatusEventActor,
+    PaymentMethod,
+    PaymentStatus,
 )
 
 
@@ -171,6 +186,34 @@ PRODUCTS = [
 ]
 
 
+DELIVERY_SLOTS = [
+    {
+        "label": "تحویل همان روز (عصر)",
+        "note": "سفارش‌های ثبت شده قبل از ساعت ۱۴",
+        "fee": 50000,
+        "kind": DeliverySlotKind.SAME_DAY,
+        "cutoff_time": time(14, 0),
+        "active": True,
+    },
+    {
+        "label": "تحویل فردا صبح",
+        "note": "ارسال بین ساعت ۹ تا ۱۲ صبح",
+        "fee": 35000,
+        "kind": DeliverySlotKind.NEXT_MORNING,
+        "cutoff_time": time(20, 0),
+        "active": True,
+    },
+    {
+        "label": "تحویل حضوری",
+        "note": "مراجعه حضوری به فروشگاه مرکزی",
+        "fee": 0,
+        "kind": DeliverySlotKind.PICKUP,
+        "cutoff_time": time(18, 0),
+        "active": True,
+    },
+]
+
+
 async def seed_categories(session):
     categories = {}
 
@@ -187,7 +230,6 @@ async def seed_categories(session):
         categories[data["slug"]] = category
 
     await session.flush()
-
     return categories
 
 
@@ -211,8 +253,6 @@ async def seed_products(session, categories):
         )
 
         session.add(product)
-
-        # Need the product ID for the related rows.
         await session.flush()
 
         for variant_data in data["variants"]:
@@ -223,10 +263,8 @@ async def seed_products(session, categories):
                 stock_qty=variant_data["stock_qty"],
                 sku=variant_data["sku"],
             )
-
             session.add(variant)
 
-        # Placeholder images
         session.add_all(
             [
                 ProductImage(
@@ -245,30 +283,24 @@ async def seed_products(session, categories):
 
 async def seed_admin(session):
     result = await session.execute(
-        select(AdminUser).where(
-            AdminUser.email == "admin@example.com"
-        )
+        select(AdminUser).where(AdminUser.email == "admin@example.com")
     )
-
     admin = result.scalar_one_or_none()
 
     if admin is None:
         admin = AdminUser(
             name="Owner",
             email="admin@example.com",
-            # Development-only password hash placeholder.
             password_hash="CHANGE_ME",
             role=AdminRole.OWNER,
         )
-
         session.add(admin)
 
 
-async def seed_customer(session):
+async def seed_customer(session) -> User:
     result = await session.execute(
         select(User).where(User.phone == "09120000000")
     )
-
     user = result.scalar_one_or_none()
 
     if user is None:
@@ -279,8 +311,120 @@ async def seed_customer(session):
             telegram_opt_in=False,
             sms_opt_in=False,
         )
-
         session.add(user)
+        await session.flush()
+
+    return user
+
+
+async def seed_address(session, user: User) -> Address:
+    result = await session.execute(
+        select(Address).where(Address.user_id == user.id)
+    )
+    address = result.scalar_one_or_none()
+
+    if address is None:
+        address = Address(
+            user_id=user.id,
+            label="خانه",
+            line="تهران، خیابان ولیعصر، نرسیده به میدان ونک، پلاک ۱",
+            unit="واحد ۴",
+            postal_code="1234567890",
+            phone="09120000000",
+            lat=35.7575,
+            lng=51.4100,
+            is_default=True,
+        )
+        session.add(address)
+        await session.flush()
+
+    return address
+
+
+async def seed_delivery_slots(session) -> list[DeliverySlot]:
+    slots = []
+    for data in DELIVERY_SLOTS:
+        result = await session.execute(
+            select(DeliverySlot).where(DeliverySlot.label == data["label"])
+        )
+        slot = result.scalar_one_or_none()
+
+        if slot is None:
+            slot = DeliverySlot(**data)
+            session.add(slot)
+
+        slots.append(slot)
+
+    await session.flush()
+    return slots
+
+
+async def seed_orders(session, user: User, address: Address, delivery_slot: DeliverySlot):
+    result = await session.execute(
+        select(Order).where(Order.order_no == "ORD-20260818-001")
+    )
+    order = result.scalar_one_or_none()
+
+    if order is not None:
+        return
+
+    # Fetch product & variant for realistic snapshots
+    product_res = await session.execute(
+        select(Product).where(Product.name == "زعفران نگین")
+    )
+    product = product_res.scalar_one()
+
+    variant_res = await session.execute(
+        select(ProductVariant).where(ProductVariant.sku == "SAF-N-1G")
+    )
+    variant = variant_res.scalar_one()
+
+    now = datetime.now(timezone.utc)
+
+    # 1. Create Sample Order
+    order = Order(
+        order_no="ORD-20260818-001",
+        user_id=user.id,
+        address_id=address.id,
+        delivery_slot_id=delivery_slot.id,
+        status=OrderStatus.NEW,
+        fulfillment_method=FulfillmentMethod.COURIER,
+        courier=CourierType.IN_HOUSE_RIDER,
+        subtotal=450000,
+        delivery_fee=delivery_slot.fee,
+        discount=0,
+        total=450000 + delivery_slot.fee,
+        payment_method=PaymentMethod.ONLINE,
+        payment_status=PaymentStatus.PAID,
+        note="لطفا قبل از ارسال تماس بگیرید.",
+        placed_at=now,
+        updated_at=now,
+    )
+    session.add(order)
+    await session.flush()
+
+    # 2. Add Order Item
+    order_item = OrderItem(
+        order_id=order.id,
+        product_id=product.id,
+        product_variant_id=variant.id,
+        name_snapshot=product.name,
+        size_label_snapshot=variant.label,
+        unit_price_snapshot=variant.price,
+        qty=1,
+        line_total=variant.price * 1,
+    )
+    session.add(order_item)
+
+    # 3. Add Initial Status Event
+    status_event = OrderStatusEvent(
+        order_id=order.id,
+        status=OrderStatus.NEW,
+        note="سفارش با موفقیت ثبت شد.",
+        actor=OrderStatusEventActor.SYSTEM,
+        created_at=now,
+    )
+    session.add(status_event)
 
 
 async def main():
@@ -289,10 +433,15 @@ async def main():
             categories = await seed_categories(session)
             await seed_products(session, categories)
             await seed_admin(session)
-            await seed_customer(session)
+            
+            user = await seed_customer(session)
+            address = await seed_address(session, user)
+            delivery_slots = await seed_delivery_slots(session)
+            
+            # Use the first delivery slot (Same-Day) for sample order seeding
+            await seed_orders(session, user, address, delivery_slots[0])
 
             await session.commit()
-
             print("Seed completed successfully.")
 
         except Exception:
