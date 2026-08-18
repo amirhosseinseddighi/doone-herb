@@ -187,7 +187,7 @@ class CartItem(Base):
     qty: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
-    cart: Mapped["Cart"] = relationship("Cart", back_populates="items")
+    cart: Mapped[Optional["Cart"]] = relationship("Cart", back_populates="items")
 
 
 

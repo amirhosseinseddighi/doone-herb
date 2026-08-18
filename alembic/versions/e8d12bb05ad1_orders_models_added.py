@@ -1,4 +1,4 @@
-"""orders and admin models added
+"""orders models added
 
 Revision ID: e8d12bb05ad1
 Revises: 4c2752108b77

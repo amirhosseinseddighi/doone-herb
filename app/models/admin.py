@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Index, Integer, UniqueConstraint,String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SQLEnum
-from identity import UserTier
+from app.models.identity import UserTier
 from app.db.database import Base
 import enum
 
@@ -22,7 +22,7 @@ class CampaignAudienceType(str, enum.Enum):
     """
     ALL = 'all'
     GOLD = 'gold'
-    SILVER = 'solver'
+    SILVER = 'silver'
     NEW = 'new'
     RISK = 'risk'
     CUSTOM = 'custom'
@@ -137,7 +137,7 @@ class PushCampaign(Base):
 
     recipient_count: Mapped[Optional[int]]= mapped_column(Integer, nullable=True)
 
-    recipients: Mapped["PushCampaignRecipient"] = relationship("PushCampaignRecipient",  back_populates="campaign")
+    recipients: Mapped[list["PushCampaignRecipient"]] = relationship("PushCampaignRecipient",  back_populates="campaign")
 
 
 class PushCampaignRecipient(Base):
@@ -152,7 +152,7 @@ class PushCampaignRecipient(Base):
     )
     campaign_id: Mapped[int] = mapped_column(
         Integer, 
-        ForeignKey("campaigns.id", ondelete="CASCADE"), 
+        ForeignKey("push_campaigns.id", ondelete="CASCADE"), 
         nullable=False, 
         index=True
     )
@@ -160,7 +160,7 @@ class PushCampaignRecipient(Base):
 
     campaign: Mapped["PushCampaign"] = relationship("PushCampaign", back_populates="recipients")
     __table_args__ = (
-        UniqueConstraint("campaign_id", "user_id", name="uq_push_campaign_recipient")
+        UniqueConstraint("campaign_id", "user_id", name="uq_push_campaign_recipient"),
     )
 
 

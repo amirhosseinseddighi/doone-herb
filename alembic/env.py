@@ -10,23 +10,49 @@ from app.db.database import Base
 from app.core.config import settings
 
 
-from app.models.identity import (
-    User,
-    OTPCode,
-    Address,
-    AdminRole
+from app.models.admin import (
+    ActivityKind,
+    ActivityLog,
+    AdminNotification,
+    AdminNotificationKind,
+    CampaignAudienceType,
+    Purchase,
+    PushCampaign,
+    PushCampaignRecipient,
 )
-
 from app.models.category import (
     Category,
-    Product,
-    ProductVariant,
-    ProductImage,
     Offer,
-    Review
+    Product,
+    ProductImage,
+    ProductVariant,
+    Review,
 )
-
-from app.models.order import Order
+from app.models.identity import (
+    Address,
+    AdminRole,
+    AdminUser,
+    OTPCode,
+    User,
+    UserTier,
+)
+from app.models.order import (
+    Cart,
+    CartItem,
+    CourierType,
+    DeliverySlot,
+    DeliverySlotKind,
+    FulfillmentMethod,
+    Order,
+    OrderItem,
+    OrderStatus,
+    OrderStatusEvent,
+    OrderStatusEventActor,
+    Payment,
+    PaymentMethod,
+    PaymentProvider,
+    PaymentStatus,
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -57,7 +57,7 @@ class User(Base):
 
     addresses: Mapped[list["Address"]] = relationship("Address", back_populates="user")
     reviews: Mapped[list["Review"]] = relationship("Review", back_populates="user")
-    cart: Mapped["Cart"] = relationship("Cart", back_populates="user")
+    cart: Mapped[Optional["Cart"]] = relationship("Cart", back_populates="user")
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="user")
 
 
@@ -96,7 +96,7 @@ class AdminUser(Base):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    email: Mapped[EmailStr] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[AdminRole] = mapped_column(
         SQLEnum(

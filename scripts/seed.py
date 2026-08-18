@@ -1,24 +1,39 @@
 import asyncio
-from datetime import datetime, time, timezone
+from datetime import UTC, date, datetime, time, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from app.db.database import engine
+from app.models.admin import (
+    ActivityKind,
+    ActivityLog,
+    AdminNotification,
+    AdminNotificationKind,
+    CampaignAudienceType,
+    Purchase,
+    PushCampaign,
+    PushCampaignRecipient,
+)
 from app.models.category import (
     Category,
+    Offer,
     Product,
     ProductImage,
     ProductVariant,
+    Review,
 )
 from app.models.identity import (
     Address,
     AdminRole,
     AdminUser,
+    OTPCode,
     User,
     UserTier,
 )
 from app.models.order import (
+    Cart,
+    CartItem,
     CourierType,
     DeliverySlot,
     DeliverySlotKind,
@@ -28,7 +43,9 @@ from app.models.order import (
     OrderStatus,
     OrderStatusEvent,
     OrderStatusEventActor,
+    Payment,
     PaymentMethod,
+    PaymentProvider,
     PaymentStatus,
 )
 
@@ -216,7 +233,6 @@ DELIVERY_SLOTS = [
 
 async def seed_categories(session):
     categories = {}
-
     for data in CATEGORIES:
         result = await session.execute(
             select(Category).where(Category.slug == data["slug"])
@@ -281,7 +297,36 @@ async def seed_products(session, categories):
         )
 
 
-async def seed_admin(session):
+async def seed_offers(session):
+    variant_res = await session.execute(
+        select(ProductVariant).where(ProductVariant.sku == "SAF-N-1G")
+    )
+    variant = variant_res.scalar_one_or_none()
+
+    if variant is None:
+        return None
+
+    result = await session.execute(
+        select(Offer).where(Offer.product_variant_id == variant.id)
+    )
+    offer = result.scalar_one_or_none()
+
+    if offer is None:
+        now = datetime.now(UTC)
+        offer = Offer(
+            product_variant_id=variant.id,
+            badge_label="پیشنهاد ویژه",
+            starts_at=now - timedelta(days=1),
+            ends_at=now + timedelta(days=7),
+            active=True,
+        )
+        session.add(offer)
+        await session.flush()
+
+    return offer
+
+
+async def seed_admin(session) -> AdminUser:
     result = await session.execute(
         select(AdminUser).where(AdminUser.email == "admin@example.com")
     )
@@ -295,6 +340,9 @@ async def seed_admin(session):
             role=AdminRole.OWNER,
         )
         session.add(admin)
+        await session.flush()
+
+    return admin
 
 
 async def seed_customer(session) -> User:
@@ -315,6 +363,24 @@ async def seed_customer(session) -> User:
         await session.flush()
 
     return user
+
+
+async def seed_otp_codes(session):
+    result = await session.execute(
+        select(OTPCode).where(OTPCode.phone == "09120000000")
+    )
+    otp = result.scalar_one_or_none()
+
+    if otp is None:
+        now = datetime.now(UTC)
+        otp = OTPCode(
+            phone="09120000000",
+            code="12345",
+            expires_at=now + timedelta(minutes=2),
+            consumed_at=now,
+            attempts=1,
+        )
+        session.add(otp)
 
 
 async def seed_address(session, user: User) -> Address:
@@ -359,16 +425,42 @@ async def seed_delivery_slots(session) -> list[DeliverySlot]:
     return slots
 
 
-async def seed_orders(session, user: User, address: Address, delivery_slot: DeliverySlot):
+async def seed_cart(session, user: User):
+    result = await session.execute(
+        select(Cart).where(Cart.user_id == user.id)
+    )
+    cart = result.scalar_one_or_none()
+
+    if cart is None:
+        cart = Cart(
+            user_id=user.id,
+            session_id="sess_test_customer_001",
+        )
+        session.add(cart)
+        await session.flush()
+
+        variant_res = await session.execute(
+            select(ProductVariant).where(ProductVariant.sku == "TEA-G-100")
+        )
+        variant = variant_res.scalar_one()
+
+        cart_item = CartItem(
+            cart_id=cart.id,
+            product_variant_id=variant.id,
+            qty=2,
+        )
+        session.add(cart_item)
+
+
+async def seed_orders(session, user: User, address: Address, delivery_slot: DeliverySlot) -> Order:
     result = await session.execute(
         select(Order).where(Order.order_no == "ORD-20260818-001")
     )
     order = result.scalar_one_or_none()
 
     if order is not None:
-        return
+        return order
 
-    # Fetch product & variant for realistic snapshots
     product_res = await session.execute(
         select(Product).where(Product.name == "زعفران نگین")
     )
@@ -379,7 +471,7 @@ async def seed_orders(session, user: User, address: Address, delivery_slot: Deli
     )
     variant = variant_res.scalar_one()
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # 1. Create Sample Order
     order = Order(
@@ -426,20 +518,139 @@ async def seed_orders(session, user: User, address: Address, delivery_slot: Deli
     )
     session.add(status_event)
 
+    # 4. Add Payment record
+    payment = Payment(
+        order_id=order.id,
+        provider=PaymentProvider.CASH,
+        provider_ref="REF-20260818-001",
+        amount=order.total,
+        status=PaymentStatus.PAID,
+        raw_payload={"gateway": "mock", "transaction_id": "TXN_123456"},
+        created_at=now,
+    )
+    session.add(payment)
+
+    return order
+
+
+async def seed_reviews(session, user: User, order: Order):
+    product_res = await session.execute(
+        select(Product).where(Product.name == "زعفران نگین")
+    )
+    product = product_res.scalar_one()
+
+    result = await session.execute(
+        select(Review).where(Review.order_id == order.id)
+    )
+    review = result.scalar_one_or_none()
+
+    if review is None:
+        review = Review(
+            product_id=product.id,
+            user_id=user.id,
+            order_id=order.id,
+            stars=5,
+            text="کیفیت عالی و بسته‌بندی بسیار خوب بود.",
+            admin_reply="با تشکر از دیدگاه شما!",
+        )
+        session.add(review)
+
+
+async def seed_admin_notifications(session, order: Order):
+    result = await session.execute(
+        select(AdminNotification).where(AdminNotification.order_id == order.id)
+    )
+    notification = result.scalar_one_or_none()
+
+    if notification is None:
+        notification = AdminNotification(
+            kind=AdminNotificationKind.ORDER,
+            title="سفارش جدید ثبت شد",
+            body=f"سفارش شماره {order.order_no} ثبت شد.",
+            order_id=order.id,
+        )
+        session.add(notification)
+
+
+async def seed_push_campaigns(session, user: User):
+    result = await session.execute(
+        select(PushCampaign).where(PushCampaign.text == "تخفیف ویژه محصولات زعفران")
+    )
+    campaign = result.scalar_one_or_none()
+
+    if campaign is None:
+        now = datetime.now(UTC)
+        campaign = PushCampaign(
+            text="تخفیف ویژه محصولات زعفران",
+            audience_type=CampaignAudienceType.ALL,
+            sent_at=now,
+            recipient_count=1,
+        )
+        session.add(campaign)
+        await session.flush()
+
+        recipient = PushCampaignRecipient(
+            user_id=user.id,
+            campaign_id=campaign.id,
+        )
+        session.add(recipient)
+
+
+async def seed_activity_logs(session, admin: AdminUser):
+    result = await session.execute(
+        select(ActivityLog).where(ActivityLog.text == "تنظیمات پایگاه داده مقداردهی اولیه شد.")
+    )
+    log = result.scalar_one_or_none()
+
+    if log is None:
+        log = ActivityLog(
+            actor_id=admin.id,
+            actor_label=admin.name,
+            kind=ActivityKind.USER,
+            text="تنظیمات پایگاه داده مقداردهی اولیه شد.",
+        )
+        session.add(log)
+
+
+async def seed_purchases(session):
+    result = await session.execute(
+        select(Purchase).where(Purchase.title == "خرید عمده زعفران نگین")
+    )
+    purchase = result.scalar_one_or_none()
+
+    if purchase is None:
+        purchase = Purchase(
+            title="خرید عمده زعفران نگین",
+            note="خرید مستقیم از کشاورزان خراسان",
+            amount=50000000,
+            purchase_date=date(2026, 8, 15),
+        )
+        session.add(purchase)
+
 
 async def main():
     async with SessionLocal() as session:
         try:
             categories = await seed_categories(session)
             await seed_products(session, categories)
-            await seed_admin(session)
-            
+            await seed_offers(session)
+
+            admin = await seed_admin(session)
             user = await seed_customer(session)
+            await seed_otp_codes(session)
+
             address = await seed_address(session, user)
             delivery_slots = await seed_delivery_slots(session)
-            
-            # Use the first delivery slot (Same-Day) for sample order seeding
-            await seed_orders(session, user, address, delivery_slots[0])
+
+            await seed_cart(session, user)
+
+            order = await seed_orders(session, user, address, delivery_slots[0])
+            await seed_reviews(session, user, order)
+
+            await seed_admin_notifications(session, order)
+            await seed_push_campaigns(session, user)
+            await seed_activity_logs(session, admin)
+            await seed_purchases(session)
 
             await session.commit()
             print("Seed completed successfully.")
