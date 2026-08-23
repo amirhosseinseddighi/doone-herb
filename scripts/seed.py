@@ -62,7 +62,7 @@ CATEGORIES = [
         "slug": "saffron",
         "tint_color": "#FFF4CC",
         "dot_color": "#D4A017",
-        "sort_order": 1,
+        "sort_order": 0,
     },
     {
         "name": "چای",
