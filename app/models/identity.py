@@ -39,6 +39,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True,unique=True)
     phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(200), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     tier: Mapped[UserTier] = mapped_column(
         SQLEnum(

@@ -356,6 +356,7 @@ async def seed_customer(session) -> User:
             phone="09120000000",
             name="Test Customer",
             tier=UserTier.NEW,
+            password_hash="$argon2id$v=19$m=65536,t=3,p=4$qbCOQ0JAn7ob7d86L/7jzw$iCKbdv7YMBS43Cy42UV+IMvZsnTeJNHnqAeX1sENvsA",
             telegram_opt_in=False,
             sms_opt_in=False,
         )
