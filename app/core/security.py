@@ -17,6 +17,8 @@ password_hash = PasswordHash.recommended()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
+admin_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/auth/login")
+
 
 def hash_password(plain_password: str) -> str:
     return password_hash.hash(plain_password)

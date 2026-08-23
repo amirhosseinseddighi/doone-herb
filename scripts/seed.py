@@ -336,7 +336,7 @@ async def seed_admin(session) -> AdminUser:
         admin = AdminUser(
             name="Owner",
             email="admin@example.com",
-            password_hash="CHANGE_ME",
+            password_hash="$argon2id$v=19$m=65536,t=3,p=4$qbCOQ0JAn7ob7d86L/7jzw$iCKbdv7YMBS43Cy42UV+IMvZsnTeJNHnqAeX1sENvsA",
             role=AdminRole.OWNER,
         )
         session.add(admin)

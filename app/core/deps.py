@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import status
 from fastapi import Depends, HTTPException
 from sqlalchemy import select
-from app.core.security import oauth2_scheme, verify_access_token
+from app.core.security import oauth2_scheme, verify_access_token, admin_oauth2_scheme
 from app.db.database import AsyncSession
 from app.db.database import Base, AsyncSessionLocal
 from app.models.identity import User, AdminUser
@@ -54,7 +54,7 @@ async def get_current_user(
 
 
 
-async def require_admin(token: Annotated[str, Depends(oauth2_scheme)],
+async def require_admin(token: Annotated[str, Depends(admin_oauth2_scheme)],
         db: Annotated[AsyncSession, Depends(get_db)]):
     
     user_id = verify_access_token(token=token)
