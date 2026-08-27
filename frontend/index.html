@@ -961,44 +961,19 @@ const mapCategory = (c) => ({
   _id: c.id
 });
 
-const P = (id, name, cat, sizes, desc, kw) => ({ id, name, cat, sizes, desc: desc || "", kw: kw || "food" });
-const S = (label, price, old, out) => ({ label, price, old: old || 0, out: !!out });
-
-const PRODUCTS = [
-  P(101, "Golden Saffron, Sargol", "spices", [S("1 g", 195000, 240000), S("2.3 g", 420000, 510000)], "Hand-picked red stigmas from a single highland harvest, dried slowly to keep the crocin high. One gram colours about twelve servings of rice.", "saffron"),
-  P(102, "Cinnamon Sticks", "spices", [S("100 g", 68000)], "True cinnamon quills, thin and layered — sweeter and softer than cassia.", "cinnamon,sticks"),
-  P(103, "Turmeric, Stone Ground", "spices", [S("200 g", 42000), S("500 g", 95000)], "Ground on a stone mill in small batches so the oils stay in the powder.", "turmeric,powder"),
-  P(104, "Black Pepper, Cracked", "spices", [S("100 g", 55000, 0, true)], "Cracked coarse for finishing. Back in stock mid-week.", "black,pepper"),
-  P(105, "Sumac, Coarse", "seasonings", [S("150 g", 38000)], "Tart, deep red sumac with no salt added.", "sumac,spice"),
-  P(106, "House Rice Blend", "seasonings", [S("100 g", 72000, 90000)], "Rose petal, cinnamon, cardamom and cumin, ground fresh every Monday morning.", "spice,blend"),
-  P(107, "Pomegranate Molasses", "seasonings", [S("500 ml", 88000)], "Reduced from sour pomegranates only. Nothing added, no sugar.", "pomegranate,syrup"),
-  P(108, "Chickpea Flour", "flours", [S("500 g", 46000), S("1 kg", 84000)], "Roasted then milled, for pastry and for thickening stews.", "chickpea,flour"),
-  P(109, "Barley Savigh", "flours", [S("400 g", 96000)], "Roasted barley flour — stir a spoon into warm milk or water.", "barley,flour"),
-  P(110, "Sesame Halva", "breakfast", [S("350 g", 118000)], "Slow-pulled tahini halva, lightly sweetened with sugar and vanilla.", "halva,sesame"),
-  P(111, "Wild Comb Honey", "breakfast", [S("900 g jar", 640000)], "Cut straight from the frame at a mountain apiary. Crystallises in winter — that is the point.", "honeycomb,honey"),
-  P(112, "Date Spread", "breakfast", [S("300 g", 62000, 0, true)], "Only dates, blended smooth. New batch arriving Sunday.", "dates,spread"),
-  P(113, "Cold-Pressed Olive Oil", "oils", [S("500 ml", 380000), S("1 L", 720000)], "First press from old hillside groves, unfiltered, bottled in dark glass.", "olive,oil,bottle"),
-  P(114, "Black Seed Oil", "oils", [S("250 ml", 265000, 310000)], "Cold pressed nigella seed, peppery and strong. A teaspoon a day is plenty.", "black,seed,oil"),
-  P(115, "Dried Mint", "herbs", [S("80 g", 34000)], "Shade-dried so it stays green rather than grey.", "dried,mint"),
-  P(116, "Dried Basil", "herbs", [S("60 g", 30000)], "Whole leaf, crumbled by hand at the counter if you ask.", "dried,basil"),
-  P(117, "Dried Limes, Whole", "dried", [S("200 g", 58000)], "Boiled in salt water then sun-dried until hollow. Pierce before adding to a slow-cooked stew.", "dried,lime"),
-  P(118, "Dried Barberry", "dried", [S("250 g", 145000, 175000)], "Puffy, deep red barberries, cleaned and stem-free.", "barberry,berries"),
-  P(119, "Sun-Dried Whole Figs", "fruit", [S("400 g", 285000)], "Grade one, dried on the tree, naturally split and pale gold.", "dried,figs"),
-  P(120, "Sun-Dried Apricot", "fruit", [S("300 g", 132000)], "No sulphur, so they are brown rather than orange — and they taste like apricots.", "dried,apricots"),
-  P(121, "Long Pistachio, Roasted", "nuts", [S("500 g", 690000), S("1 kg", 1340000)], "Long green kernels, roasted with a little salt the morning they ship.", "pistachio"),
-  P(122, "Almond Kernels", "nuts", [S("400 g", 320000)], "Raw almonds, skin on.", "almonds"),
-  P(123, "Walnut Halves", "nuts", [S("500 g", 410000, 0, true)], "New harvest lands in October.", "walnuts"),
-  P(124, "Chickpea & Raisin Mix", "snacks", [S("300 g", 78000)], "Roasted chickpeas and sultanas, half and half.", "chickpeas,raisins"),
-  P(125, "Sesame Brittle", "snacks", [S("250 g", 92000, 110000)], "Thin sheets of sesame and sugar, snapped by hand.", "sesame,brittle"),
-  P(126, "Damask Rose Tea", "tea", [S("100 g", 125000)], "Whole rose buds picked at dawn. Steep four minutes, no longer.", "rose,tea"),
-  P(127, "Chai Masala Blend", "tea", [S("200 g", 98000)], "Assam base with cardamom, ginger, clove and pepper.", "chai,tea"),
-  P(128, "Rosewater Distillate", "distillates", [S("500 ml", 85000), S("1 L", 145000)], "Forty-day traditional distillation, single pass, food grade.", "rosewater,bottle"),
-  P(129, "Mint Distillate", "distillates", [S("1 L", 96000)], "Settles the stomach after a heavy meal.", "mint,water"),
-  P(130, "Green Lentils", "legumes", [S("900 g", 105000)], "Sorted twice, holds shape when cooked.", "green,lentils"),
-  P(131, "Mung Beans", "legumes", [S("900 g", 118000)], "Small green mung for soups and for sprouting.", "mung,beans"),
-  P(132, "Ceramic Spice Jars, Set of 6", "jars", [S("set of 6", 340000)], "Glazed stoneware with cork stoppers and blank labels.", "spice,jars"),
-  P(133, "Brass Mortar & Pestle", "jars", [S("1 pc", 520000, 0, true)], "Cast brass, heavy enough to crack cardamom in one strike.", "mortar,pestle")
-];
+const mapProduct = (p) => ({
+  id: p.id,
+  name: p.name,
+  cat: p.category?.slug || "",
+  sizes: (p.variants || []).map((v) => ({
+    label: v.label,
+    price: v.price,
+    old: v.compare_at_price || 0,
+    out: (v.stock_qty ?? 0) <= 0
+  })),
+  desc: p.description || "",
+  kw: p.keyword_tags || "food"
+});
 
 const NOTES = {
   spices: [
@@ -1077,13 +1052,15 @@ const GREEN = "#0f7a4a";
 
 class Component extends DCLogic {
   state = {
-    screen: "home", cat: "all", q: "", pid: 101, sizeIdx: 0, qty: 1, cart: {}, cartOpen: false, toast: "", faq: null,
+    screen: "home", cat: "all", q: "", pid: null, sizeIdx: 0, qty: 1, cart: {}, cartOpen: false, toast: "", faq: null,
     user: null, acctOpen: false, loginPhone: "", loginCode: "", codeSent: false, loginErr: "",
     acctTab: "orders", orders: MY_ORDERS.map((o) => Object.assign({}, o)), addresses: MY_ADDRESSES.map((a) => Object.assign({}, a)),
     slot: 0, pay: 0, err: "", receipt: null,
     form: { name: "", phone: "", addr: "", unit: "", postal: "", note: "" },
     pinX: 48, pinY: 52, addrLabel: 0,
     cats: [],
+    products: [],
+    dataReady: false,
   };
 
 
@@ -1093,17 +1070,27 @@ class Component extends DCLogic {
 
   async loadData() {
     try {
-      const res = await fetch(`${API_BASE}/api/categories`);
-      if (!res.ok) throw new Error("Failed to load categories");
-      const data = await res.json();
+      const [catRes, prodRes] = await Promise.all([
+        fetch(`${API_BASE}/api/categories`),
+        fetch(`${API_BASE}/api/products`)
+      ]);
+      if (!catRes.ok) throw new Error("Failed to load categories");
+      if (!prodRes.ok) throw new Error("Failed to load products");
+      const catData = await catRes.json();
+      const prodData = await prodRes.json();
+
+      const products = (Array.isArray(prodData) ? prodData : prodData.items || prodData.results || []).map(mapProduct);
+      const cats = (Array.isArray(catData) ? catData : catData.items || catData.results || []).map(mapCategory);
 
       this.setState({
-        cats: data.map(mapCategory),
-        dataReady: true
+        cats,
+        products,
+        dataReady: true,
+        pid: products.length ? products[0].id : null
       });
     } catch (err) {
       console.error(err);
-      this.flash("Could not load categories");
+      this.flash("Could not load catalogue");
     }
   }
 
@@ -1121,8 +1108,10 @@ class Component extends DCLogic {
 
   add = (id, i, n) => {
     const k = this.key(id, i);
+    const PRODUCTS = this.state.products;
     this.setState((s) => ({ cart: Object.assign({}, s.cart, { [k]: (s.cart[k] || 0) + (n || 1) }) }));
-    this.flash(PRODUCTS.find((x) => x.id === id).name + " added");
+    const p = PRODUCTS.find((x) => x.id === id);
+    this.flash((p ? p.name : "Item") + " added");
   };
   bump = (k, d) => this.setState((s) => {
     const c = Object.assign({}, s.cart);
@@ -1169,6 +1158,7 @@ class Component extends DCLogic {
     const st = this.state;
 
     const CATS = st.cats;
+    const PRODUCTS = st.products;
 
     const fee = this.props.deliveryFee ?? 45000;
     const freeOver = this.props.freeOver ?? 900000;
@@ -1180,8 +1170,9 @@ class Component extends DCLogic {
     const lines = Object.keys(st.cart).map((k) => {
       const parts = k.split(":");
       const p = PRODUCTS.find((x) => x.id === +parts[0]);
+      if (!p || !p.sizes[+parts[1]]) return null;
       return { k, p, sz: p.sizes[+parts[1]], qty: st.cart[k], line: p.sizes[+parts[1]].price * st.cart[k] };
-    });
+    }).filter(Boolean);
     const count = lines.reduce((a, l) => a + l.qty, 0);
     const sub = lines.reduce((a, l) => a + l.line, 0);
     const slotDef = SLOTS[st.slot];
@@ -1195,6 +1186,7 @@ class Component extends DCLogic {
     const countdown = "Offers end in " + Math.floor(mins / 60) + "h " + (mins % 60) + "m";
 
     const card = (p) => {
+      if (!p || !p.sizes || !p.sizes.length) return null;
       const s0 = p.sizes[0];
       const k = this.key(p.id, 0);
       const qty = st.cart[k] || 0;
@@ -1226,16 +1218,16 @@ class Component extends DCLogic {
 
     const shown = CATS.filter((c) => st.cat === "all" || c.id === st.cat);
     const groups = shown.map((c) => {
-      const items = PRODUCTS.filter((p) => p.cat === c.id);
-      return { name: c.name, dot: c.dot, count: items.length + " products", items: items.map(card) };
+      const items = PRODUCTS.filter((p) => p.cat === c.id).map(card).filter(Boolean);
+      return { name: c.name, dot: c.dot, count: items.length + " products", items };
     }).filter((g) => g.items.length);
 
     const q = st.q.trim().toLowerCase();
-    const results = q ? PRODUCTS.filter((p) => p.name.toLowerCase().includes(q) || catOf(p.cat).name.toLowerCase().includes(q)).map(card) : [];
+    const results = q ? PRODUCTS.filter((p) => p.name.toLowerCase().includes(q) || catOf(p.cat).name.toLowerCase().includes(q)).map(card).filter(Boolean) : [];
 
-    const p = PRODUCTS.find((x) => x.id === st.pid) || PRODUCTS[0];
-    const si = Math.min(st.sizeIdx, p.sizes.length - 1);
-    const sz = p.sizes[si];
+    const p = PRODUCTS.find((x) => x.id === st.pid) || PRODUCTS[0] || { id: 0, name: "", cat: "", sizes: [{ label: "", price: 0, old: 0, out: true }], desc: "", kw: "food" };
+    const si = Math.min(st.sizeIdx, Math.max(0, (p.sizes || []).length - 1));
+    const sz = (p.sizes && p.sizes[si]) || { label: "", price: 0, old: 0, out: true };
     const pc = catOf(p.cat);
     const pDisc = sz.old > 0;
 
@@ -1261,7 +1253,7 @@ class Component extends DCLogic {
 
       offersOn: this.props.showOffers ?? true,
       countdown,
-      offers: PRODUCTS.filter((x) => x.sizes[0].old > 0).map(card),
+      offers: PRODUCTS.filter((x) => x.sizes && x.sizes[0] && x.sizes[0].old > 0).map(card).filter(Boolean),
 
       catTiles: CATS.map((c, i) => ({
         name: c.name, tint: c.tint, slotId: "cat-" + c.id, img: photo(c.kw, 200 + i, 300),
@@ -1299,7 +1291,7 @@ class Component extends DCLogic {
         imgB: photo(p.kw, p.id + 400, 300), imgC: photo(p.kw + ",pack", p.id + 500, 300), imgD: photo(p.kw + ",kitchen", p.id + 600, 300),
         stockLabel: sz.out ? "Out of stock — back next week" : "In stock — packed today",
         stockFg: sz.out ? "#e4572e" : GREEN,
-        sizes: p.sizes.map((s, i) => ({
+        sizes: (p.sizes || []).map((s, i) => ({
           label: s.label,
           price: s.out ? "unavailable" : fmt(s.price),
           bd: i === si ? INK : "#e2e0d8",
@@ -1321,7 +1313,7 @@ class Component extends DCLogic {
         onQtyDec: () => this.setState((s) => ({ qty: Math.max(1, s.qty - 1) })),
         onAdd: () => (sz.out ? this.flash("We'll text you when it's back") : this.add(p.id, si, st.qty))
       },
-      related: PRODUCTS.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4).map(card),
+      related: PRODUCTS.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4).map(card).filter(Boolean),
 
       cartLines: lines.map((l) => ({
         name: l.p.name, size: l.sz.label, each: fmt(l.sz.price) + " each",
@@ -1413,9 +1405,10 @@ class Component extends DCLogic {
 
       myOrders: st.orders.map((o) => {
         const items = o.items.map((it) => {
-          const p = PRODUCTS.find((x) => x.id === it[0]);
-          return { p, sz: p.sizes[it[1]], qty: it[2] };
-        });
+          const prod = PRODUCTS.find((x) => x.id === it[0]);
+          if (!prod) return null;
+          return { p: prod, sz: prod.sizes[it[1]] || prod.sizes[0], qty: it[2] };
+        }).filter(Boolean);
         const k = (i) => {
           const done = i < o.status;
           const active = i === o.status;
@@ -1459,13 +1452,14 @@ class Component extends DCLogic {
       }),
 
       myReviews: MY_REVIEWS.map((r) => {
-        const p = PRODUCTS.find((x) => x.id === r.pid);
+        const prod = PRODUCTS.find((x) => x.id === r.pid);
+        if (!prod) return null;
         return {
-          product: p.name, img: photo(p.kw, p.id), tint: catOf(p.cat).tint,
+          product: prod.name, img: photo(prod.kw, prod.id), tint: catOf(prod.cat).tint,
           stars: "★★★★★".slice(0, r.stars) + "☆☆☆☆☆".slice(0, 5 - r.stars),
           date: r.date, text: r.text, reply: r.reply, hasReply: !!r.reply
         };
-      }),
+      }).filter(Boolean),
 
       myAddresses: st.addresses.map((a) => ({
         label: a.label, line: a.line, meta: a.meta, isDefault: a.def, canDefault: !a.def,
