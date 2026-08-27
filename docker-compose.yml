@@ -72,6 +72,16 @@ services:
     ports:
       - "6379:6379"
 
+
+  frontend:
+    image: python:3.13-slim-bookworm
+    working_dir: /frontend
+    volumes:
+      - ./frontend:/frontend
+    ports:
+      - "7000:7000"
+    command: ["python3", "-m","http.server","7000"]
+    restart: unless-stopped
 volumes:
   postgres_data:
   redis_data:

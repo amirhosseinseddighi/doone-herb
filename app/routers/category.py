@@ -25,13 +25,3 @@ async def get_all_categories(db: Annotated[AsyncSession, Depends(get_db)]):
             .order_by(Category.sort_order.desc())
     )
     return category_result.scalars().all()
-
-
-
-"""
-GET /api/categories — sorted by sort_order
- GET /api/products?category=&q=&sort= — start q as a simple ILIKE match on name (Day 12 swaps this for real tsvector search); exclude is_hidden=true
- GET /api/products/:id — sizes, images, and the notes-by-category content block
- GET /api/offers — only offers where active=true and current time is within starts_at/ends_at
- GET /api/notes?category=, GET /api/faqs, GET /api/shipping-info — if §2 didn't give these an explicit table, add a minimal content_blocks-style table now rather than hardcoding the content in Python
-"""

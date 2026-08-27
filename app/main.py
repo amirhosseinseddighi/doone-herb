@@ -1,12 +1,33 @@
-from fastapi import FastAPI, status
-from app.routers import auth,category
+from fastapi import FastAPI, Request, status
+from fastapi.staticfiles import StaticFiles
+from app.routers import category
+from app.routers import auth
 from app.routers.admin import auth as admin_auth
+from fastapi.middleware.cors import CORSMiddleware
+
+
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://127.0.0.1:7000",
+]
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(admin_auth.router, prefix="/api/admin/auth", tags=["admin_auth"])
 app.include_router(category.router, prefix="/api/categories")
+
 
 @app.get("/healthz")
 def healthz():
