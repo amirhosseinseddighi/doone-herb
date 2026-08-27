@@ -1,9 +1,17 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 from app.schemas.categories import CategoryResponse
 
 
+
+class OfferResponse(BaseModel):
+
+    id: int
+    badge_label: str
+    starts_at: datetime
+    ends_at: datetime
 
 class ProductVariantResponse(BaseModel):
     id: int
@@ -12,6 +20,7 @@ class ProductVariantResponse(BaseModel):
     compare_at_price: Optional[int]
     stock_qty: int
     sku: str
+    offers: list[OfferResponse]
 
     model_config = ConfigDict(from_attributes=True)
 
