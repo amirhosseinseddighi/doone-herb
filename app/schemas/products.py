@@ -32,6 +32,7 @@ class ProductResponse(BaseModel):
 
     id: int
     name: str
+    slug: str
     category: CategoryResponse
     description: str
     keyword_tags: Optional[str]

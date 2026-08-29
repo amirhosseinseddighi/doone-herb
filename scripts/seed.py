@@ -87,10 +87,10 @@ CATEGORIES = [
     },
 ]
 
-
 PRODUCTS = [
     {
         "name": "زعفران نگین",
+        "slug": "زعفران-نگین",
         "category_slug": "saffron",
         "description": "زعفران نگین با کیفیت ممتاز.",
         "keyword_tags": "زعفران,نگین,خالص,ممتاز",
@@ -103,6 +103,7 @@ PRODUCTS = [
     },
     {
         "name": "زعفران سرگل",
+        "slug": "زعفران-سرگل",
         "category_slug": "saffron",
         "description": "زعفران سرگل مناسب مصرف روزانه.",
         "keyword_tags": "زعفران,سرگل",
@@ -114,6 +115,7 @@ PRODUCTS = [
     },
     {
         "name": "چای سبز ممتاز",
+        "slug": "چای-سبز-ممتاز",
         "category_slug": "tea",
         "description": "چای سبز با عطر و طعم ملایم.",
         "keyword_tags": "چای,چای سبز",
@@ -125,6 +127,7 @@ PRODUCTS = [
     },
     {
         "name": "چای سیاه ایرانی",
+        "slug": "چای-سیاه-ایرانی",
         "category_slug": "tea",
         "description": "چای سیاه ایرانی با عطر طبیعی.",
         "keyword_tags": "چای,چای سیاه,ایرانی",
@@ -136,6 +139,7 @@ PRODUCTS = [
     },
     {
         "name": "دمنوش گل گاوزبان",
+        "slug": "دمنوش-گل-گاوزبان",
         "category_slug": "herbal-tea",
         "description": "گل گاوزبان خشک مناسب تهیه دمنوش.",
         "keyword_tags": "دمنوش,گل گاوزبان",
@@ -147,6 +151,7 @@ PRODUCTS = [
     },
     {
         "name": "دمنوش بابونه",
+        "slug": "دمنوش-بابونه",
         "category_slug": "herbal-tea",
         "description": "بابونه خشک با کیفیت مناسب تهیه دمنوش.",
         "keyword_tags": "دمنوش,بابونه",
@@ -158,6 +163,7 @@ PRODUCTS = [
     },
     {
         "name": "گل محمدی خشک",
+        "slug": "گل-محمدی-خشک",
         "category_slug": "medicinal-herbs",
         "description": "گل محمدی خشک معطر.",
         "keyword_tags": "گل محمدی,گیاه دارویی",
@@ -169,6 +175,7 @@ PRODUCTS = [
     },
     {
         "name": "نعناع خشک",
+        "slug": "نعناع-خشک",
         "category_slug": "medicinal-herbs",
         "description": "نعناع خشک مناسب آشپزی و دمنوش.",
         "keyword_tags": "نعناع,گیاه دارویی",
@@ -180,6 +187,7 @@ PRODUCTS = [
     },
     {
         "name": "دارچین سیلان",
+        "slug": "دارچین-سیلان",
         "category_slug": "medicinal-herbs",
         "description": "دارچین سیلان با عطر و کیفیت بالا.",
         "keyword_tags": "دارچین,سیلان",
@@ -191,6 +199,7 @@ PRODUCTS = [
     },
     {
         "name": "هل سبز",
+        "slug": "هل-سبز",
         "category_slug": "medicinal-herbs",
         "description": "هل سبز معطر مناسب چای و دمنوش.",
         "keyword_tags": "هل,هل سبز",
@@ -201,6 +210,7 @@ PRODUCTS = [
         ],
     },
 ]
+
 
 
 DELIVERY_SLOTS = [
@@ -261,6 +271,7 @@ async def seed_products(session, categories):
 
         product = Product(
             name=data["name"],
+            slug = data["slug"],
             category=categories[data["category_slug"]],
             description=data["description"],
             keyword_tags=data["keyword_tags"],

@@ -80,6 +80,8 @@ services:
       - ./frontend:/frontend
     ports:
       - "7000:7000"
+    depends_on:
+      - app
     command: ["python3", "-m","http.server","7000"]
     restart: unless-stopped
 volumes:

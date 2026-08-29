@@ -26,6 +26,7 @@ class Product(Base):
     __tablename__ = "products"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, unique=True)
+    slug: Mapped[str] = mapped_column(String(300), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     category_id: Mapped[int] = mapped_column(Integer, ForeignKey("categories.id"), nullable=False, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
