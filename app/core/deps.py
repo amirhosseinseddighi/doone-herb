@@ -70,3 +70,4 @@ def require_role(*allowed_roles: Roles):
 CurrentUser = Annotated[User, Depends(get_current_user)]
 CurrentAdmin = Annotated[User, Depends(require_role(Roles.OWNER, Roles.PACKER, Roles.MANAGER))]
 CurrentOwner = Annotated[User, Depends(require_role(Roles.OWNER))]
+CurrentManagerOrOwner = Annotated[User, Depends(require_role(Roles.OWNER, Roles.MANAGER))]
