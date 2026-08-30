@@ -23,8 +23,8 @@ app.add_middleware(
 
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-app.include_router(category.router, prefix="/api/categories")
-app.include_router(products.router, prefix="/api/products")
+app.include_router(category.router, prefix="/api/categories", tags=["category"])
+app.include_router(products.router, prefix="/api/products", tags=["products"])
 
 
 @app.get("/healthz")
