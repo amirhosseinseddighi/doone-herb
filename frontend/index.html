@@ -77,14 +77,61 @@
               <sc-if value="{{ loggedOut }}" hint-placeholder-val="{{ true }}">
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                   <div>
-                    <h3 style="font-size: 19px;">Sign in</h3>
-                    <p style="margin: 4px 0 0; font-size: 12.5px; color: #7d857f; line-height: 1.5;">Your mobile number is all we need — we text a code.</p>
+                    <h3 style="font-size: 19px;">{{ authTitle }}</h3>
+                    <p style="margin: 4px 0 0; font-size: 12.5px; color: #7d857f; line-height: 1.5;">{{ authSub }}</p>
                   </div>
-                  <input value="{{ loginPhone }}" onChange="{{ onLoginPhone }}" placeholder="0912 000 0000" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
-                  <sc-if value="{{ codeSent }}" hint-placeholder-val="{{ false }}">
-                    <input value="{{ loginCode }}" onChange="{{ onLoginCode }}" placeholder="4-digit code · 1234" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; letter-spacing: 0.2em;" />
+
+                  <sc-if value="{{ forgotClosed }}" hint-placeholder-val="{{ true }}">
+                    <div style="display: flex; gap: 6px; padding: 4px; border-radius: 999px; background: #f1efe8;">
+                      <button onClick="{{ tabPw.onClick }}" style="flex: 1; height: 34px; border: 0; border-radius: 999px; background: {{ tabPw.bg }}; color: {{ tabPw.fg }}; font-size: 12.5px; font-weight: 700; cursor: pointer;">Password</button>
+                      <button onClick="{{ tabOtp.onClick }}" style="flex: 1; height: 34px; border: 0; border-radius: 999px; background: {{ tabOtp.bg }}; color: {{ tabOtp.fg }}; font-size: 12.5px; font-weight: 700; cursor: pointer;">SMS code</button>
+                    </div>
                   </sc-if>
-                  <button onClick="{{ doLogin }}" style="height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14.5px; font-weight: 700; cursor: pointer;">{{ loginCta }}</button>
+
+                  <sc-if value="{{ showPwForm }}" hint-placeholder-val="{{ true }}">
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                      <sc-if value="{{ signupMode }}" hint-placeholder-val="{{ false }}">
+                        <input value="{{ signupName }}" onChange="{{ onSignupName }}" placeholder="Full name" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                      </sc-if>
+                      <input value="{{ loginUser }}" onChange="{{ onLoginUser }}" placeholder="Username" autocomplete="username" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                      <input type="password" value="{{ loginPass }}" onChange="{{ onLoginPass }}" placeholder="{{ pwPlaceholder }}" autocomplete="current-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                      <sc-if value="{{ signupMode }}" hint-placeholder-val="{{ false }}">
+                        <input type="password" value="{{ signupPass2 }}" onChange="{{ onSignupPass2 }}" placeholder="Repeat password" autocomplete="new-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                      </sc-if>
+                      <button onClick="{{ doPwAuth }}" disabled="{{ authBusy }}" style="height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14.5px; font-weight: 700; cursor: pointer; opacity: {{ authBusy ? 0.6 : 1 }};">{{ pwCta }}</button>
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <button onClick="{{ toggleSignup }}" style="border: 0; background: none; padding: 0; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #0f7a4a;">{{ signupToggleLabel }}</button>
+                        <sc-if value="{{ signinMode }}" hint-placeholder-val="{{ true }}">
+                          <button onClick="{{ openForgot }}" style="border: 0; background: none; padding: 0; cursor: pointer; font-size: 12.5px; font-weight: 500; color: #7d857f;">Forgot password?</button>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ showOtpForm }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                      <input value="{{ loginPhone }}" onChange="{{ onLoginPhone }}" placeholder="0912 000 0000" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                      <sc-if value="{{ codeSent }}" hint-placeholder-val="{{ false }}">
+                        <input value="{{ loginCode }}" onChange="{{ onLoginCode }}" placeholder="4-digit code · 1234" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; letter-spacing: 0.2em;" />
+                      </sc-if>
+                      <button onClick="{{ doLogin }}" style="height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14.5px; font-weight: 700; cursor: pointer;">{{ loginCta }}</button>
+                      <span style="font-size: 12px; color: #8b918c; line-height: 1.5;">Prefer a code? We text a one-time password to your mobile — no password to remember.</span>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ forgotOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                      <input value="{{ forgotUser }}" onChange="{{ onForgotUser }}" placeholder="Username" autocomplete="username" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                      <sc-if value="{{ forgotSent }}" hint-placeholder-val="{{ false }}">
+                        <input value="{{ forgotCode }}" onChange="{{ onForgotCode }}" placeholder="4-digit code · 1234" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; letter-spacing: 0.2em;" />
+                        <input type="password" value="{{ forgotPass }}" onChange="{{ onForgotPass }}" placeholder="New password" autocomplete="new-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                        <input type="password" value="{{ forgotPass2 }}" onChange="{{ onForgotPass2 }}" placeholder="Repeat new password" autocomplete="new-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                      </sc-if>
+                      <button onClick="{{ doForgot }}" disabled="{{ authBusy }}" style="height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14.5px; font-weight: 700; cursor: pointer; opacity: {{ authBusy ? 0.6 : 1 }};">{{ forgotCta }}</button>
+                      <button onClick="{{ closeForgot }}" style="border: 0; background: none; padding: 0; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #0f7a4a; align-self: flex-start;">← Back to sign in</button>
+                    </div>
+                  </sc-if>
+
                   <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
                     <span style="font-size: 12.5px; color: #b8451f;">{{ loginErrorText }}</span>
                   </sc-if>
@@ -949,6 +996,56 @@ const photo = (kw, lock, size) => "https://loremflickr.com/" + (size || 600) + "
 
 
 const API_BASE = "http://127.0.0.1:8000";
+const AUTH_TOKEN_KEY = "dh_token";
+
+async function apiLogin(username, password) {
+  const body = new URLSearchParams({ username, password, grant_type: "password" });
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString()
+  });
+  if (!res.ok) {
+    let msg = "Sign-in failed. Please try again.";
+    if (res.status === 401 || res.status === 403) msg = "Wrong username or password.";
+    try {
+      const data = await res.json();
+      if (res.status !== 401 && res.status !== 403 && data && data.detail) {
+        msg = typeof data.detail === "string" ? data.detail : msg;
+      }
+    } catch (e) { /* non-JSON error body */ }
+    const err = new Error(msg);
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+
+async function apiMe(token) {
+  const res = await fetch(`${API_BASE}/api/auth/me`, {
+    headers: { Authorization: "Bearer " + token }
+  });
+  if (!res.ok) throw new Error("Session expired — please sign in again.");
+  return res.json();
+}
+
+// TODO(backend): POST /api/auth/register is not implemented yet — UI-only simulation.
+async function apiSignup(name, username, password) {
+  await new Promise((r) => setTimeout(r, 400));
+  return { ok: true };
+}
+
+// TODO(backend): POST /api/auth/password-reset/request is not implemented yet — UI-only simulation.
+async function apiRequestReset(username) {
+  await new Promise((r) => setTimeout(r, 400));
+  return { ok: true };
+}
+
+// TODO(backend): POST /api/auth/password-reset/confirm is not implemented yet — UI-only simulation.
+async function apiConfirmReset(username, code, password) {
+  await new Promise((r) => setTimeout(r, 400));
+  return { ok: true };
+}
 
 
 
@@ -1053,7 +1150,11 @@ const GREEN = "#0f7a4a";
 class Component extends DCLogic {
   state = {
     screen: "home", cat: "all", q: "", pid: null, sizeIdx: 0, qty: 1, cart: {}, cartOpen: false, toast: "", faq: null,
-    user: null, acctOpen: false, loginPhone: "", loginCode: "", codeSent: false, loginErr: "",
+    user: null, acctOpen: false,
+    authTab: "pw", signupMode: false, forgotOpen: false, forgotSent: false, authBusy: false,
+    loginUser: "", loginPass: "", loginPass2: "", signupName: "",
+    forgotUser: "", forgotCode: "", forgotPass: "", forgotPass2: "",
+    loginPhone: "", loginCode: "", codeSent: false, loginErr: "",
     acctTab: "orders", orders: MY_ORDERS.map((o) => Object.assign({}, o)), addresses: MY_ADDRESSES.map((a) => Object.assign({}, a)),
     slot: 0, pay: 0, err: "", receipt: null,
     form: { name: "", phone: "", addr: "", unit: "", postal: "", note: "" },
@@ -1066,6 +1167,21 @@ class Component extends DCLogic {
 
   componentDidMount() {
     this.loadData();
+    this.restoreSession();
+  }
+
+  async restoreSession() {
+    try {
+      const tok = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (!tok) return;
+      const me = await apiMe(tok);
+      this.setState({
+        user: { name: me.name || "Member", username: me.phone || "", phone: me.phone || "" },
+        form: Object.assign({}, this.state.form, { name: me.name || "", phone: me.phone || "" })
+      });
+    } catch (e) {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+    }
   }
 
   async loadData() {
@@ -1351,7 +1467,7 @@ class Component extends DCLogic {
       avatarBg: st.user ? "#eaf6ee" : "#f1efe8",
       avatarFg: st.user ? "#0b5c38" : "#7d857f",
       userName: st.user ? st.user.name : st.form.name || "Guest",
-      userPhone: st.user ? st.user.phone : st.form.phone || "not signed in",
+      userPhone: st.user ? (st.user.phone || (st.user.username ? "@" + st.user.username : "member")) : st.form.phone || "not signed in",
       memberLine: st.user ? "member since 2024" : "guest checkout — sign in to keep this history",
       loginPhone: st.loginPhone,
       loginCode: st.loginCode,
@@ -1376,7 +1492,122 @@ class Component extends DCLogic {
         });
         this.flash("Signed in");
       },
-      doLogout: () => { this.setState({ user: null, acctOpen: false, screen: "home" }); this.flash("Signed out"); },
+
+      authTab: st.authTab,
+      signupMode: st.signupMode,
+      forgotOpen: st.forgotOpen,
+      forgotSent: st.forgotSent,
+      authTitle: st.forgotOpen ? "Reset password" : st.signupMode ? "Create account" : "Sign in",
+      authSub: st.forgotOpen
+        ? "Enter your username and we'll text a reset code."
+        : st.signupMode
+          ? "Pick a username and password — takes a minute."
+          : "Welcome back. Sign in with your username and password.",
+      forgotClosed: !st.forgotOpen,
+      showPwForm: !st.forgotOpen && st.authTab === "pw",
+      showOtpForm: !st.forgotOpen && st.authTab === "otp",
+      tabPw: {
+        bg: st.authTab === "pw" ? "#fff" : "transparent",
+        fg: st.authTab === "pw" ? INK : "#7d857f",
+        onClick: () => this.setState({ authTab: "pw", signupMode: false, forgotOpen: false, forgotSent: false, loginErr: "" })
+      },
+      tabOtp: {
+        bg: st.authTab === "otp" ? "#fff" : "transparent",
+        fg: st.authTab === "otp" ? INK : "#7d857f",
+        onClick: () => this.setState({ authTab: "otp", signupMode: false, forgotOpen: false, forgotSent: false, loginErr: "" })
+      },
+      pwPlaceholder: st.signupMode ? "Password (min 6 chars)" : "Password",
+      pwCta: st.authBusy ? "Please wait…" : st.signupMode ? "Create account" : "Sign in",
+      signupToggleLabel: st.signupMode ? "Already have an account? Sign in" : "New here? Create an account",
+      signinMode: !st.signupMode,
+      loginUser: st.loginUser,
+      loginPass: st.loginPass,
+      signupName: st.signupName,
+      signupPass2: st.loginPass2,
+      onLoginUser: (e) => { const v = e.target.value; this.setState({ loginUser: v, loginErr: "" }); },
+      onLoginPass: (e) => { const v = e.target.value; this.setState({ loginPass: v, loginErr: "" }); },
+      onSignupName: (e) => { const v = e.target.value; this.setState({ signupName: v, loginErr: "" }); },
+      onSignupPass2: (e) => { const v = e.target.value; this.setState({ loginPass2: v, loginErr: "" }); },
+      toggleSignup: () => this.setState((s) => ({ signupMode: !s.signupMode, forgotOpen: false, forgotSent: false, loginErr: "" })),
+      doPwAuth: async () => {
+        const u = st.loginUser.trim();
+        const p = st.loginPass;
+        if (u.length < 3) { this.setState({ loginErr: "Username needs at least 3 characters." }); return; }
+        if (p.length < 6) { this.setState({ loginErr: "Password needs at least 6 characters." }); return; }
+        if (st.signupMode) {
+          const name = st.signupName.trim();
+          if (name.length < 2) { this.setState({ loginErr: "Enter your full name." }); return; }
+          if (p !== st.loginPass2) { this.setState({ loginErr: "Passwords don't match." }); return; }
+          this.setState({ authBusy: true, loginErr: "" });
+          try {
+            await apiSignup(name, u, p);
+            this.setState({
+              user: { name, username: u, phone: "" },
+              acctOpen: false, signupMode: false, loginPass: "", loginPass2: "", authBusy: false, loginErr: "",
+              form: Object.assign({}, st.form, { name })
+            });
+            this.flash("Account created — welcome");
+          } catch (e) {
+            this.setState({ authBusy: false, loginErr: e.message || "Sign-up failed. Please try again." });
+          }
+          return;
+        }
+        this.setState({ authBusy: true, loginErr: "" });
+        try {
+          const tok = await apiLogin(u, p);
+          const me = await apiMe(tok.access_token);
+          localStorage.setItem(AUTH_TOKEN_KEY, tok.access_token);
+          const name = me.name || u;
+          this.setState({
+            user: { name, username: u, phone: me.phone || "" },
+            acctOpen: false, loginPass: "", authBusy: false, loginErr: "",
+            form: Object.assign({}, st.form, { name, phone: me.phone || st.form.phone })
+          });
+          this.flash("Signed in");
+        } catch (e) {
+          this.setState({ authBusy: false, loginErr: e.message || "Sign-in failed. Please try again." });
+        }
+      },
+      openForgot: () => this.setState({ forgotOpen: true, forgotSent: false, forgotUser: st.loginUser, forgotCode: "", forgotPass: "", forgotPass2: "", loginErr: "" }),
+      closeForgot: () => this.setState({ forgotOpen: false, forgotSent: false, forgotCode: "", forgotPass: "", forgotPass2: "", loginErr: "" }),
+      forgotUser: st.forgotUser,
+      forgotCode: st.forgotCode,
+      forgotPass: st.forgotPass,
+      forgotPass2: st.forgotPass2,
+      forgotCta: st.authBusy ? "Please wait…" : st.forgotSent ? "Reset password" : "Send reset code",
+      onForgotUser: (e) => { const v = e.target.value; this.setState({ forgotUser: v, loginErr: "" }); },
+      onForgotCode: (e) => { const v = e.target.value; this.setState({ forgotCode: v, loginErr: "" }); },
+      onForgotPass: (e) => { const v = e.target.value; this.setState({ forgotPass: v, loginErr: "" }); },
+      onForgotPass2: (e) => { const v = e.target.value; this.setState({ forgotPass2: v, loginErr: "" }); },
+      doForgot: async () => {
+        if (!st.forgotSent) {
+          if (st.forgotUser.trim().length < 3) { this.setState({ loginErr: "Enter your username." }); return; }
+          this.setState({ authBusy: true, loginErr: "" });
+          try {
+            await apiRequestReset(st.forgotUser.trim());
+            this.setState({ forgotSent: true, authBusy: false, loginErr: "" });
+            this.flash("Reset code sent — use 1234");
+          } catch (e) {
+            this.setState({ authBusy: false, loginErr: e.message || "Could not send the reset code." });
+          }
+          return;
+        }
+        if (st.forgotCode.replace(/\D/g, "").length < 4) { this.setState({ loginErr: "The code is four digits." }); return; }
+        if (st.forgotPass.length < 6) { this.setState({ loginErr: "Password needs at least 6 characters." }); return; }
+        if (st.forgotPass !== st.forgotPass2) { this.setState({ loginErr: "Passwords don't match." }); return; }
+        this.setState({ authBusy: true, loginErr: "" });
+        try {
+          await apiConfirmReset(st.forgotUser.trim(), st.forgotCode.replace(/\D/g, ""), st.forgotPass);
+          this.setState({
+            forgotOpen: false, forgotSent: false, forgotUser: "", forgotCode: "", forgotPass: "", forgotPass2: "",
+            loginUser: st.forgotUser, loginPass: "", authBusy: false, loginErr: ""
+          });
+          this.flash("Password updated — sign in");
+        } catch (e) {
+          this.setState({ authBusy: false, loginErr: e.message || "Could not reset the password." });
+        }
+      },
+      doLogout: () => { localStorage.removeItem(AUTH_TOKEN_KEY); this.setState({ user: null, acctOpen: false, screen: "home" }); this.flash("Signed out"); },
       myOrderCount: st.orders.length,
       myActiveCount: st.orders.filter((o) => o.status < 4).length,
       acctLinks: [
