@@ -50,7 +50,7 @@ def upgrade() -> None:
     sa.Column('kind', sa.Enum('order', 'stock', 'price', 'user', 'offer', name='activity_kind_enum'), nullable=False),
     sa.Column('text', sa.Text(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.ForeignKeyConstraint(['actor_id'], ['admin_users.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['actor_id'], ['users.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_activity_log_actor_id'), 'activity_log', ['actor_id'], unique=False)

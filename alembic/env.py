@@ -30,8 +30,7 @@ from app.models.category import (
 )
 from app.models.identity import (
     Address,
-    AdminRole,
-    AdminUser,
+    Roles,
     OTPCode,
     User,
     UserTier,

@@ -5,11 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import func, select
 from app.models.identity import User
-from app.core.deps import CurrentUser, CurrentAdminUser, get_db
+from app.core.deps import CurrentUser, CurrentAdmin, get_db
 from app.db.database import AsyncSession
 from app.core import security
 from app.core.config import settings
-from app.schemas.auth import Token
+from app.schemas.auth import CurrentUserInfoResponse, Token
 
 router = APIRouter()
 
@@ -39,9 +39,16 @@ async def login(
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.generate_access_token(
         data = {
-            "sub": str(user.id)
+            "sub": str(user.id),
+            "role": user.role
         }, 
         expires_delta= access_token_expires
     )
 
     return Token(access_token= access_token, token_type='bearer')
+
+
+
+@router.get("/me", response_model=CurrentUserInfoResponse)
+async def read_users_me(current_user: CurrentUser):
+    return current_user

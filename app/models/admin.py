@@ -173,7 +173,7 @@ class ActivityLog(Base):
     # what's displayed. If the admin account is later deleted, this
     # goes to NULL; the log entry stays fully readable regardless.
     actor_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("admin_users.id", ondelete="SET NULL"), nullable=True, index=True
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
     # Snapshot of the actor's name at write time — same pattern as
     # order_items.name_snapshot. None only for genuine system events
@@ -195,7 +195,7 @@ class ActivityLog(Base):
         DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False, index=True
     )
 
-    actor: Mapped[Optional["AdminUser"]] = relationship(foreign_keys=[actor_id])
+    actor: Mapped[Optional["User"]] = relationship(foreign_keys=[actor_id])
 
 
 

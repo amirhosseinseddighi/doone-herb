@@ -17,8 +17,6 @@ password_hash = PasswordHash.recommended()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-admin_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/auth/login")
-
 
 def hash_password(plain_password: str) -> str:
     return password_hash.hash(plain_password)
@@ -58,7 +56,7 @@ def verify_access_token(token: str) -> str | None:
             token,
             settings.JWT_SECRET.get_secret_value(),
             algorithms=[settings.JWT_ALGORITHM],
-            options={"require": ["exp", "sub"]}
+            options={"require": ["exp", "sub", "role"]}
         )
     
     except jwt.InvalidTokenError:

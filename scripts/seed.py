@@ -25,9 +25,9 @@ from app.models.category import (
 )
 from app.models.identity import (
     Address,
-    AdminRole,
-    AdminUser,
+    Roles,
     OTPCode,
+    Roles,
     User,
     UserTier,
 )
@@ -337,23 +337,27 @@ async def seed_offers(session):
     return offer
 
 
-async def seed_admin(session) -> AdminUser:
-    result = await session.execute(
-        select(AdminUser).where(AdminUser.email == "admin@example.com")
-    )
-    admin = result.scalar_one_or_none()
 
-    if admin is None:
-        admin = AdminUser(
-            name="Owner",
-            email="admin@example.com",
+async def seed_admin(session) -> User:
+    result = await session.execute(
+        select(User).where(User.phone == "09129999999")
+    )
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        user = User(
+            phone="09129999999",
+            name="Test Admin",
+            tier=UserTier.NEW,
+            role=Roles.OWNER,
             password_hash="$argon2id$v=19$m=65536,t=3,p=4$qbCOQ0JAn7ob7d86L/7jzw$iCKbdv7YMBS43Cy42UV+IMvZsnTeJNHnqAeX1sENvsA",
-            role=AdminRole.OWNER,
+            telegram_opt_in=False,
+            sms_opt_in=False,
         )
-        session.add(admin)
+        session.add(user)
         await session.flush()
 
-    return admin
+    return user
 
 
 async def seed_customer(session) -> User:
@@ -367,6 +371,7 @@ async def seed_customer(session) -> User:
             phone="09120000000",
             name="Test Customer",
             tier=UserTier.NEW,
+            role=Roles.CUSTOMER,
             password_hash="$argon2id$v=19$m=65536,t=3,p=4$qbCOQ0JAn7ob7d86L/7jzw$iCKbdv7YMBS43Cy42UV+IMvZsnTeJNHnqAeX1sENvsA",
             telegram_opt_in=False,
             sms_opt_in=False,
@@ -608,7 +613,7 @@ async def seed_push_campaigns(session, user: User):
         session.add(recipient)
 
 
-async def seed_activity_logs(session, admin: AdminUser):
+async def seed_activity_logs(session, admin: User):
     result = await session.execute(
         select(ActivityLog).where(ActivityLog.text == "تنظیمات پایگاه داده مقداردهی اولیه شد.")
     )
