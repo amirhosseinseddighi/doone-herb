@@ -17,6 +17,13 @@ class Category(Base):
     dot_color: Mapped[str] = mapped_column(String(7), nullable=False)
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, server_default="true")
+    is_deleted: Mapped[bool] = mapped_column(
+            Boolean, 
+            default=False, 
+            nullable=False, 
+            server_default="false", 
+            index=True
+        )
 
     products: Mapped[list["Product"]] = relationship("Product", back_populates="category")
 
@@ -38,6 +45,13 @@ class Product(Base):
         DateTime(timezone=True), 
         default=lambda: datetime.now(UTC), 
         onupdate=lambda: datetime.now(UTC)
+    )
+    is_deleted: Mapped[bool] = mapped_column(
+        Boolean, 
+        default=False, 
+        nullable=False, 
+        server_default="false", 
+        index=True
     )
 
     category: Mapped["Category"] = relationship("Category", back_populates="products")
@@ -67,7 +81,7 @@ class ProductVariant(Base):
     product: Mapped["Product"] = relationship("Product", back_populates="variants")
     offers: Mapped[list["Offer"]] = relationship("Offer", back_populates="product_variant")
     order_items: Mapped[list["OrderItem"]] = relationship("OrderItem", back_populates="product_variant")
-
+    
 
 class ProductImage(Base):
     __tablename__ = "product_images"
