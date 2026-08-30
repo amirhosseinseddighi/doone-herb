@@ -53,3 +53,12 @@ class NewProductRequest(BaseModel):
     description: Optional[str] = Field(max_length=400)
     is_in_stock: bool
     is_featured: bool
+
+
+class UpdateProductRequest(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=1, max_length=255)
+    category_id: Optional[int] = Field(default=None)
+    description: Optional[str] = Field(default=None, max_length=400)
+    keyword_tags: Optional[str] = Field(default=None)
+    is_featured: Optional[bool] = Field(default=None)
+    is_hidden: Optional[bool] = Field(default=None)

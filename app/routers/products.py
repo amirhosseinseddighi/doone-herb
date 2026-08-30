@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload, with_loader_criteria
 from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
 from app.models.category import Category, Offer, Product, ProductVariant
-from app.schemas.products import NewProductRequest, ProductResponse
+from app.schemas.products import NewProductRequest, ProductResponse, UpdateProductRequest
 from app.utils import generate_sku
 
 router = APIRouter()
@@ -141,3 +141,88 @@ async def delete_product(
     product.is_hidden = True
     await db.commit()
     return None
+
+
+
+
+
+
+
+
+@router.patch("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
+async def update_product(
+    product_id: int,
+    product_update: UpdateProductRequest,
+    admin: CurrentManagerOrOwner,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    # check existance of product and check if it's not soft-deleted
+    stmt = (
+        select(Product)
+        .where((Product.id == product_id) & (Product.is_deleted.is_(False)))
+        .options(
+            selectinload(Product.category),
+            selectinload(Product.variants).selectinload(ProductVariant.offers)
+        )
+    )
+    result = await db.execute(stmt)
+    product = result.scalar_one_or_none()
+
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    update_data = product_update.model_dump(exclude_unset=True)
+
+    # check existance of category
+    if "category_id" in update_data and update_data["category_id"] != product.category_id:
+        category_result = await db.execute(
+            select(Category).where(
+                (Category.id == update_data["category_id"]) & (Category.is_deleted.is_(False))
+            )
+        )
+        if not category_result.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Target category not found or is deleted"
+            )
+
+    # slug generation if name changes
+    if "name" in update_data and update_data["name"] != product.name:
+        new_slug = slugify(update_data["name"], allow_unicode=True)
+        slug = new_slug
+        counter = 1
+
+        while True:
+            existing = await db.execute(
+                select(Product).where(
+                    (Product.slug == slug) & (Product.id != product_id)
+                )
+            )
+            if not existing.scalar_one_or_none():
+                break
+            slug = f"{new_slug}-{counter}"
+            counter += 1
+
+        product.slug = slug
+
+
+    for field, value in update_data.items():
+        setattr(product, field, value)
+
+    await db.commit()
+
+    # refetch the created product
+    refetched_stmt = (
+        select(Product)
+        .where(Product.id == product_id)
+        .options(
+            selectinload(Product.category),
+            selectinload(Product.variants).selectinload(ProductVariant.offers)
+        )
+    )
+    refetched_product = await db.scalar(refetched_stmt)
+
+    return refetched_product
