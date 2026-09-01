@@ -4,12 +4,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from slugify import slugify
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload, with_loader_criteria
 
 from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
 from app.models.category import Category, Offer, Product, ProductVariant
-from app.schemas.products import NewProductRequest, ProductResponse, UpdateProductRequest
+from app.schemas.products import NewProductRequest, NewProductVariantRequest, ProductResponse, ProductVariantResponse, UpdateProductRequest, UpdateProductVariantRequest
 from app.utils import generate_sku
 
 router = APIRouter()
@@ -226,3 +227,181 @@ async def update_product(
     refetched_product = await db.scalar(refetched_stmt)
 
     return refetched_product
+
+
+
+# ============== PRODUCT VARIANTS ================
+
+@router.post(
+        "/{product_id}/variants", 
+        response_model=ProductVariantResponse, 
+        status_code=status.HTTP_201_CREATED
+)
+async def add_product_variant(
+    product_id: int,
+    variant_data: NewProductVariantRequest,
+    admin: CurrentManagerOrOwner,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    # Verify product existence
+    product_stmt = select(Product).where(
+        (Product.id == product_id) & (Product.is_deleted.is_(False))
+    )
+    product_result = await db.execute(product_stmt)
+    if not product_result.scalar_one_or_none():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            # Create a savepoint in case commit fails due to duplicate SKU
+            async with db.begin_nested():
+                new_variant = ProductVariant(
+                    product_id=product_id,
+                    label=variant_data.label,
+                    price=variant_data.price,
+                    compare_at_price=variant_data.compare_at_price,
+                    stock_qty=variant_data.stock_qty,
+                    sku=generate_sku(),
+                )
+                db.add(new_variant)
+                await db.flush()
+            
+            # If flush succeeds without IntegrityError, commit transaction
+            await db.commit()
+            break
+        except IntegrityError:
+            # Rollback to savepoint on collision
+            if attempt == max_retries - 1:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Could not generate a unique SKU. Please try again."
+                )
+
+    # Re-fetch with relationship criteria
+    now = datetime.now(UTC)
+    stmt = (
+        select(ProductVariant)
+        .where(ProductVariant.id == new_variant.id)
+        .options(
+            selectinload(ProductVariant.offers),
+            with_loader_criteria(
+                Offer,
+                lambda cls: cls.active.is_(True) & (cls.starts_at <= now) & (cls.ends_at >= now),
+                include_aliases=True,
+            ),
+        )
+    )
+    return await db.scalar(stmt)
+
+
+
+@router.delete(
+    "/{product_id}/variants/{variant_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_product_variant(
+    product_id: int,
+    variant_id: int,
+    admin: CurrentManagerOrOwner,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    # check product exists and is not soft-deleted
+    product_stmt = select(Product).where(
+        (Product.id == product_id) & (Product.is_deleted.is_(False))
+    )
+    product_result = await db.execute(product_stmt)
+    if not product_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    # get variant belonging to this specific product
+    variant_stmt = select(ProductVariant).where(
+        (ProductVariant.id == variant_id) & (ProductVariant.product_id == product_id)
+    )
+    variant_result = await db.execute(variant_stmt)
+    variant = variant_result.scalar_one_or_none()
+
+    if not variant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product variant not found"
+        )
+
+    # prevent deleting the last remaining variant to maintain product consistency
+    count_stmt = (
+        select(func.count())
+        .select_from(ProductVariant)
+        .where(ProductVariant.product_id == product_id)
+    )
+    total_variants = await db.scalar(count_stmt)
+    if total_variants <= 1:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete the only remaining variant of a product"
+        )
+
+    await db.delete(variant)
+    await db.commit()
+    return None
+
+
+
+
+
+@router.patch(
+    "/{product_id}/variants/{variant_id}",
+    response_model=ProductVariantResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def update_product_variant(
+    product_id: int,
+    variant_id: int,
+    variant_update: UpdateProductVariantRequest,
+    admin: CurrentManagerOrOwner,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    # check the product exists and isn't soft-deleted
+    product_result = await db.execute(
+        select(Product).where((Product.id == product_id) & Product.is_deleted.is_(False))
+    )
+    if not product_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    # get the variant linked to this product with active offers loaded
+    now = datetime.now(UTC)
+    stmt = (
+        select(ProductVariant)
+        .where((ProductVariant.id == variant_id) & (ProductVariant.product_id == product_id))
+        .options(
+            selectinload(ProductVariant.offers),
+            with_loader_criteria(
+                Offer,
+                lambda cls: cls.active.is_(True) & (cls.starts_at <= now) & (cls.ends_at >= now),
+                include_aliases=True,
+            ),
+        )
+    )
+    result = await db.execute(stmt)
+    variant = result.scalar_one_or_none()
+
+    if not variant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product variant not found"
+        )
+
+    # do the partial updates
+    update_data = variant_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(variant, field, value)
+
+    await db.commit()
+    await db.refresh(variant)
+
+    return variant
