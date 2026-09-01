@@ -1175,8 +1175,13 @@ class Component extends DCLogic {
       const tok = localStorage.getItem(AUTH_TOKEN_KEY);
       if (!tok) return;
       const me = await apiMe(tok);
+      if (me.role && me.role !== "customer") {
+        // Admins land on the admin panel.
+        window.location.href = "./admin.html";
+        return;
+      }
       this.setState({
-        user: { name: me.name || "Member", username: me.phone || "", phone: me.phone || "" },
+        user: { name: me.name || "Member", username: me.phone || "", phone: me.phone || "", role: me.role || "customer" },
         form: Object.assign({}, this.state.form, { name: me.name || "", phone: me.phone || "" })
       });
     } catch (e) {
@@ -1558,8 +1563,13 @@ class Component extends DCLogic {
           const me = await apiMe(tok.access_token);
           localStorage.setItem(AUTH_TOKEN_KEY, tok.access_token);
           const name = me.name || u;
+          if (me.role && me.role !== "customer") {
+            // Admins go straight to the admin panel.
+            window.location.href = "./admin.html";
+            return;
+          }
           this.setState({
-            user: { name, username: u, phone: me.phone || "" },
+            user: { name, username: u, phone: me.phone || "", role: me.role || "customer" },
             acctOpen: false, loginPass: "", authBusy: false, loginErr: "",
             form: Object.assign({}, st.form, { name, phone: me.phone || st.form.phone })
           });

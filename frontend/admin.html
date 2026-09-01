@@ -71,11 +71,14 @@
       </button>
     </sc-for>
     <div style="margin-top: auto; display: flex; align-items: center; gap: 11px; padding: 14px 10px 4px; border-top: 1px solid #f2f0e9;">
-      <span style="width: 34px; height: 34px; border-radius: 999px; background: #eaf6ee; color: #0f7a4a; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700;">MR</span>
-      <span style="display: flex; flex-direction: column;">
-        <span style="font-size: 13px; font-weight: 600;">Mehdi R.</span>
-        <span style="font-size: 11.5px; color: #7d857f;">owner</span>
+      <span style="width: 34px; height: 34px; border-radius: 999px; background: #eaf6ee; color: #0f7a4a; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700;">{{ userInitials }}</span>
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+        <span style="font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ userName }}</span>
+        <span style="font-size: 11.5px; color: #7d857f;">{{ userRole }}</span>
       </span>
+      <button onClick="{{ doLogout }}" title="Sign out" style="flex: none; width: 34px; height: 34px; border: 0; border-radius: 999px; background: #f1efe8; color: #7d857f; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Sign out">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
+      </button>
     </div>
   </div>
 
@@ -591,6 +594,9 @@
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="{{ r.featFill }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"></polygon></svg>
                 </button>
                 <button onClick="{{ r.onEdit }}" style="flex: none; height: 34px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">Edit</button>
+                <button onClick="{{ r.onDelete }}" title="Delete product" style="flex: none; width: 34px; height: 34px; border: 0; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fdece2; color: #b8451f;" aria-label="Delete">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
               </div>
             </sc-for>
             <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
@@ -604,19 +610,28 @@
       </sc-if>
 
       <sc-if value="{{ isCats }}" hint-placeholder-val="{{ false }}">
-        <div class="catgrid">
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <input value="{{ newCatName }}" onChange="{{ onNewCatName }}" placeholder="New category name" style="height: 44px; flex: 1; min-width: 200px; max-width: 320px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px; color: #12211a;" />
+            <button onClick="{{ addCat }}" disabled="{{ catBusy }}" style="height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer; opacity: {{ catBusy ? 0.6 : 1 }};">{{ catBusy ? "Adding…" : "Add category" }}</button>
+          </div>
+          <div class="catgrid">
           <sc-for list="{{ catCards }}" as="c" hint-placeholder-count="8">
             <div style="border-radius: 22px; overflow: hidden; background: #fff; border: 1px solid #eceae3; display: flex; flex-direction: column;">
               <div style="aspect-ratio: 16 / 9; background: {{ c.tint }}; background-image: url({{ c.img }}); background-size: cover; background-position: center; opacity: {{ c.dim }};"></div>
               <div style="padding: 13px 15px 15px; display: flex; align-items: center; gap: 10px;">
                 <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
-                  <span style="font-size: 14px; font-weight: 700;">{{ c.name }}</span>
+                  <span style="font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.name }}</span>
                   <span style="font-size: 12px; color: #8b918c;">{{ c.count }}</span>
                 </span>
                 <button onClick="{{ c.onToggle }}" style="flex: none; height: 30px; padding: 0 13px; border: 0; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 700; background: {{ c.bg }}; color: {{ c.fg }};">{{ c.state }}</button>
+                <button onClick="{{ c.onDelete }}" title="Delete category" style="flex: none; width: 30px; height: 30px; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fdece2; color: #b8451f;" aria-label="Delete">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
               </div>
             </div>
           </sc-for>
+          </div>
         </div>
       </sc-if>
 
@@ -857,6 +872,32 @@
         </div>
       </sc-if>
 
+      <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 720px;">
+          <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 22px; display: flex; align-items: center; gap: 16px;">
+            <span style="width: 64px; height: 64px; flex: none; border-radius: 999px; background: #12211a; color: #d8f24b; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800;">{{ userInitials }}</span>
+            <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-size: 19px; font-weight: 800;">{{ userName }}</span>
+              <span style="font-size: 13px; color: #7d857f;">{{ profilePhone }}</span>
+              <span style="display: inline-flex; align-self: flex-start; height: 24px; padding: 0 12px; align-items: center; border-radius: 999px; background: #eaf6ee; color: #0b5c38; font-size: 11.5px; font-weight: 700; text-transform: capitalize;">{{ userRole }}</span>
+              <span style="font-size: 12px; color: #a2a89f;">Member since {{ profileSince }}</span>
+            </span>
+          </div>
+          <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 22px; display: flex; flex-direction: column; gap: 12px;">
+            <h2 style="font-size: 20px;">Account details</h2>
+            <sc-for list="{{ profileRows }}" as="r" hint-placeholder-count="6">
+              <div style="display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid #f1efe8;">
+                <span style="width: 150px; flex: none; font-size: 12.5px; color: #7d857f;">{{ r.label }}</span>
+                <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.value }}</span>
+              </div>
+              <sc-if value="{{ r.last }}" hint-placeholder-val="{{ false }}"></sc-if>
+            </sc-for>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button onClick="{{ doLogout }}" style="height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; font-size: 13.5px; font-weight: 700; cursor: pointer;">Log out</button>
+          </div>
+        </div>
+      </sc-if>
       <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
         <div class="setgrid">
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
@@ -1010,7 +1051,7 @@
         </div>
         <div style="padding: 16px 20px 20px; border-top: 1px solid #eceae3; display: flex; gap: 10px;">
           <button onClick="{{ closeEditor }}" style="flex: none; height: 48px; padding: 0 22px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 14px; font-weight: 700; cursor: pointer;">Cancel</button>
-          <button onClick="{{ saveDraft }}" style="flex: 1; height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14.5px; font-weight: 700; cursor: pointer;">{{ saveLabel }}</button>
+          <button onClick="{{ saveDraft }}" disabled="{{ saving }}" style="flex: 1; height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14.5px; font-weight: 700; cursor: pointer; opacity: {{ saving ? 0.6 : 1 }};">{{ saveLabel }}</button>
         </div>
       </div>
     </div>
@@ -1058,6 +1099,77 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}">
 const photo = (kw, lock, size) => "https://loremflickr.com/" + (size || 400) + "/" + (size || 400) + "/" + kw + "?lock=" + lock;
+
+// ---- Backend API (FastAPI at 127.0.0.1:8000) ----
+const API_BASE = "http://127.0.0.1:8000";
+const AUTH_TOKEN_KEY = "dh_token";
+
+async function apiMe(token) {
+  const res = await fetch(`${API_BASE}/api/auth/me`, {
+    headers: { Authorization: "Bearer " + token }
+  });
+  if (!res.ok) throw new Error("Session expired");
+  return res.json();
+}
+
+async function apiGet(path) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { Authorization: "Bearer " + localStorage.getItem(AUTH_TOKEN_KEY) }
+  });
+  if (res.status === 401) { window.location.href = "./index.html"; throw new Error("Not signed in"); }
+  if (!res.ok) throw new Error("Request failed (" + res.status + ")");
+  return res.json();
+}
+
+async function apiSend(method, path, body) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method,
+    headers: Object.assign(
+      { Authorization: "Bearer " + localStorage.getItem(AUTH_TOKEN_KEY) },
+      body !== undefined ? { "Content-Type": "application/json" } : {}
+    ),
+    body: body !== undefined ? JSON.stringify(body) : undefined
+  });
+  if (res.status === 401) { window.location.href = "./index.html"; throw new Error("Not signed in"); }
+  if (!res.ok) {
+    let msg = "Request failed (" + res.status + ")";
+    try {
+      const data = await res.json();
+      if (data && data.detail) msg = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail);
+    } catch (e) { /* non-JSON error body */ }
+    throw new Error(msg);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+const mapCategory = (c) => ({
+  _id: c.id,
+  id: c.slug,
+  name: c.name,
+  tint: c.tint_color || "#f1efe8",
+  dot: c.dot_color || "#7d857f",
+  sort_order: c.sort_order || 0,
+  is_active: c.is_active !== false,
+  kw: c.slug
+});
+
+const mapProduct = (p) => ({
+  _id: p.id,
+  id: p.slug,
+  name: p.name,
+  cat: p.category ? p.category.slug : "",
+  desc: p.description || "",
+  kw: (Array.isArray(p.keyword_tags) && p.keyword_tags.length ? p.keyword_tags.join(",") : (p.category ? p.category.slug : "food")),
+  featured: !!p.is_featured,
+  sizes: (p.variants || []).map((v) => ({
+    _id: v.id,
+    label: v.label,
+    price: v.price || 0,
+    old: v.compare_at_price || 0,
+    out: (v.stock_qty || 0) <= 0
+  }))
+});
 
 const CATS = [
   { id: "spices", name: "Spices", tint: "#fdf0e4", kw: "spices" },
@@ -1351,6 +1463,9 @@ const salesFor = (y, m, d) => {
 class Component extends DCLogic {
   state = {
     page: "dash",
+    userName: "", userRole: "", userPhone: "",
+    me: null,
+    cats: CATS.map((c) => Object.assign({}, c)),
     products: SEED.map((p) => Object.assign({}, p, { sizes: p.sizes.map((s) => Object.assign({}, s)) })),
     orders: buildHistory(USERS, ORDERS),
     q: "", filterCat: "all", stock: "all", hidden: {}, offersOn: true,
@@ -1364,12 +1479,60 @@ class Component extends DCLogic {
     monthOffset: 0, selDay: new Date().getDate()
   };
 
+  componentDidMount() {
+    this.restoreSession();
+  }
+
   componentWillUnmount() { clearTimeout(this.toastT); }
+
+  async restoreSession() {
+    const tok = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!tok) { window.location.href = "./index.html"; return; }
+    try {
+      const me = await apiMe(tok);
+      if (!me.role || me.role === "customer") {
+        // Only staff can use the admin panel.
+        window.location.href = "./index.html";
+        return;
+      }
+      this.setState({
+        me,
+        userName: me.name || "Admin",
+        userRole: me.role,
+        userPhone: me.phone || ""
+      });
+      await this.loadCatalogue();
+    } catch (e) {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      window.location.href = "./index.html";
+    }
+  }
+
+  async loadCatalogue() {
+    try {
+      const [catData, prodData] = await Promise.all([
+        apiGet("/api/categories"),
+        apiGet("/api/products")
+      ]);
+      const cats = (Array.isArray(catData) ? catData : catData.items || catData.results || []).map(mapCategory);
+      const products = (Array.isArray(prodData) ? prodData : prodData.items || prodData.results || []).map(mapProduct);
+      this.setState({ cats, products });
+      this.flash("Catalogue loaded from the shop");
+    } catch (err) {
+      console.error(err);
+      this.flash("Could not load catalogue — showing sample data");
+    }
+  }
 
   flash = (m) => {
     clearTimeout(this.toastT);
     this.setState({ toast: m });
     this.toastT = setTimeout(() => this.setState({ toast: "" }), 1800);
+  };
+
+  doLogout = () => {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    window.location.href = "./index.html";
   };
 
   patch = (id, fn) => this.setState((s) => ({
@@ -1385,25 +1548,141 @@ class Component extends DCLogic {
 
   setDraft = (patch) => this.setState((s) => ({ draft: Object.assign({}, s.draft, patch) }));
 
-  save = () => {
+  save = async () => {
     const d = this.state.draft;
     const wasNew = this.state.editing === "new";
     if (!d.name.trim()) { this.flash("Give the product a name first"); return; }
     const sizes = d.sizes.filter((s) => s.label.trim()).map((s) => ({ label: s.label, price: parse(s.price), old: parse(s.old), out: !!s.out }));
     if (!sizes.length) { this.flash("Add at least one package size"); return; }
-    this.setState((s) => {
-      const rec = { id: wasNew ? Date.now() % 100000 : s.editing, name: d.name, cat: d.cat, desc: d.desc, featured: d.featured, kw: d.kw || "food", sizes };
-      return {
-        products: wasNew ? [rec].concat(s.products) : s.products.map((p) => (p.id === s.editing ? rec : p)),
-        editing: null, draft: null
-      };
-    });
-    this.flash(wasNew ? "Product added — live on the shop" : "Changes saved");
+    const cat = this.state.cats.find((c) => c.id === d.cat) || this.state.cats[0];
+    if (!cat || !cat._id) { this.flash("Pick a category first"); return; }
+    this.setState({ saving: true });
+    try {
+      if (wasNew) {
+        // POST /api/products — NewProductRequest
+        const body = {
+          name: d.name.trim(),
+          category_id: cat._id,
+          description: d.desc || "",
+          is_in_stock: sizes.some((s) => !s.out),
+          is_featured: !!d.featured,
+          variants: sizes.map((s) => ({
+            label: s.label,
+            price: s.price,
+            compare_at_price: s.old > 0 ? s.old : null,
+            stock_qty: s.out ? 0 : 10
+          }))
+        };
+        const created = await apiSend("POST", "/api/products", body);
+        const rec = mapProduct(created);
+        this.setState((s) => ({ products: [rec].concat(s.products), editing: null, draft: null, saving: false }));
+        this.flash("Product added — live on the shop");
+      } else {
+        // PATCH /api/products/{id} — UpdateProductRequest
+        const body = {
+          name: d.name.trim(),
+          category_id: cat._id,
+          description: d.desc || "",
+          is_featured: !!d.featured
+        };
+        await apiSend("PATCH", "/api/products/" + d._id, body);
+        this.setState((s) => ({
+          products: s.products.map((p) => (p.id === d.id ? Object.assign({}, p, { name: body.name, cat: cat.id, desc: body.description, featured: body.is_featured }) : p)),
+          editing: null, draft: null, saving: false
+        }));
+        this.flash("Changes saved");
+      }
+    } catch (e) {
+      this.setState({ saving: false });
+      this.flash(e.message || "Could not save the product");
+    }
+  };
+
+  toggleStock = async (p) => {
+    const s0 = p.sizes[0];
+    const nextOut = !s0.out;
+    // Optimistic flip, then PATCH is_in_stock on the backend.
+    this.patch(p.id, (x) => { x.sizes[0].out = nextOut; return x; });
+    try {
+      await apiSend("PATCH", "/api/products/" + p._id, { is_in_stock: !nextOut });
+      this.flash(p.name + (nextOut ? " marked out of stock" : " is back in stock"));
+    } catch (e) {
+      this.patch(p.id, (x) => { x.sizes[0].out = !nextOut; return x; });
+      this.flash(e.message || "Could not update stock");
+    }
+  };
+
+  toggleFeature = async (p) => {
+    const next = !p.featured;
+    this.patch(p.id, (x) => { x.featured = next; return x; });
+    try {
+      await apiSend("PATCH", "/api/products/" + p._id, { is_featured: next });
+      this.flash(next ? "Featured on the shop" : "Removed from featured");
+    } catch (e) {
+      this.patch(p.id, (x) => { x.featured = !next; return x; });
+      this.flash(e.message || "Could not update the product");
+    }
+  };
+
+  deleteProduct = async (p) => {
+    if (!window.confirm("Delete “" + p.name + "” from the shop?")) return;
+    try {
+      await apiSend("DELETE", "/api/products/" + p._id);
+      this.setState((s) => ({ products: s.products.filter((x) => x.id !== p.id) }));
+      this.flash("Product deleted");
+    } catch (e) {
+      this.flash(e.message || "Could not delete the product");
+    }
+  };
+
+  toggleCat = async (c) => {
+    const next = !c.is_active;
+    this.setState((s) => ({ cats: s.cats.map((x) => (x.id === c.id ? Object.assign({}, x, { is_active: next }) : x)) }));
+    try {
+      // PATCH /api/categories/{id} — UpdateCategoryRequest
+      await apiSend("PATCH", "/api/categories/" + c._id, { is_active: next });
+      this.flash(c.name + (next ? " is visible on the shop" : " hidden from the shop"));
+    } catch (e) {
+      this.setState((s) => ({ cats: s.cats.map((x) => (x.id === c.id ? Object.assign({}, x, { is_active: !next }) : x)) }));
+      this.flash(e.message || "Could not update the category");
+    }
+  };
+
+  addCat = async () => {
+    const name = (this.state.newCatName || "").trim();
+    if (name.length < 1) { this.flash("Give the category a name"); return; }
+    this.setState({ catBusy: true });
+    try {
+      // POST /api/categories — NewCategoryRequest
+      const created = await apiSend("POST", "/api/categories", {
+        name,
+        tint_color: "#f1efe8",
+        dot_color: "#7d857f",
+        sort_order: this.state.cats.length + 1,
+        is_active: true
+      });
+      this.setState((s) => ({ cats: s.cats.concat([mapCategory(created)]), newCatName: "", catBusy: false }));
+      this.flash("Category added");
+    } catch (e) {
+      this.setState({ catBusy: false });
+      this.flash(e.message || "Could not add the category");
+    }
+  };
+
+  deleteCat = async (c) => {
+    if (!window.confirm("Delete “" + c.name + "”? Products in it may need a new category.")) return;
+    try {
+      await apiSend("DELETE", "/api/categories/" + c._id);
+      this.setState((s) => ({ cats: s.cats.filter((x) => x.id !== c.id) }));
+      this.flash("Category deleted");
+    } catch (e) {
+      this.flash(e.message || "Could not delete the category");
+    }
   };
 
   renderVals() {
     const st = this.state;
-    const catOf = (id) => CATS.find((c) => c.id === id) || CATS[0];
+    const catOf = (id) => st.cats.find((c) => c.id === id) || st.cats[0];
     const now = new Date();
 
     const mins = Math.max(0, 24 * 60 - (now.getHours() * 60 + now.getMinutes()));
@@ -1557,14 +1836,15 @@ class Component extends DCLogic {
       { id: "users", label: "Customers", badge: String(USERS.length), dot: "#3c5c9c" },
       { id: "calendar", label: "Calendar", badge: "", dot: "#5b6ab0" },
       { id: "products", label: "Products", badge: String(st.products.length), dot: "#b08b52" },
-      { id: "cats", label: "Categories", badge: String(CATS.length), dot: "#8a6bb0" },
+      { id: "cats", label: "Categories", badge: String(st.cats.length), dot: "#8a6bb0" },
       { id: "offers", label: "Offers", badge: String(offerProducts.length), dot: ORANGE },
       { id: "orders", label: "Orders", badge: String(st.orders.filter((o) => o.status < 3).length), dot: "#4a9b62" },
+      { id: "profile", label: "Profile", badge: "", dot: "#b08b52" },
       { id: "settings", label: "Settings", badge: "", dot: "#7f8896" }
     ];
 
     const titles = {
-      dash: ["Good morning, Mehdi", "Everything that needs you today, in one place."],
+      dash: ["Good morning, " + st.userName, "Everything that needs you today, in one place."],
       analytics: ["Analytics", "Every number the shop makes, over a range you choose."],
       users: ["Customers", "Who buys, how to reach them, and what they asked for."],
       calendar: ["Calendar", "Selling, buying and shop notes, month by month."],
@@ -1572,6 +1852,7 @@ class Component extends DCLogic {
       cats: ["Categories", "Hide a shelf and it disappears from the shop."],
       offers: ["Offers", "Daily discounts shown at the top of the shop."],
       orders: ["Orders", "Tap a status to move it along."],
+      profile: ["Profile", "Your account details, straight from the shop's records."],
       settings: ["Settings", "Store details and delivery rules."]
     };
 
@@ -1676,6 +1957,23 @@ class Component extends DCLogic {
       isAnalytics: st.page === "analytics", isUsers: st.page === "users",
       isDash: st.page === "dash", isCalendar: st.page === "calendar", isProducts: st.page === "products",
       isCats: st.page === "cats", isOffers: st.page === "offers", isOrders: st.page === "orders", isSettings: st.page === "settings",
+      isProfile: st.page === "profile",
+
+      userName: st.userName,
+      userRole: st.userRole,
+      userInitials: (st.userName || "A").trim().split(/\s+/).map((x) => x[0]).join("").slice(0, 2).toUpperCase(),
+      profilePhone: st.me ? (st.me.phone || "—") : "—",
+      profileSince: st.me && st.me.created_at ? new Date(st.me.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "—",
+      profileRows: st.me ? [
+        { label: "Full name", value: st.me.name || "—" },
+        { label: "Phone", value: st.me.phone || "—" },
+        { label: "Role", value: st.me.role || "—" },
+        { label: "Tier", value: st.me.tier || "—" },
+        { label: "SMS updates", value: st.me.sms_opt_in ? "On" : "Off" },
+        { label: "Telegram updates", value: st.me.telegram_opt_in ? "On" : "Off" },
+        { label: "Last seen", value: st.me.last_seen_at ? new Date(st.me.last_seen_at).toLocaleString("en-GB") : "—" },
+        { label: "Joined", value: st.me.created_at ? new Date(st.me.created_at).toLocaleDateString("en-GB") : "—", last: true }
+      ] : [],
       goOrders: () => this.setState({ page: "orders" }),
       goProducts: () => this.setState({ page: "products", stock: "out" }),
 
@@ -1739,7 +2037,7 @@ class Component extends DCLogic {
       onQuery: (e) => { const v = e.target.value; this.setState({ q: v }); },
       filterCat: st.filterCat,
       onFilterCat: (e) => { const v = e.target.value; this.setState({ filterCat: v }); },
-      catOptions: [{ id: "all", name: "All categories" }].concat(CATS),
+      catOptions: [{ id: "all", name: "All categories" }].concat(st.cats),
       stockFilters: [{ id: "all", label: "All" }, { id: "in", label: "In stock" }, { id: "out", label: "Out" }].map((f) => ({
         label: f.label,
         bg: st.stock === f.id ? INK : "#f1efe8",
@@ -1761,28 +2059,34 @@ class Component extends DCLogic {
           stockLabel: s0.out ? "Out of stock" : "In stock",
           stockBg: s0.out ? "#fdece2" : "#eaf6ee",
           stockFg: s0.out ? "#b8451f" : "#0b5c38",
-          onToggleStock: () => { this.patch(p.id, (x) => { x.sizes[0].out = !x.sizes[0].out; return x; }); this.flash(p.name + (s0.out ? " is back in stock" : " marked out of stock")); },
+          onToggleStock: () => this.toggleStock(p),
           featBg: p.featured ? "#fdf4e0" : "#f1efe8",
           featFg: p.featured ? "#b8860b" : "#c3c8c4",
           featFill: p.featured ? "currentColor" : "none",
-          onFeature: () => { this.patch(p.id, (x) => { x.featured = !x.featured; return x; }); this.flash(p.featured ? "Removed from featured" : "Featured on the shop"); },
-          onEdit: () => this.openEditor(p)
+          onFeature: () => this.toggleFeature(p),
+          onEdit: () => this.openEditor(p),
+          onDelete: () => this.deleteProduct(p)
         };
       }),
       newProduct: () => this.openEditor(null),
 
-      catCards: CATS.map((c, i) => {
+      catCards: st.cats.map((c) => {
         const n = st.products.filter((p) => p.cat === c.id).length;
-        const hidden = !!st.hidden[c.id];
+        const hidden = !c.is_active;
         return {
           name: c.name, count: n + (n === 1 ? " product" : " products"),
-          tint: c.tint, img: photo(c.kw, 200 + i, 400), dim: hidden ? 0.35 : 1,
+          tint: c.tint, img: photo(c.kw, 200 + (c._id || 0), 400), dim: hidden ? 0.35 : 1,
           state: hidden ? "Hidden" : "Visible",
           bg: hidden ? "#f1efe8" : "#eaf6ee",
           fg: hidden ? "#7d857f" : "#0b5c38",
-          onToggle: () => this.setState((s) => ({ hidden: Object.assign({}, s.hidden, { [c.id]: !s.hidden[c.id] }) }))
+          onToggle: () => this.toggleCat(c),
+          onDelete: () => this.deleteCat(c)
         };
       }),
+      catBusy: !!st.catBusy,
+      newCatName: st.newCatName,
+      onNewCatName: (e) => { const v = e.target.value; this.setState({ newCatName: v }); },
+      addCat: () => this.addCat(),
 
       countdown,
       offersState: st.offersOn ? "Live" : "Paused",
@@ -1894,10 +2198,11 @@ class Component extends DCLogic {
 
       editorOpen: st.editing !== null,
       editorTitle: st.editing === "new" ? "New product" : "Edit product",
-      saveLabel: st.editing === "new" ? "Add product" : "Save changes",
+      saveLabel: st.saving ? "Saving…" : st.editing === "new" ? "Add product" : "Save changes",
+      saving: !!st.saving,
       closeEditor: () => this.setState({ editing: null, draft: null }),
       draft: d0,
-      catList: CATS,
+      catList: st.cats,
       draftPhotos: [
         { slotId: "dh-" + d0.id, label: "main photo", img: photo(d0.kw, d0.id === "new" ? 999 : d0.id) },
         { slotId: "dh-" + d0.id + "-b", label: "detail", img: "" },
@@ -1923,6 +2228,8 @@ class Component extends DCLogic {
       draftFeatFg: d0.featured ? "#8a6508" : "#5c665f",
       toggleDraftFeature: () => this.setDraft({ featured: !d0.featured }),
       saveDraft: this.save,
+
+      doLogout: this.doLogout,
 
       ranges: RANGES.map((r, i) => ({
         label: r.label,

@@ -38,6 +38,7 @@ class Roles(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True,unique=True)
+    username: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     role: Mapped[Roles] = mapped_column(

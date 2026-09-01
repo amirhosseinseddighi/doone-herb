@@ -1,9 +1,9 @@
 from __future__ import annotations
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import status
 from fastapi import Depends, HTTPException
 from sqlalchemy import select
-from app.core.security import oauth2_scheme, verify_access_token
+from app.core.security import oauth2_scheme, verify_access_token, oauth2_scheme_optional
 from app.db.database import AsyncSession
 from app.db.database import Base, AsyncSessionLocal
 from app.models.identity import Roles, User
@@ -11,6 +11,31 @@ from app.models.identity import Roles, User
 async def get_db():
     async with AsyncSessionLocal() as session:
         yield session
+
+
+
+async def get_optional_current_user(
+    token: Annotated[Optional[str], Depends(oauth2_scheme_optional)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Optional[User]:
+    """return authenticated User if a valid token is provided, otherwise None."""
+    if not token:
+        return None
+    
+    user_id = verify_access_token(token=token)
+    if not user_id:
+        return None
+
+    try:
+        user_id_int = int(user_id)
+    except (TypeError, ValueError):
+        return None
+
+    result = await db.execute(
+        select(User).where(User.id == user_id_int)
+    )
+    return result.scalars().first()
+
 
 
 
@@ -71,3 +96,4 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 CurrentAdmin = Annotated[User, Depends(require_role(Roles.OWNER, Roles.PACKER, Roles.MANAGER))]
 CurrentOwner = Annotated[User, Depends(require_role(Roles.OWNER))]
 CurrentManagerOrOwner = Annotated[User, Depends(require_role(Roles.OWNER, Roles.MANAGER))]
+OptionalUser = Annotated[Optional[User], Depends(get_optional_current_user)]

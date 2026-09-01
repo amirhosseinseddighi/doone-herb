@@ -16,6 +16,10 @@ import secrets
 password_hash = PasswordHash.recommended()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(
+    tokenUrl="/api/auth/login",
+    auto_error=False
+)
 
 
 def hash_password(plain_password: str) -> str:
