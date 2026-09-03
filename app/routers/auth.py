@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import func, select
@@ -11,7 +11,10 @@ from app.core.deps import CurrentUser, CurrentAdmin, OptionalUser, get_db
 from app.db.database import AsyncSession
 from app.core import security
 from app.core.config import settings
-from app.schemas.auth import CurrentUserInfoResponse, NewUserCreate, Token
+from app.db.redis_cli import redis_client
+from app.schemas.auth import CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, Token
+from app.utils.email_utils import send_password_reset_email
+
 
 router = APIRouter()
 
@@ -34,7 +37,7 @@ async def login(
         )
     # check if user with this phone exists, then check if password is correct
     result = await db.execute(
-        select(User).where(func.lower(User.username) == form_data.username.lower())
+        select(User).where(func.lower(User.email) == form_data.username.lower())
     )
 
     user = result.scalars().first()
@@ -80,11 +83,11 @@ async def create_new_user(
         )
     
     # check username and phone uniqueness
-    normalized_username = new_user.username.lower()
+    normalized_email = new_user.email.lower()
     user_result = await db.execute(
-        select(User.username, User.phone)
+        select(User.email, User.phone)
         .where(
-            (func.lower(User.username) == normalized_username) |
+            (func.lower(User.email) == normalized_email) |
             (User.phone == new_user.phone)
         )
     )
@@ -92,8 +95,8 @@ async def create_new_user(
     existing_user = user_result.first()
 
     if existing_user:
-        if existing_user.username.lower() == normalized_username:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already exists")
+        if existing_user.email.lower() == normalized_email:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
         if existing_user.phone == new_user.phone:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phone number already registered")
 
@@ -102,7 +105,7 @@ async def create_new_user(
     password_hash = security.hash_password(new_user.password)
 
     user = User(
-        username = normalized_username,
+        email = normalized_email,
         phone = new_user.phone,
         name = new_user.name,
         role = Roles.CUSTOMER,
@@ -125,3 +128,58 @@ async def create_new_user(
         status_code=status.HTTP_201_CREATED,
         content={"message": "Registration successful. Please login into your account."},
     )
+
+
+
+
+@router.post("/forget-password", status_code=status.HTTP_200_OK)
+async def forget_password(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: OptionalUser,
+    background_task: BackgroundTasks,
+    forget_password_request: ForgetPasswordRequest
+):
+    # check user is not logged in
+    if current_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are already logged in.",
+        )
+
+    # get email and check existance
+    normalized_email = forget_password_request.email.lower()
+    user_result = await db.execute(
+        select(User)
+        .where(
+            (func.lower(User.email) == normalized_email)
+        )
+    )
+
+    user = user_result.scalar_one_or_none()
+    if user:
+        # generate token
+        reset_token = security.generate_reset_token()
+        hash_reset_token = security.hash_reset_token(reset_token)
+
+        # store token in redis
+        redis_key = f"{settings.RESET_TOKEN_PREFIX}{reset_token}"
+        redis_client.set(redis_key, str(user.id), ex=settings.RESET_TOKEN_TTL_SECONDS)
+
+
+        # send email
+        background_task.add_task(
+            send_password_reset_email,
+            user.name,
+            user.email,
+            reset_token
+        )
+
+
+
+    return {
+            "message": "If an account exists with this email, you'll receive reset token soon."
+        }
+
+
+
+

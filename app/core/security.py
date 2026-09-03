@@ -1,6 +1,7 @@
 from __future__ import annotations
 from datetime import datetime, UTC, timedelta
 from pwdlib import PasswordHash
+from redis import RedisError
 from app.core.config import settings
 from fastapi.security import OAuth2PasswordBearer
 import jwt
@@ -74,8 +75,3 @@ def generate_reset_token() -> str:
 
 def hash_reset_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
-
-
-
-
-

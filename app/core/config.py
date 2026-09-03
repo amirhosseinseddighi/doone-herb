@@ -24,6 +24,22 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: int
 
+
+    # Email-related variables
+    MAIL_SERVER: str = "sandbox.smtp.mailtrap.io"
+    MAIL_PORT: int = 2525
+    MAIL_USERNAME: str = ""
+    MAIL_PASSWORD: SecretStr = SecretStr("")
+    MAIL_FROM: str = "from@example.com"
+    MAIL_USE_TLS: bool = False
+    MAIL_START_TLS: bool = True
+
+    # reset password functionality
+    RESET_TOKEN_PREFIX: str = "pwd_reset:"
+    RESET_TOKEN_TTL_SECONDS: int = 3600  # 60 minutes
+
+    FRONTEND_URL: str = "http://localhost:7000"
+
     @property
     def database_url(self) -> PostgresDsn:
         return PostgresDsn.build(

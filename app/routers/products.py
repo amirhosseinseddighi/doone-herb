@@ -11,7 +11,7 @@ from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
 from app.models.category import Category, Offer, Product, ProductVariant
 from app.schemas.products import NewProductRequest, NewProductVariantRequest, ProductResponse, ProductVariantResponse, UpdateProductRequest, UpdateProductVariantRequest
-from app.utils import generate_sku
+from app.utils.product_utils import generate_sku
 
 router = APIRouter()
 

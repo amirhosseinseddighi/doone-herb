@@ -1,14 +1,21 @@
 from datetime import datetime
 import re
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel, 
+    ConfigDict, 
+    EmailStr, 
+    Field, 
+    StringConstraints, 
+    field_validator, 
+    model_validator
+)
 
 from app.models.identity import Roles
 
-
-USERNAME_REGEX = re.compile(r"^[a-zA-Z0-9_-]+$")
 PASSWORD_SPECIAL_CHAR_REGEX = re.compile(r"[!@#$%^&*(),.?\":{}|<>]")
-
+PasswordStr = Annotated[str, StringConstraints(strip_whitespace=False)]
 
 class Token(BaseModel):
     access_token: str
@@ -34,12 +41,9 @@ class NewUserCreate(BaseModel):
         extra="forbid"
     )
 
-    username: str = Field(
-        min_length=3, 
-        max_length=20,
-        pattern=r"^[a-zA-Z1-9_-]+$",
-        description="alphanumeric characters, underscores and hyphens only",
-        examples=["09120000000"]
+    email: EmailStr = Field(
+        description="User email address",
+        examples=["user@example.com"]
     )
 
     phone: str = Field(
@@ -57,22 +61,12 @@ class NewUserCreate(BaseModel):
     )
     
 
-    password: str = Field(
+    password: PasswordStr = Field(
         min_length=8, 
         max_length=128,
         description="Must contain uppercase,lowercase,numbers and special chars"
     )
-    password_repeat: str = Field(min_length=8, max_length=128)
-
-
-    @field_validator("username")
-    @classmethod
-    def validate_username(cls, v: str):
-        username = v.lower()
-        if not USERNAME_REGEX.match(username):
-            raise ValueError("Username can only contain alphanumeric characters, underscores, and hyphens")
-
-        return v
+    password_repeat: PasswordStr = Field(min_length=8, max_length=128)
 
 
     @field_validator("password")
@@ -94,3 +88,66 @@ class NewUserCreate(BaseModel):
         if self.password != self.password_repeat:
             raise ValueError("Passwords do not match")
         return self
+
+
+
+
+
+
+
+
+
+
+# ===== FORGET PASSWORD =======
+
+class ForgetPasswordRequest(BaseModel):
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        extra="forbid"
+    )
+
+    email: EmailStr
+
+
+# ====== RESET PASSWORD AND CHANGE PASSWORD ========
+class PasswordMixin(BaseModel):
+    """Reusable mixin for password complexity and strict config."""
+    
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        extra="forbid"
+    )
+
+    new_password: PasswordStr = Field(
+        min_length=8,
+        max_length=128,
+        description="Must contain uppercase, lowercase, numbers, and special chars"
+    )
+    password_repeat: PasswordStr = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_password_complexity(cls, v: str) -> str:
+        if not any(c.isupper() for c in v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not any(c.islower() for c in v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain at least one number")
+        if not PASSWORD_SPECIAL_CHAR_REGEX.search(v):
+            raise ValueError("Password must contain at least one special character")
+        return v
+
+    @model_validator(mode="after")
+    def validate_passwords_match(self) -> "PasswordMixin":
+        if self.new_password != self.password_repeat:
+            raise ValueError("Passwords do not match")
+        return self
+
+
+class ResetPasswordRequest(PasswordMixin):
+    token: str = Field(..., description="Password reset verification token")
+
+
+class ChangePasswordRequest(PasswordMixin):
+    current_password: PasswordStr = Field(..., description="User's existing password")

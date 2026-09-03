@@ -348,7 +348,7 @@ async def seed_admin(session) -> User:
         user = User(
             phone="09129999999",
             name="Test Admin",
-            username="admin",
+            email="admin@gmail.com",
             tier=UserTier.NEW,
             role=Roles.OWNER,
             password_hash="$argon2id$v=19$m=65536,t=3,p=4$qbCOQ0JAn7ob7d86L/7jzw$iCKbdv7YMBS43Cy42UV+IMvZsnTeJNHnqAeX1sENvsA",
@@ -371,7 +371,7 @@ async def seed_customer(session) -> User:
         user = User(
             phone="09120000000",
             name="Test Customer",
-            username="customer",
+            email="customer@gmail.com",
             tier=UserTier.NEW,
             role=Roles.CUSTOMER,
             password_hash="$argon2id$v=19$m=65536,t=3,p=4$qbCOQ0JAn7ob7d86L/7jzw$iCKbdv7YMBS43Cy42UV+IMvZsnTeJNHnqAeX1sENvsA",
