@@ -13,7 +13,7 @@ from app.db.database import AsyncSession
 from app.core import security
 from app.core.config import settings
 from app.db.redis_cli import redis_client
-from app.schemas.auth import CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token
+from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token
 from app.utils.email_utils import send_password_reset_email
 
 
@@ -248,3 +248,32 @@ async def reset_password(
     return {
         "message": "Password reset successfully. You can now log in with your new password.",
     }
+
+
+
+@router.post("/change-password", status_code=status.HTTP_200_OK)
+async def change_password(
+    change_password_request: ChangePasswordRequest,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Authenticated user password update endpoint."""
+    
+    # Verify existing password
+    if not security.verify_password(
+        change_password_request.current_password, current_user.password_hash
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect current password.",
+        )
+
+    # Hash new password and apply change
+    current_user.password_hash = security.hash_password(
+        change_password_request.new_password
+    )
+
+    db.add(current_user)
+    await db.commit()
+
+    return {"message": "Password changed successfully."}

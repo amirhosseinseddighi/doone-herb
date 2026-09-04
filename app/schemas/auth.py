@@ -151,3 +151,9 @@ class ResetPasswordRequest(PasswordMixin):
 
 class ChangePasswordRequest(PasswordMixin):
     current_password: PasswordStr = Field(..., description="User's existing password")
+
+    @model_validator(mode="after")
+    def validate_new_password_different(self) -> "ChangePasswordRequest":
+        if self.current_password == self.new_password:
+            raise ValueError("New password must be different from current password")
+        return self
