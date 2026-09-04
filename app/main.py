@@ -9,6 +9,7 @@ origins = [
     "https://localhost.tiangolo.com",
     "http://localhost",
     "http://127.0.0.1:7000",
+    "http://localhost:7000"
 ]
 
 app = FastAPI()

@@ -1167,7 +1167,8 @@ const mapProduct = (p) => ({
     label: v.label,
     price: v.price || 0,
     old: v.compare_at_price || 0,
-    out: (v.stock_qty || 0) <= 0
+    out: (v.stock_qty || 0) <= 0,
+    qty: v.stock_qty || 0
   }))
 });
 
@@ -1542,8 +1543,8 @@ class Component extends DCLogic {
   openEditor = (p) => this.setState({
     editing: p ? p.id : "new",
     draft: p
-      ? { id: p.id, name: p.name, cat: p.cat, desc: p.desc, featured: p.featured, kw: p.kw, sizes: p.sizes.map((s) => ({ label: s.label, price: String(s.price), old: s.old ? String(s.old) : "", out: s.out })) }
-      : { id: "new", name: "", cat: "spices", desc: "", featured: false, kw: "food", sizes: [{ label: "", price: "", old: "", out: false }] }
+      ? { _id: p._id, id: p.id, name: p.name, cat: p.cat, desc: p.desc, featured: p.featured, kw: p.kw, sizes: p.sizes.map((s) => ({ _id: s._id, label: s.label, price: String(s.price), old: s.old ? String(s.old) : "", out: s.out, qty: s.qty || 0 })) }
+      : { id: "new", name: "", cat: this.state.cats.length ? this.state.cats[0].id : "", desc: "", featured: false, kw: "food", sizes: [{ label: "", price: "", old: "", out: false, qty: 10 }] }
   });
 
   setDraft = (patch) => this.setState((s) => ({ draft: Object.assign({}, s.draft, patch) }));
@@ -1552,7 +1553,7 @@ class Component extends DCLogic {
     const d = this.state.draft;
     const wasNew = this.state.editing === "new";
     if (!d.name.trim()) { this.flash("Give the product a name first"); return; }
-    const sizes = d.sizes.filter((s) => s.label.trim()).map((s) => ({ label: s.label, price: parse(s.price), old: parse(s.old), out: !!s.out }));
+    const sizes = d.sizes.filter((s) => s.label.trim()).map((s) => ({ _id: s._id, label: s.label, price: parse(s.price), old: parse(s.old), out: !!s.out, qty: s.qty || 0 }));
     if (!sizes.length) { this.flash("Add at least one package size"); return; }
     const cat = this.state.cats.find((c) => c.id === d.cat) || this.state.cats[0];
     if (!cat || !cat._id) { this.flash("Pick a category first"); return; }
@@ -1586,8 +1587,45 @@ class Component extends DCLogic {
           is_featured: !!d.featured
         };
         await apiSend("PATCH", "/api/products/" + d._id, body);
+        // Sync variant changes (new / renamed / repriced / restocked).
+        const before = (this.state.products.find((x) => x.id === d.id) || { sizes: [] }).sizes;
+        const beforeById = new Map(before.map((s) => [s._id, s]));
+        const keptIds = [];
+        for (const s of sizes) {
+          const prev = s._id ? beforeById.get(s._id) : null;
+          if (prev) {
+            keptIds.push(s._id);
+            const changed = prev.label !== s.label || prev.price !== s.price || prev.old !== s.old || prev.out !== s.out;
+            if (changed) {
+              await apiSend("PATCH", `/api/products/${d._id}/variants/${s._id}`, {
+                label: s.label,
+                price: s.price,
+                compare_at_price: s.old > 0 ? s.old : null,
+                stock_qty: s.out ? 0 : (prev.qty > 0 ? prev.qty : 10)
+              });
+            }
+          } else {
+            // New size row — create it on the backend.
+            const createdV = await apiSend("POST", `/api/products/${d._id}/variants`, {
+              label: s.label,
+              price: s.price,
+              compare_at_price: s.old > 0 ? s.old : null,
+              stock_qty: s.out ? 0 : 10
+            });
+            keptIds.push(createdV.id);
+          }
+        }
+        // Sizes removed in the editor — delete them on the backend.
+        for (const prev of before) {
+          if (prev._id && keptIds.indexOf(prev._id) < 0) {
+            await apiSend("DELETE", `/api/products/${d._id}/variants/${prev._id}`);
+          }
+        }
         this.setState((s) => ({
-          products: s.products.map((p) => (p.id === d.id ? Object.assign({}, p, { name: body.name, cat: cat.id, desc: body.description, featured: body.is_featured }) : p)),
+          products: s.products.map((p) => (p.id === d.id ? Object.assign({}, p, {
+            name: body.name, cat: cat.id, desc: body.description, featured: body.is_featured,
+            sizes: sizes.map((s) => Object.assign({}, s))
+          }) : p)),
           editing: null, draft: null, saving: false
         }));
         this.flash("Changes saved");
@@ -1600,15 +1638,34 @@ class Component extends DCLogic {
 
   toggleStock = async (p) => {
     const s0 = p.sizes[0];
+    if (!s0 || !s0._id) { this.flash("This product has no package sizes"); return; }
     const nextOut = !s0.out;
-    // Optimistic flip, then PATCH is_in_stock on the backend.
+    // Optimistic flip, then PATCH stock_qty on the variant (UpdateProductVariantRequest).
     this.patch(p.id, (x) => { x.sizes[0].out = nextOut; return x; });
     try {
-      await apiSend("PATCH", "/api/products/" + p._id, { is_in_stock: !nextOut });
+      const restockQty = s0.qty > 0 ? s0.qty : 10;
+      await apiSend("PATCH", `/api/products/${p._id}/variants/${s0._id}`, {
+        stock_qty: nextOut ? 0 : restockQty
+      });
+      this.patch(p.id, (x) => { x.sizes[0].qty = nextOut ? 0 : restockQty; return x; });
       this.flash(p.name + (nextOut ? " marked out of stock" : " is back in stock"));
     } catch (e) {
       this.patch(p.id, (x) => { x.sizes[0].out = !nextOut; return x; });
       this.flash(e.message || "Could not update stock");
+    }
+  };
+
+  endOffer = async (p) => {
+    const s0 = p.sizes[0];
+    if (!s0 || !s0._id) return;
+    this.patch(p.id, (x) => { x.sizes[0].old = 0; return x; });
+    try {
+      // compare_at_price: null clears the discount on the backend.
+      await apiSend("PATCH", `/api/products/${p._id}/variants/${s0._id}`, { compare_at_price: null });
+      this.flash("Offer ended for " + p.name);
+    } catch (e) {
+      this.patch(p.id, (x) => { x.sizes[0].old = s0.old; return x; });
+      this.flash(e.message || "Could not end the offer");
     }
   };
 
@@ -2099,7 +2156,7 @@ class Component extends DCLogic {
           name: p.name, size: s0.label, tint: catOf(p.cat).tint, img: photo(p.kw, p.id),
           old: fmt(s0.old), now: fmt(s0.price),
           pct: "−" + Math.round((1 - s0.price / s0.old) * 100) + "%",
-          onEnd: () => { this.patch(p.id, (x) => { x.sizes[0].old = 0; return x; }); this.flash("Offer ended for " + p.name); }
+          onEnd: () => { this.endOffer(p); }
         };
       }),
       noOffers: offerProducts.length === 0,
