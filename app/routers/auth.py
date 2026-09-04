@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from redis import RedisError
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from app.models.identity import Roles, User
@@ -12,7 +13,7 @@ from app.db.database import AsyncSession
 from app.core import security
 from app.core.config import settings
 from app.db.redis_cli import redis_client
-from app.schemas.auth import CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, Token
+from app.schemas.auth import CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token
 from app.utils.email_utils import send_password_reset_email
 
 
@@ -162,7 +163,7 @@ async def forget_password(
         hash_reset_token = security.hash_reset_token(reset_token)
 
         # store token in redis
-        redis_key = f"{settings.RESET_TOKEN_PREFIX}{reset_token}"
+        redis_key = f"{settings.RESET_TOKEN_PREFIX}{hash_reset_token}"
         redis_client.set(redis_key, str(user.id), ex=settings.RESET_TOKEN_TTL_SECONDS)
 
 
@@ -183,3 +184,67 @@ async def forget_password(
 
 
 
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+async def reset_password(
+    reset_password_request: ResetPasswordRequest, 
+    current_user: OptionalUser,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+
+    # check user is not logged in
+    if current_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are already logged in.",
+        )
+        
+    # check if token exists
+    reset_token = reset_password_request.token
+    hash_reset_token = security.hash_reset_token(reset_token)
+    redis_key = f"{settings.RESET_TOKEN_PREFIX}{hash_reset_token}"
+    try:
+        user_id = redis_client.get(redis_key)
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired reset token.",
+            )
+        user_id = int(user_id)
+        redis_client.delete(redis_key)
+    except RedisError as e:
+        raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Service unavailable. Please try again later.",
+                )
+
+    
+
+    # get the user
+    user_result = await db.execute(
+            select(User)
+            .where(
+                (User.id == user_id)
+            )
+        )
+    
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Something bad happend. Try again!",
+        )
+
+    # hash new_password
+    new_password_hash = security.hash_password(reset_password_request.new_password)
+
+    # change the user's password
+    user.password_hash = new_password_hash
+
+    # commit changes
+    await db.commit()
+
+    # return response
+    return {
+        "message": "Password reset successfully. You can now log in with your new password.",
+    }
