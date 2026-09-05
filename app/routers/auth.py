@@ -1,7 +1,7 @@
 from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from redis import RedisError
@@ -13,6 +13,7 @@ from app.db.database import AsyncSession
 from app.core import security
 from app.core.config import settings
 from app.db.redis_cli import redis_client
+from app.routers.cart import merge_guest_cart_to_user
 from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token
 from app.utils.email_utils import send_password_reset_email
 
@@ -24,8 +25,10 @@ router = APIRouter()
 @router.post("/login", response_model=Token)
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
+    response: Response,
     db: Annotated[AsyncSession, Depends(get_db)],
-    current_user: OptionalUser
+    current_user: OptionalUser,
+    guest_cart_token: Optional[str] = Cookie(None, alias="guest_cart_token"),
 ):
     """ Login endpoint """
 
@@ -49,6 +52,21 @@ async def login(
             detail="Wrong Username or Password",
             headers={"WWW-Authenticate": "Bearer"}
         )
+
+    # merge guest cart
+    if guest_cart_token:
+        await merge_guest_cart_to_user(
+            guest_token=guest_cart_token,
+            current_user=user,
+            db=db
+        )
+
+    # delete guest cart cookie
+    response.delete_cookie(
+        key="guest_cart_token",
+        httponly=True,
+        samesite="lax",
+    )
     
     # if both are correct then generate a JWT token (access token + refresh token) and return it with Token model
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

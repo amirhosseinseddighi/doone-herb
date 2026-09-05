@@ -453,7 +453,7 @@ async def seed_cart(session, user: User):
     if cart is None:
         cart = Cart(
             user_id=user.id,
-            session_id="sess_test_customer_001",
+            guest_token="2fe412cb-2ea6-45ab-9874-55fa06566907",
         )
         session.add(cart)
         await session.flush()

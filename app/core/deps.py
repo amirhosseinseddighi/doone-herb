@@ -1,6 +1,7 @@
 from __future__ import annotations
+from dataclasses import dataclass
 from typing import Annotated, Optional
-from fastapi import status
+from fastapi import Cookie, status
 from fastapi import Depends, HTTPException
 from sqlalchemy import select
 from app.core.security import oauth2_scheme, verify_access_token, oauth2_scheme_optional
@@ -97,3 +98,39 @@ CurrentAdmin = Annotated[User, Depends(require_role(Roles.OWNER, Roles.PACKER, R
 CurrentOwner = Annotated[User, Depends(require_role(Roles.OWNER))]
 CurrentManagerOrOwner = Annotated[User, Depends(require_role(Roles.OWNER, Roles.MANAGER))]
 OptionalUser = Annotated[Optional[User], Depends(get_optional_current_user)]
+
+
+
+# ===== CART =====
+@dataclass
+class CartIdentity:
+    """Resolved owner of a cart request: either a logged-in user or a guest token."""
+    user_id: Optional[int]
+    guest_token: Optional[str]
+
+
+async def get_cart_identity(
+    current_user: OptionalUser,
+    guest_token: Optional[str] = Cookie(None, alias="guest_cart_token"),
+) -> CartIdentity:
+    return CartIdentity(
+        user_id=current_user.id if current_user else None,
+        guest_token=guest_token,
+    )
+
+
+async def require_cart_identity(
+    identity: Annotated[CartIdentity, Depends(get_cart_identity)],
+) -> CartIdentity:
+    """Same as get_cart_identity, but 404s when there's no cart to act on at all."""
+    if not identity.user_id and not identity.guest_token:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cart not found",
+        )
+    return identity
+
+
+CartIdentityDep = Annotated[CartIdentity, Depends(get_cart_identity)]
+RequiredCartIdentityDep = Annotated[CartIdentity, Depends(require_cart_identity)]
+

@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: int
 
+    # CART
+    GUEST_CART_MAX_AGE: int = 30 * 24 * 3600
+
 
     # Email-related variables
     MAIL_SERVER: str = "sandbox.smtp.mailtrap.io"
