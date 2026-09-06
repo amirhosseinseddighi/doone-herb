@@ -26,7 +26,6 @@ from app.models.category import (
 from app.models.identity import (
     Address,
     Roles,
-    OTPCode,
     Roles,
     User,
     UserTier,
@@ -35,6 +34,7 @@ from app.models.cart import (
     Cart,
     CartItem,
 )
+from app.models.order import DeliverySlot, DeliverySlotKind, FulfillmentMethod, Order, OrderItem, OrderStatus, OrderStatusEvent, OrderStatusEventActor, Payment, PaymentMethod, PaymentProvider, PaymentStatus
 
 
 SessionLocal = async_sessionmaker(
@@ -338,7 +338,7 @@ async def seed_admin(session) -> User:
             email="admin@gmail.com",
             tier=UserTier.NEW,
             role=Roles.OWNER,
-            password_hash="$argon2id$v=19$m=65536,t=3,p=4$qbCOQ0JAn7ob7d86L/7jzw$iCKbdv7YMBS43Cy42UV+IMvZsnTeJNHnqAeX1sENvsA",
+            password_hash="$argon2id$v=19$m=65536,t=3,p=4$qznbi/jmFhYeZQ8JGBUoEw$3JK+GUlEpdnoMI//jTPSumK/vqBe1pFVw7pHCfG8hWk",
             telegram_opt_in=False,
             sms_opt_in=False,
         )
@@ -370,23 +370,6 @@ async def seed_customer(session) -> User:
 
     return user
 
-
-async def seed_otp_codes(session):
-    result = await session.execute(
-        select(OTPCode).where(OTPCode.phone == "09120000000")
-    )
-    otp = result.scalar_one_or_none()
-
-    if otp is None:
-        now = datetime.now(UTC)
-        otp = OTPCode(
-            phone="09120000000",
-            code="12345",
-            expires_at=now + timedelta(minutes=2),
-            consumed_at=now,
-            attempts=1,
-        )
-        session.add(otp)
 
 
 async def seed_address(session, user: User) -> Address:
@@ -487,7 +470,6 @@ async def seed_orders(session, user: User, address: Address, delivery_slot: Deli
         delivery_slot_id=delivery_slot.id,
         status=OrderStatus.NEW,
         fulfillment_method=FulfillmentMethod.COURIER,
-        courier=CourierType.IN_HOUSE_RIDER,
         subtotal=450000,
         delivery_fee=delivery_slot.fee,
         discount=0,
@@ -643,7 +625,6 @@ async def main():
 
             admin = await seed_admin(session)
             user = await seed_customer(session)
-            await seed_otp_codes(session)
 
             address = await seed_address(session, user)
             delivery_slots = await seed_delivery_slots(session)

@@ -31,7 +31,6 @@ from app.models.category import (
 from app.models.identity import (
     Address,
     Roles,
-    OTPCode,
     User,
     UserTier,
 )

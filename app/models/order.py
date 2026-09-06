@@ -55,12 +55,6 @@ class FulfillmentMethod(str, enum.Enum):
     POST = "post"
     PICKUP = "pickup"
 
-
-class CourierType(str, enum.Enum):
-    IN_HOUSE_RIDER = "in_house_rider"
-    TIPAX = "tipax"
-    NATIONAL_POST = "national_post"
-
 class PaymentMethod(str, enum.Enum):
     ONLINE = "online"
     CASH_ON_DELIVERY = "cash_on_delivery"
@@ -128,10 +122,6 @@ class Order(Base):
     fulfillment_method: Mapped[FulfillmentMethod] = mapped_column(
         _pg_enum(FulfillmentMethod, "fulfillment_method_enum"), nullable=False
     )
-    courier: Mapped[Optional[CourierType]] = mapped_column(
-        _pg_enum(CourierType, "courier_type_enum"), nullable=True
-    )
-    rider_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     tracking_code: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)
 
     subtotal: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -214,7 +204,7 @@ class OrderStatusEvent(Base):
     actor: Mapped[OrderStatusEventActor] = mapped_column(
         _pg_enum(OrderStatusEventActor, "order_status_event_actor_enum"), nullable=False
     )
-    # which admin/courier
+    # which admin
     actor_user_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=True, index=True
     )

@@ -8,7 +8,7 @@ from app.core.deps import CartIdentityDep, CurrentUser, OptionalUser, RequiredCa
 from app.db.database import AsyncSession
 from app.models.category import ProductVariant
 from app.models.cart import Cart, CartItem
-from app.schemas.orders import AddCartItemRequest, CartItemResponse, CartResponse, DeleteCartItemResponse, UpdateCartItemRequest
+from app.schemas.cart import AddCartItemRequest, CartItemResponse, CartResponse, DeleteCartItemResponse, UpdateCartItemRequest
 from app.core.config import settings
 
 
