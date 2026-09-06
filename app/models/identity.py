@@ -18,7 +18,7 @@ from sqlalchemy import (
 from datetime import UTC, datetime
 
 from app.models.category import Review
-from app.models.order import Cart
+from app.models.cart import Cart
 
 
 class UserTier(str, enum.Enum):
@@ -71,18 +71,6 @@ class User(Base):
     reviews: Mapped[list["Review"]] = relationship("Review", back_populates="user")
     cart: Mapped[Optional["Cart"]] = relationship("Cart", back_populates="user")
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="user")
-
-
-
-class OTPCode(Base):
-    __tablename__="otp_codes"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True,unique=True)
-    phone: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
-    code: Mapped[str] = mapped_column(String(5), nullable=False)
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    consumed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
 
 class Address(Base):

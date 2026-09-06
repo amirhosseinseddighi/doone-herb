@@ -31,22 +31,9 @@ from app.models.identity import (
     User,
     UserTier,
 )
-from app.models.order import (
+from app.models.cart import (
     Cart,
     CartItem,
-    CourierType,
-    DeliverySlot,
-    DeliverySlotKind,
-    FulfillmentMethod,
-    Order,
-    OrderItem,
-    OrderStatus,
-    OrderStatusEvent,
-    OrderStatusEventActor,
-    Payment,
-    PaymentMethod,
-    PaymentProvider,
-    PaymentStatus,
 )
 
 

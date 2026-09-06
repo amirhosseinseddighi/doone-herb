@@ -1,15 +1,13 @@
 import uuid
-from dataclasses import dataclass
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-
 from app.core.deps import CartIdentityDep, CurrentUser, OptionalUser, RequiredCartIdentityDep, get_db
 from app.db.database import AsyncSession
 from app.models.category import ProductVariant
-from app.models.order import Cart, CartItem
+from app.models.cart import Cart, CartItem
 from app.schemas.orders import AddCartItemRequest, CartItemResponse, CartResponse, DeleteCartItemResponse, UpdateCartItemRequest
 from app.core.config import settings
 

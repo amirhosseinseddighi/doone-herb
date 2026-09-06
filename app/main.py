@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, status
 from fastapi.staticfiles import StaticFiles
-from app.routers import cart, category, auth, products
+from app.routers import addresses, cart, category, auth, products
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -27,6 +27,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(category.router, prefix="/api/categories", tags=["category"])
 app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(cart.router, prefix="/api/cart", tags=["cart"])
+app.include_router(addresses.router,prefix="/api/address", tags=["addresses"])
 
 @app.get("/healthz")
 def healthz():

@@ -1,17 +1,43 @@
-from datetime import UTC, datetime
+"""Order domain models: carts, orders, payments, and delivery scheduling."""
+
+from datetime import UTC, datetime, time
 import enum
 from typing import Optional
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    Time,
+    UniqueConstraint,
+)
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.db.database import Base
-from sqlalchemy import Enum as SQLEnum, Time
 
+from app.db.database import Base
+
+
+def _utcnow() -> datetime:
+    """Single source of truth for 'now' across all created_at/updated_at defaults."""
+    return datetime.now(UTC)
+
+
+def _pg_enum(enum_cls: type[enum.Enum], name: str) -> SQLEnum:
+    """ Create DB enum column given python enums """
+    return SQLEnum(enum_cls, name=name, values_callable=lambda x: [e.value for e in x])
+
+
+# ====== ENUMS =========
 
 class DeliverySlotKind(str, enum.Enum):
-    SAME_DAY = 'same_day'
-    NEXT_MORNING = 'next_morning'
-    PICKUP = 'pickup'
+    SAME_DAY = "same_day"
+    NEXT_MORNING = "next_morning"
+    PICKUP = "pickup"
 
 
 class OrderStatus(str, enum.Enum):
@@ -21,6 +47,7 @@ class OrderStatus(str, enum.Enum):
     OUT_FOR_DELIVERY = "out_for_delivery"
     DELIVERED = "delivered"
     RETURNED = "returned"
+    CANCELLED = "cancelled"
 
 
 class FulfillmentMethod(str, enum.Enum):
@@ -33,8 +60,6 @@ class CourierType(str, enum.Enum):
     IN_HOUSE_RIDER = "in_house_rider"
     TIPAX = "tipax"
     NATIONAL_POST = "national_post"
-    NONE = "none"
-
 
 class PaymentMethod(str, enum.Enum):
     ONLINE = "online"
@@ -46,6 +71,7 @@ class PaymentStatus(str, enum.Enum):
     PAID = "paid"
     FAILED = "failed"
     REFUNDED = "refunded"
+
 
 class OrderStatusEventActor(str, enum.Enum):
     SYSTEM = "system"
@@ -61,231 +87,164 @@ class PaymentProvider(str, enum.Enum):
     CASH = "cash"
 
 
+# DB ENUMS
 
+ORDER_STATUS_ENUM = _pg_enum(OrderStatus, "order_status_enum")
+PAYMENT_STATUS_ENUM = _pg_enum(PaymentStatus, "payment_status_enum")
 
-
-class Order(Base):
-    __tablename__ = "orders"
-    
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    order_no: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    address_id: Mapped[int] = mapped_column(Integer, ForeignKey("addresses.id"), nullable=False, index=True)
-    delivery_slot_id: Mapped[int] = mapped_column(
-        Integer, 
-        ForeignKey("delivery_slots.id"), 
-        nullable=False, 
-        index=True
-    )
-    status: Mapped[OrderStatus] = mapped_column(
-        SQLEnum(OrderStatus, name="order_status_enum", values_callable=lambda x: [e.value for e in x]),
-        nullable=False
-    )
-    fulfillment_method: Mapped[FulfillmentMethod] = mapped_column(
-        SQLEnum(FulfillmentMethod, name="fulfillment_method_enum", values_callable=lambda x: [e.value for e in x]),
-        nullable=False
-    )
-    courier: Mapped[CourierType] = mapped_column(
-        SQLEnum(CourierType, name="courier_type_enum", values_callable=lambda x: [e.value for e in x]),
-        nullable=False
-    )
-    rider_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    tracking_code: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)
-    subtotal: Mapped[int] = mapped_column(Integer, nullable=False)
-    delivery_fee: Mapped[int] = mapped_column(Integer, nullable=False)
-    discount: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    total: Mapped[int] = mapped_column(Integer, nullable=False)
-    payment_method: Mapped[PaymentMethod] = mapped_column(
-        SQLEnum(
-            PaymentMethod, 
-            name="payment_method_enum", 
-            values_callable=lambda x: [e.value for e in x]),
-            nullable=False
-        )
-    payment_status: Mapped[PaymentStatus] = mapped_column(
-        SQLEnum(
-            PaymentStatus, 
-            name="payment_status_enum", 
-            values_callable=lambda x: [e.value for e in x]),
-            nullable=False
-        )
-    note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    placed_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(UTC), 
-        nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(UTC), 
-        onupdate=lambda: datetime.now(UTC), 
-        nullable=False
-    )
-    
-    user: Mapped["User"] = relationship("User", back_populates="orders")
-    address: Mapped["Address"] = relationship("Address", back_populates="orders")
-    delivery_slot: Mapped["DeliverySlot"] = relationship("DeliverySlot", back_populates="orders")
-    reviews: Mapped[list["Review"]] = relationship("Review", back_populates="order")
-    items: Mapped[list["OrderItem"]] = relationship("OrderItem", back_populates="order")
-    status_events: Mapped[list["OrderStatusEvent"]] = relationship(
-        "OrderStatusEvent", 
-        back_populates="order",
-        cascade="all, delete-orphan"
-    )
-    payments: Mapped[list["Payment"]] = relationship("Payment", back_populates="order")
-
-
+# ========== MODELS ===========
 
 class DeliverySlot(Base):
     __tablename__ = "delivery_slots"
-    
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     label: Mapped[str] = mapped_column(String(100), nullable=False)
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     fee: Mapped[int] = mapped_column(Integer, nullable=False)
     kind: Mapped[DeliverySlotKind] = mapped_column(
-        SQLEnum(
-            DeliverySlotKind,
-            name="delivery_slot_kind_enum",
-            values_callable=lambda x: [e.value for e in x]
-        ),
-        nullable=False
+        _pg_enum(DeliverySlotKind, "delivery_slot_kind_enum"), nullable=False
     )
-    cutoff_time: Mapped[Time] = mapped_column(Time, nullable=False)
+    cutoff_time: Mapped[time] = mapped_column(Time, nullable=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="delivery_slot")
 
+    __table_args__ = (CheckConstraint("fee >= 0", name="ck_delivery_slots_fee_non_negative"),)
 
-class Cart(Base):
-    __tablename__="carts"
+
+class Order(Base):
+    __tablename__ = "orders"
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
-    guest_token: Mapped[str] = mapped_column(String(100),nullable=False, unique=True, index=True)
-    updated_at: Mapped[datetime] = mapped_column(
-            DateTime(timezone=True), 
-            default=lambda: datetime.now(UTC), 
-            onupdate=lambda: datetime.now(UTC)
-        )
-
-
-    user: Mapped["User"] = relationship("User", back_populates="cart")
-    items: Mapped[list["CartItem"]] = relationship("CartItem", back_populates="cart", cascade="all, delete-orphan")
-
-
-
-class CartItem(Base):
-    __tablename__ = "cart_items"
-    
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    cart_id: Mapped[int] = mapped_column(Integer, ForeignKey("carts.id"), index=True)
-    product_variant_id: Mapped[int] = mapped_column(
-        Integer, 
-        ForeignKey("product_variants.id"), 
-        index=True, 
-        nullable=False
+    order_no: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    address_id: Mapped[int] = mapped_column(Integer, ForeignKey("addresses.id"), nullable=False, index=True)
+    delivery_slot_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("delivery_slots.id"), nullable=False, index=True
     )
-    qty: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    product_variant: Mapped["ProductVariant"] = relationship("ProductVariant")
-    cart: Mapped[Optional["Cart"]] = relationship("Cart")
+    status: Mapped[OrderStatus] = mapped_column(ORDER_STATUS_ENUM, nullable=False, index=True)
 
+    fulfillment_method: Mapped[FulfillmentMethod] = mapped_column(
+        _pg_enum(FulfillmentMethod, "fulfillment_method_enum"), nullable=False
+    )
+    courier: Mapped[Optional[CourierType]] = mapped_column(
+        _pg_enum(CourierType, "courier_type_enum"), nullable=True
+    )
+    rider_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    tracking_code: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)
+
+    subtotal: Mapped[int] = mapped_column(Integer, nullable=False)
+    delivery_fee: Mapped[int] = mapped_column(Integer, nullable=False)
+    discount: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    total: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    payment_method: Mapped[PaymentMethod] = mapped_column(
+        _pg_enum(PaymentMethod, "payment_method_enum"), nullable=False
+    )
+    payment_status: Mapped[PaymentStatus] = mapped_column(PAYMENT_STATUS_ENUM, nullable=False, index=True)
+
+    note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    placed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, nullable=False, index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow, nullable=False
+    )
+
+    user: Mapped["User"] = relationship("User", back_populates="orders")
+    address: Mapped["Address"] = relationship("Address", back_populates="orders")
+    delivery_slot: Mapped["DeliverySlot"] = relationship("DeliverySlot", back_populates="orders")
+    reviews: Mapped[list["Review"]] = relationship("Review", back_populates="order")
+    items: Mapped[list["OrderItem"]] = relationship(
+        "OrderItem", back_populates="order", cascade="all, delete-orphan"
+    )
+    status_events: Mapped[list["OrderStatusEvent"]] = relationship(
+        "OrderStatusEvent",
+        back_populates="order",
+        cascade="all, delete-orphan",
+        order_by="OrderStatusEvent.created_at",
+    )
+    payments: Mapped[list["Payment"]] = relationship(
+        "Payment", back_populates="order", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (
+        CheckConstraint("subtotal >= 0", name="ck_orders_subtotal_non_negative"),
+        CheckConstraint("delivery_fee >= 0", name="ck_orders_delivery_fee_non_negative"),
+        CheckConstraint("discount >= 0", name="ck_orders_discount_non_negative"),
+        CheckConstraint("total >= 0", name="ck_orders_total_non_negative"),
+    )
 
 
 class OrderItem(Base):
     __tablename__ = "order_items"
-    
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    order_id: Mapped[int] = mapped_column(
-        Integer, 
-        ForeignKey("orders.id"), 
-        nullable=False, 
-        index=True
-    )
-    product_id: Mapped[int] = mapped_column(
-        Integer, 
-        ForeignKey("products.id"), 
-        nullable=False, 
-        index=True
-    )
+    order_id: Mapped[int] = mapped_column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
+    product_id: Mapped[int] = mapped_column(Integer, ForeignKey("products.id"), nullable=False, index=True)
     product_variant_id: Mapped[int] = mapped_column(
-        Integer, 
-        ForeignKey("product_variants.id"), 
-        nullable=False, 
-        index=True
+        Integer, ForeignKey("product_variants.id"), nullable=False, index=True
     )
+
     name_snapshot: Mapped[str] = mapped_column(String(255), nullable=False)
     size_label_snapshot: Mapped[str] = mapped_column(String(100), nullable=False)
     unit_price_snapshot: Mapped[int] = mapped_column(Integer, nullable=False)
     qty: Mapped[int] = mapped_column(Integer, nullable=False)
     line_total: Mapped[int] = mapped_column(Integer, nullable=False)
-    
+
     order: Mapped["Order"] = relationship("Order", back_populates="items")
     product: Mapped["Product"] = relationship("Product", back_populates="order_items")
     product_variant: Mapped["ProductVariant"] = relationship("ProductVariant", back_populates="order_items")
 
-
+    __table_args__ = (
+        CheckConstraint("qty > 0", name="ck_order_items_qty_positive"),
+        CheckConstraint("unit_price_snapshot >= 0", name="ck_order_items_unit_price_non_negative"),
+    )
 
 
 class OrderStatusEvent(Base):
     __tablename__ = "order_status_events"
-    
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    order_id: Mapped[int] = mapped_column(
-        Integer, 
-        ForeignKey("orders.id"), 
-        nullable=False, 
-        index=True
-    )
-    status: Mapped[OrderStatus] = mapped_column(
-        SQLEnum(OrderStatus, name="order_status_enum", values_callable=lambda x: [e.value for e in x]),
-        nullable=False
-    )
+    order_id: Mapped[int] = mapped_column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
+    status: Mapped[OrderStatus] = mapped_column(ORDER_STATUS_ENUM, nullable=False)
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     actor: Mapped[OrderStatusEventActor] = mapped_column(
-        SQLEnum(
-            OrderStatusEventActor, 
-            name="order_status_event_actor_enum", 
-            values_callable=lambda x: [e.value for e in x]
-        ),
-        nullable=False
-        )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(UTC), 
-        nullable=False,
-        index=True
+        _pg_enum(OrderStatusEventActor, "order_status_event_actor_enum"), nullable=False
     )
-    
+    # which admin/courier
+    actor_user_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=True, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, nullable=False, index=True
+    )
+
     order: Mapped["Order"] = relationship("Order", back_populates="status_events")
+    actor_user: Mapped[Optional["User"]] = relationship("User")
 
 
 class Payment(Base):
     __tablename__ = "payments"
-    
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    order_id: Mapped[int] = mapped_column(
-        Integer, 
-        ForeignKey("orders.id"), 
-        nullable=False, 
-        index=True
-    )
+    order_id: Mapped[int] = mapped_column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
     provider: Mapped[PaymentProvider] = mapped_column(
-        SQLEnum(PaymentProvider, name="payment_provider_enum", values_callable=lambda x: [e.value for e in x]),
-        nullable=False
+        _pg_enum(PaymentProvider, "payment_provider_enum"), nullable=False
     )
     provider_ref: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
-    status: Mapped[PaymentStatus] = mapped_column(
-        SQLEnum(PaymentStatus, name="payment_status_enum", values_callable=lambda x: [e.value for e in x]),
-        nullable=False
-    )
-    raw_payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+    status: Mapped[PaymentStatus] = mapped_column(PAYMENT_STATUS_ENUM, nullable=False)
+    raw_payload: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(UTC), 
-        nullable=False,
-        index=True
+        DateTime(timezone=True), default=_utcnow, nullable=False, index=True
     )
-    
+
     order: Mapped["Order"] = relationship("Order", back_populates="payments")
+
+    __table_args__ = (
+        UniqueConstraint("provider", "provider_ref", name="uq_payments_provider_ref"),
+        CheckConstraint("amount >= 0", name="ck_payments_amount_non_negative"),
+    )
