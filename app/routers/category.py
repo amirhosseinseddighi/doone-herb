@@ -1,25 +1,61 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from slugify import slugify
-from sqlalchemy import select
+from sqlalchemy import and_, select
 
 from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
-from app.models.category import Category
-from app.schemas.categories import CategoryResponse, NewCategoryRequest, UpdateCategoryRequest
-
+from app.models.category import Category, Product, ProductVariant
+from app.schemas.categories import CategoryDetails, CategoryResponse, NewCategoryRequest, UpdateCategoryRequest
+from sqlalchemy.orm import selectinload
 router = APIRouter()
 
 
+
 @router.get("", response_model=list[CategoryResponse])
-async def get_all_categories(db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_all_categories(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    search: Annotated[
+        str | None,
+        Query(
+            min_length=1,
+            max_length=100,
+            description="Search categories by name",
+        ),
+    ] = None,
+):
+    conditions = [Category.is_active.is_(True), Category.is_deleted.is_(False)]
+
+    if search is not None:
+        term = search.strip()
+        if term:
+            escaped = term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            pattern = f"%{escaped}%"
+            conditions.append(Category.name.ilike(pattern, escape="\\"))
+
     result = await db.execute(
         select(Category)
-        .where(Category.is_active.is_(True) & Category.is_deleted.is_(False))
+        .where(and_(*conditions))
         .order_by(Category.sort_order.desc())
     )
     return result.scalars().all()
+
+
+@router.get("/{category_id}", response_model=CategoryDetails)
+async def get_category_details(
+    category_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    category_res = await db.execute(
+        select(Category)
+        .where(Category.id == category_id)
+        .options(
+            selectinload(Category.products)
+        )
+    )
+
+    return category_res.scalar_one_or_none()
 
 
 # ================= ADMIN OPERATIONS ===================

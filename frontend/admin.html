@@ -846,8 +846,8 @@
               </span>
 
               <div style="display: flex; gap: 8px; margin-top: auto;">
-                <button onClick="{{ o.onAdvance }}" style="flex: 1; min-width: 0; height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13px; font-weight: 700; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ o.nextLabel }}</button>
-                <button onClick="{{ o.onReturn }}" title="Mark returned" style="flex: none; width: 44px; height: 44px; border: 0; border-radius: 999px; background: #fbe9e9; color: #a33232; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Mark returned">
+                <button onClick="{{ o.onAdvance }}" disabled="{{ o.nextDisabled }}" style="flex: 1; min-width: 0; height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: {{ o.nextBg }}; color: {{ o.nextFg }}; font-size: 13px; font-weight: 700; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ o.nextLabel }}</button>
+                <button onClick="{{ o.onReturn }}" disabled="{{ o.returnDisabled }}" title="Mark returned" style="flex: none; width: 44px; height: 44px; border: 0; border-radius: 999px; background: {{ o.returnBg }}; color: {{ o.returnFg }}; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Mark returned">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"></path><path d="M4 9h11a5 5 0 0 1 0 10H9"></path></svg>
                 </button>
               </div>
@@ -1228,58 +1228,62 @@ const SEED = [
   P(133, "Brass Mortar & Pestle", "jars", [S("1 pc", 520000, 0, true)], false, "mortar,pestle")
 ];
 
-const O = (no, customer, phone, detail, method, dest, slot, status, courier, tracking, paid, total, placed) =>
-  ({ no, customer, phone, detail, method, dest, slot, status, courier, tracking, paid, total, placed });
-
-const ORDERS = [
-  O("DH-4821", "Sara Ahmadi", "0912 331 4408", "Saffron 1 g · Pistachio 500 g · Rose tea", "Courier", "Tehran, Yousefabad", "Today 17–21", 0, "In-house rider", "", false, 1010000, "08:12"),
-  O("DH-4820", "Reza Karimi", "0935 118 7742", "Olive oil 1 L · Dried limes 200 g", "Courier", "Tehran, Saadatabad", "Today 17–21", 1, "In-house rider", "", true, 778000, "08:44"),
-  O("DH-4819", "Nadia Sultani", "0901 553 2210", "Barberry 250 g · Figs 400 g · Halva", "Courier", "Tehran, Niavaran", "Tomorrow 9–13", 1, "In-house rider", "", true, 548000, "09:20"),
-  O("DH-4823", "Farid Jalali", "0938 660 1122", "Green lentils 900 g · Mung beans 900 g", "Post", "Shiraz", "Ships tomorrow", 1, "National post", "", true, 223000, "09:41"),
-  O("DH-4818", "Amir Tehrani", "0912 887 0031", "Rice blend · Sumac · Turmeric 500 g", "Pickup", "Counter, Vali-e-Asr", "Ready 14:00", 2, "—", "", false, 205000, "10:02"),
-  O("DH-4817", "Leila Moradi", "0919 220 9915", "Comb honey 900 g", "Courier", "Tehran, Vanak", "Today 17–21", 2, "In-house rider", "TH-88214", true, 685000, "10:35"),
-  O("DH-4822", "Bahar Ebrahimi", "0902 774 5510", "Rose tea 100 g · Chai masala 200 g", "Post", "Tabriz", "In transit, day 2", 2, "Tipax", "TPX-4419023", true, 223000, "Yesterday"),
-  O("DH-4816", "Hossein Bagheri", "0921 776 3320", "Rosewater 1 L · Mint distillate 1 L", "Courier", "Tehran, Gisha", "Tomorrow 9–13", 3, "In-house rider", "TH-88198", true, 286000, "Yesterday"),
-  O("DH-4815", "Mina Rostami", "0930 441 8827", "Almond 400 g · Walnut halves", "Post", "Isfahan", "Delivered 16:40", 4, "Tipax", "TPX-4418771", true, 730000, "2 days ago"),
-  O("DH-4814", "Kaveh Nouri", "0913 002 5561", "Chai masala · Cinnamon sticks", "Pickup", "Counter, Vali-e-Asr", "Collected 18:05", 4, "—", "", true, 166000, "2 days ago"),
-  O("DH-4813", "Parisa Sadeghi", "0912 118 4471", "Pistachio 1 kg", "Courier", "Tehran, Zaferaniyeh", "Refused at door", 5, "In-house rider", "TH-88160", false, 1340000, "3 days ago")
-];
-
-const HIST_ITEMS = [
-  "Turmeric 500 g · Sumac 150 g", "Pistachio 500 g", "Rose tea 100 g · Chai masala 200 g",
-  "Olive oil 500 ml", "Dried limes 200 g · Barberry 250 g", "Comb honey 900 g",
-  "Sesame halva 350 g · Date spread", "Green lentils 900 g · Mung beans 900 g",
-  "Saffron 1 g", "Almond 400 g · Figs 400 g", "Rosewater 500 ml", "Cinnamon sticks 100 g"
-];
-
-const buildHistory = (users, live) => {
-  const out = live.slice();
-  let seq = 4700;
-  users.forEach((u, ui) => {
-    const already = live.filter((o) => o.customer === u.name).length;
-    const need = Math.max(0, u.orders - already);
-    const avg = Math.round(u.spend / u.orders);
-    for (let i = 0; i < need; i++) {
-      const r = Math.abs(Math.sin((ui + 1) * 7.3 + i * 3.1));
-      const total = Math.max(60000, Math.round((avg * (0.55 + r * 0.9)) / 1000) * 1000);
-      const daysAgo = 4 + i * 7 + Math.round(r * 5);
-      const method = u.city.indexOf("Tehran") >= 0 ? (r > 0.82 ? "Pickup" : "Courier") : "Post";
-      const courier = method === "Pickup" ? "—" : method === "Post" ? (r > 0.5 ? "Tipax" : "National post") : "In-house rider";
-      const rec = O(
-        "DH-" + (seq--), u.name, u.phone, HIST_ITEMS[(ui + i) % HIST_ITEMS.length],
-        method, u.city,
-        method === "Pickup" ? "Collected" : "Delivered",
-        (ui * 13 + i) % 60 === 0 ? 5 : 4,
-        courier, method === "Pickup" ? "" : "TPX-" + (4410000 + ui * 130 + i),
-        true, total,
-        daysAgo < 30 ? daysAgo + " days ago" : Math.round(daysAgo / 30) + " months ago"
-      );
-      rec.hist = true;
-      out.push(rec);
-    }
-  });
-  return out;
+// ---- Orders: loaded from the backend (GET /orders/admin/all + GET /orders/{id}) ----
+const ORDER_STATUS_KEYS = ["new", "packing", "shipped", "out_for_delivery", "delivered", "returned", "cancelled"];
+const statusIndex = (s) => {
+  const i = ORDER_STATUS_KEYS.indexOf(s);
+  return i < 0 ? 0 : i;
 };
+const METHOD_LABELS = { courier: "Courier", post: "Post", pickup: "Pickup" };
+// Backend-legal forward transitions, keyed by numeric status index.
+const NEXT_STATUS = { 0: "packing", 1: "shipped", 2: "out_for_delivery", 3: "delivered" };
+
+const dayLabel = (iso) => {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const startOfDay = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((startOfDay(new Date()) - startOfDay(d)) / 86400000);
+  if (diff <= 0) return d.toTimeString().slice(0, 5);
+  if (diff === 1) return "Yesterday";
+  return diff + " days ago";
+};
+
+const mapOrder = (row) => ({
+  _id: row.id,
+  no: row.order_no,
+  userId: row.user ? row.user.id : undefined,
+  customer: row.user ? row.user.name : undefined,
+  status: statusIndex(row.status),
+  paid: row.payment_status === "paid",
+  total: row.total || 0,
+  placed: dayLabel(row.placed_at)
+});
+
+// The list endpoint returns lightweight summaries — pull the detail for items, slot and tracking.
+const hydrateOrder = (base, detail) => {
+  const uid = detail.user_id !== undefined && detail.user_id !== null ? detail.user_id : base.userId;
+  const user = USERS.find((u) => u.id === uid);
+  const lines = (detail.items || []).map((it) =>
+    it.name_snapshot + " · " + it.size_label_snapshot + (it.qty > 1 ? " ×" + it.qty : "")
+  );
+  return Object.assign(base, {
+    customer: base.customer || (user ? user.name : "Customer #" + uid),
+    phone: user ? user.phone : "—",
+    detail: lines.length ? lines.join(" · ") : (detail.note || "No line items"),
+    method: METHOD_LABELS[detail.fulfillment_method] || "Courier",
+    dest: user ? user.city : "—",
+    slot: detail.delivery_slot ? detail.delivery_slot.label : "—",
+    courier: detail.fulfillment_method === "pickup" ? "—" : detail.fulfillment_method === "post" ? "National post" : "In-house rider",
+    tracking: detail.tracking_code || "",
+    note: detail.note || ""
+  });
+};
+
+const blankOrder = (base) => Object.assign(base, {
+  customer: base.customer || (base.userId != null ? "Customer #" + base.userId : "Customer"),
+  phone: "—", detail: "—", method: "Courier",
+  dest: "—", slot: "—", courier: "In-house rider", tracking: "", note: ""
+});
 
 const STATUS = [
   { label: "New", bg: "#fdece2", fg: "#b8451f" },
@@ -1287,7 +1291,8 @@ const STATUS = [
   { label: "Shipped", bg: "#eaf2fb", fg: "#3c5c9c" },
   { label: "Out for delivery", bg: "#eaf6ee", fg: "#0f7a4a" },
   { label: "Delivered", bg: "#f1efe8", fg: "#6f7a72" },
-  { label: "Returned", bg: "#fbe9e9", fg: "#a33232" }
+  { label: "Returned", bg: "#fbe9e9", fg: "#a33232" },
+  { label: "Cancelled", bg: "#f1f2f7", fg: "#6a7180" }
 ];
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -1324,10 +1329,12 @@ const STEP_TIMES = ["08:12", "09:05", "12:40", "16:20", "18:45"];
 
 const step = (o, i) => {
   const returned = o.status === 5;
-  const cur = returned ? 3 : o.status;
+  const cancelled = o.status === 6;
+  const failedIdx = returned ? 4 : cancelled ? 1 : -1;
+  const cur = returned ? 3 : cancelled ? 1 : o.status;
   const done = i < cur;
-  const active = i === cur && !returned;
-  const failed = returned && i === 4;
+  const active = i === cur && failedIdx < 0;
+  const failed = i === failedIdx;
   const bg = failed ? "#fbe9e9" : done ? "#eaf6ee" : active ? INK : "#f1efe8";
   const fg = failed ? "#a33232" : done ? "#0b5c38" : active ? LIME : "#b9beb8";
   const lineDone = "#0f7a4a";
@@ -1339,8 +1346,8 @@ const step = (o, i) => {
     after: i < cur ? lineDone : lineTodo,
     weight: active || done ? 700 : 500,
     text: failed ? "#a33232" : active ? INK : done ? "#0b5c38" : "#a2a89f",
-    time: failed ? "refused" : done || active ? STEP_TIMES[i] : "—",
-    label: failed ? "Returned" : o.method === "Pickup" ? "Collected" : "Delivered"
+    time: failed ? (cancelled ? "cancelled" : "refused") : done || active ? STEP_TIMES[i] : "—",
+    label: failed ? (cancelled ? "Cancelled" : "Returned") : o.method === "Pickup" ? "Collected" : "Delivered"
   };
 };
 
@@ -1359,6 +1366,7 @@ const rider = (o) => {
 
 const etaOf = (o) => {
   if (o.status === 5) return { label: "Needs a call back", bg: "#fbe9e9", fg: "#a33232" };
+  if (o.status === 6) return { label: "Cancelled — no delivery", bg: "#f1f2f7", fg: "#6a7180" };
   if (o.status === 4) return { label: o.method === "Pickup" ? "Collected 18:05" : "Delivered 16:40", bg: "#f1efe8", fg: "#6f7a72" };
   if (o.method === "Pickup") return { label: "Ready from 14:00", bg: "#fdf4e0", fg: "#a3730a" };
   if (o.method === "Post") return { label: o.status >= 2 ? "Arrives in 2 days" : "Ships tomorrow 09:00", bg: "#eaf2fb", fg: "#3c5c9c" };
@@ -1468,7 +1476,7 @@ class Component extends DCLogic {
     me: null,
     cats: CATS.map((c) => Object.assign({}, c)),
     products: SEED.map((p) => Object.assign({}, p, { sizes: p.sizes.map((s) => Object.assign({}, s)) })),
-    orders: buildHistory(USERS, ORDERS),
+    orders: [], orderBusy: null,
     q: "", filterCat: "all", stock: "all", hidden: {}, offersOn: true,
     orderFilter: "all", orderQuery: "", advOpen: false,
     fMethod: "all", fPay: "all", fWhen: "all", fCourier: "all", minValue: 0,
@@ -1502,7 +1510,7 @@ class Component extends DCLogic {
         userRole: me.role,
         userPhone: me.phone || ""
       });
-      await this.loadCatalogue();
+      await Promise.all([this.loadCatalogue(), this.loadOrders()]);
     } catch (e) {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       window.location.href = "./index.html";
@@ -1518,12 +1526,59 @@ class Component extends DCLogic {
       const cats = (Array.isArray(catData) ? catData : catData.items || catData.results || []).map(mapCategory);
       const products = (Array.isArray(prodData) ? prodData : prodData.items || prodData.results || []).map(mapProduct);
       this.setState({ cats, products });
-      this.flash("Catalogue loaded from the shop");
+      this.flash("Catalogue loaded from the backend");
     } catch (err) {
       console.error(err);
       this.flash("Could not load catalogue — showing sample data");
     }
   }
+
+  async loadOrders() {
+    try {
+      const data = await apiGet("/orders/admin/all?page=1&page_size=100");
+      const rows = Array.isArray(data) ? data : data.items || [];
+      const orders = await Promise.all(rows.map(async (row) => {
+        const base = mapOrder(row);
+        try {
+          return hydrateOrder(base, await apiGet("/orders/" + row.id));
+        } catch (e) {
+          console.error("Order detail failed for " + row.id, e);
+          return blankOrder(base);
+        }
+      }));
+      this.setState({ orders });
+      return orders;
+    } catch (err) {
+      console.error(err);
+      this.flash("Could not load orders — " + err.message);
+      return [];
+    }
+  }
+
+  setOrderStatus = async (o, next, okMsg) => {
+    if (this.state.orderBusy) return;
+    this.setState({ orderBusy: o._id });
+    try {
+      await apiSend("PATCH", "/orders/" + o._id + "/status", { status: next, note: "Updated from the admin panel" });
+      await this.loadOrders();
+      this.flash(okMsg);
+    } catch (err) {
+      this.flash(err.message);
+    } finally {
+      this.setState({ orderBusy: null });
+    }
+  };
+
+  advanceOrder = async (o) => {
+    const next = NEXT_STATUS[o.status];
+    if (!next) { this.flash("This order has no next step"); return; }
+    await this.setOrderStatus(o, next, "Order " + o.no + " marked " + next.replace(/_/g, " "));
+  };
+
+  returnOrder = async (o) => {
+    if (o.status !== 2 && o.status !== 3) { this.flash("Only shipped or out-for-delivery orders can be returned"); return; }
+    await this.setOrderStatus(o, "returned", "Order " + o.no + " marked returned");
+  };
 
   flash = (m) => {
     clearTimeout(this.toastT);
@@ -1761,7 +1816,7 @@ class Component extends DCLogic {
       if (tab === "open") return o.status <= 1;
       if (tab === "transit") return o.status === 2 || o.status === 3;
       if (tab === "done") return o.status === 4;
-      if (tab === "issue") return o.status === 5;
+      if (tab === "issue") return o.status === 5 || o.status === 6;
       return true;
     };
     const oq = st.orderQuery.trim().toLowerCase();
@@ -2161,7 +2216,7 @@ class Component extends DCLogic {
       }),
       noOffers: offerProducts.length === 0,
 
-      orderFilters: [{ id: "all", label: "All" }, { id: "open", label: "To send" }, { id: "transit", label: "In transit" }, { id: "done", label: "Delivered" }, { id: "issue", label: "Returned" }].map((f) => ({
+      orderFilters: [{ id: "all", label: "All" }, { id: "open", label: "To send" }, { id: "transit", label: "In transit" }, { id: "done", label: "Delivered" }, { id: "issue", label: "Issues" }].map((f) => ({
         label: f.label,
         count: tabCount(f.id),
         bg: st.orderFilter === f.id ? INK : "#f1efe8",
@@ -2243,13 +2298,17 @@ class Component extends DCLogic {
           custNote: custOf(o) ? custOf(o).note : "",
           hasCustNote: !!(custOf(o) && custOf(o).note),
           onOpenCustomer: () => this.setState({ page: "users", userTab: "all", userQuery: o.customer }),
-          nextLabel: o.status >= 4 ? "Reopen this order" : "Mark " + STATUS[o.status + 1].label.toLowerCase(),
-          onAdvance: () => this.setState((s) => ({
-            orders: s.orders.map((x) => (x.no === o.no ? Object.assign({}, x, { status: x.status >= 4 ? 0 : x.status + 1 }) : x))
-          })),
-          onReturn: () => this.setState((s) => ({
-            orders: s.orders.map((x) => (x.no === o.no ? Object.assign({}, x, { status: 5 }) : x))
-          }))
+          nextLabel: NEXT_STATUS[o.status]
+            ? "Mark " + STATUS[o.status + 1].label.toLowerCase()
+            : o.status === 4 ? "Delivered — all done" : o.status === 5 ? "Returned — needs care" : "Cancelled",
+          nextDisabled: !NEXT_STATUS[o.status],
+          nextBg: NEXT_STATUS[o.status] ? "#12211a" : "#f1efe8",
+          nextFg: NEXT_STATUS[o.status] ? "#d8f24b" : "#a2a89f",
+          returnDisabled: !(o.status === 2 || o.status === 3),
+          returnBg: o.status === 2 || o.status === 3 ? "#fbe9e9" : "#f6f5f1",
+          returnFg: o.status === 2 || o.status === 3 ? "#a33232" : "#c3c8c4",
+          onAdvance: () => this.advanceOrder(o),
+          onReturn: () => this.returnOrder(o)
         };
       }),
 

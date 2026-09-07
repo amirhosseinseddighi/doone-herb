@@ -334,22 +334,22 @@ async def list_all_orders(
     status_filter: Optional[OrderStatus] = Query(None, alias="status"),
     user_id: Optional[int] = Query(None),
 ):
-    stmt = select(Order)
+    stmt = select(Order).options(selectinload(Order.user))
     if status_filter:
         stmt = stmt.where(Order.status == status_filter)
     if user_id:
         stmt = stmt.where(Order.user_id == user_id)
 
+
     total = (await db.execute(select(func.count()).select_from(stmt.subquery()))).scalar_one()
 
     stmt = stmt.order_by(Order.placed_at.desc()).offset((page - 1) * page_size).limit(page_size)
-    rows = (await db.execute(stmt)).scalars().all()
-
+    rows = (await db.execute(stmt)).scalars().unique().all()
     return OrderListResponse(
         items=[OrderSummary.model_validate(o) for o in rows],
         total=total,
         page=page,
-        page_size=page_size,
+        page_size=page_size
     )
 
 

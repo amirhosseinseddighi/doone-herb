@@ -1,9 +1,9 @@
 from datetime import UTC, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from slugify import slugify
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload, with_loader_criteria
 
@@ -17,8 +17,34 @@ router = APIRouter()
 
 
 @router.get("", response_model=list[ProductResponse])
-async def get_all_products(db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_all_products(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    search: Annotated[
+        str | None,
+        Query(
+            min_length=1,
+            max_length=100,
+            description="Search products by name or description",
+        ),
+    ] = None,
+):
     now = datetime.now(UTC)
+
+    conditions = [Product.is_hidden.is_(False), Product.is_deleted.is_(False)]
+
+    if search is not None:
+        term = search.strip()
+        if term:
+            # escape user-supplied LIKE wildcards so they're matched literally
+            escaped = term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            pattern = f"%{escaped}%"
+            conditions.append(
+                or_(
+                    Product.name.ilike(pattern, escape="\\"),
+                    Product.description.ilike(pattern, escape="\\"),
+                )
+            )
+
     result = await db.execute(
         select(Product)
         .options(
@@ -30,7 +56,7 @@ async def get_all_products(db: Annotated[AsyncSession, Depends(get_db)]):
                 include_aliases=True
             )
         )
-        .where(Product.is_hidden.is_(False) & Product.is_deleted.is_(False))
+        .where(and_(*conditions))
         .order_by(Product.updated_at.desc())
     )
     return result.scalars().all()

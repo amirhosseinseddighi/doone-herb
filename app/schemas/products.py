@@ -1,9 +1,11 @@
 from __future__ import annotations
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
-from app.schemas.categories import CategoryResponse
+
+if TYPE_CHECKING:
+    from app.schemas.categories import CategoryResponse
 
 
 
@@ -16,19 +18,26 @@ class OfferResponse(BaseModel):
 
 
 
-   
-class ProductResponse(BaseModel):
+
+class BaseProductResponse(BaseModel):
 
     id: int
     name: str
     slug: str
-    category: CategoryResponse
     description: str
     keyword_tags: Optional[str]
     is_featured: bool
-    variants: list[ProductVariantResponse]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProductResponse(BaseProductResponse):
+    category: CategoryResponse
+    variants: list[ProductVariantResponse]
+
+
+
+
 
 
 class NewProductRequest(BaseModel):
@@ -79,3 +88,9 @@ class UpdateProductVariantRequest(BaseModel):
     price: Optional[int] = Field(default=None, ge=0)
     compare_at_price: Optional[int] = Field(default=None, ge=0)
     stock_qty: Optional[int] = Field(default=None, ge=0)
+
+
+
+
+from app.schemas.categories import CategoryResponse  # noqa: E402
+ProductResponse.model_rebuild()

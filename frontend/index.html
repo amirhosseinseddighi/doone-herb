@@ -647,7 +647,7 @@
           <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
             <span style="padding: 12px 14px; border-radius: 14px; background: #fdece2; color: #b8451f; font-size: 13px; line-height: 1.45;">{{ errorText }}</span>
           </sc-if>
-          <button onClick="{{ placeOrder }}" style="height: 52px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 15px; font-weight: 700; cursor: pointer;">{{ payCta }}</button>
+          <button onClick="{{ placeOrder }}" disabled="{{ placing }}" style="height: 52px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 15px; font-weight: 700; cursor: pointer; opacity: {{ placing ? 0.6 : 1 }};">{{ payCta }}</button>
           <span style="font-size: 11.5px; color: #8b918c; text-align: center;">{{ payFootnote }}</span>
         </div>
       </div>
@@ -796,6 +796,9 @@
 
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <button onClick="{{ o.onReorder }}" style="flex: 1; min-width: 130px; height: 42px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13px; font-weight: 700; cursor: pointer;">Order again</button>
+                <sc-if value="{{ o.canCancel }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ o.onCancel }}" style="flex: 1; min-width: 120px; height: 42px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; font-size: 13px; font-weight: 700; cursor: pointer;">Cancel order</button>
+                </sc-if>
                 <sc-if value="{{ o.canReview }}" hint-placeholder-val="{{ false }}">
                   <button onClick="{{ o.onReview }}" style="flex: 1; min-width: 130px; height: 42px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">Leave a review</button>
                 </sc-if>
@@ -998,11 +1001,23 @@ const photo = (kw, lock, size) => "https://loremflickr.com/" + (size || 600) + "
 
 const API_BASE = "http://127.0.0.1:8000";
 const AUTH_TOKEN_KEY = "dh_token";
+// Cart calls must send cookies: guests are tracked with the backend's HttpOnly
+// `guest_cart_token` cookie and the API uses CORS with allow_credentials.
+const FETCH_CREDENTIALS = "include";
+// Fallback delivery slots (until GET /orders/delivery-slots responds).
+// Indexes match the checkout screen's slot picker (st.slot).
+const SLOTS = [
+  { label: "Today, 17:00–21:00", note: "Same-day courier", fee: 45000, pickup: false },
+  { label: "Tomorrow, 9:00–13:00", note: "Next-morning window", fee: 35000, pickup: false },
+  { label: "Pickup from the shop", note: "Vali-e-Asr St counter", fee: 0, pickup: true }
+];
+const MY_REVIEWS = [];
 
 async function apiLogin(username, password) {
   const body = new URLSearchParams({ username, password, grant_type: "password" });
   const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: "POST",
+    credentials: FETCH_CREDENTIALS,
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString()
   });
@@ -1024,6 +1039,7 @@ async function apiLogin(username, password) {
 
 async function apiMe(token) {
   const res = await fetch(`${API_BASE}/api/auth/me`, {
+    credentials: FETCH_CREDENTIALS,
     headers: { Authorization: "Bearer " + token }
   });
   if (!res.ok) throw new Error("Session expired — please sign in again.");
@@ -1094,14 +1110,216 @@ const mapProduct = (p) => ({
   name: p.name,
   cat: p.category?.slug || "",
   sizes: (p.variants || []).map((v) => ({
+    id: v.id,
     label: v.label,
     price: v.price,
     old: v.compare_at_price || 0,
-    out: (v.stock_qty ?? 0) <= 0
+    stock: v.stock_qty ?? 0,
+    out: (v.stock_qty ?? 0) <= 0,
+    badge: v.offers && v.offers.length ? v.offers[0].badge_label : ""
   })),
   desc: p.description || "",
   kw: p.keyword_tags || "food"
 });
+
+function authHeaders(extra) {
+  const h = Object.assign({}, extra || {});
+  const tok = localStorage.getItem(AUTH_TOKEN_KEY);
+  if (tok) h["Authorization"] = "Bearer " + tok;
+  return h;
+}
+
+// Cart requests always carry credentials: signed-in carts are resolved from the
+// Bearer token, guest carts from the backend's HttpOnly `guest_cart_token` cookie.
+
+// GET /api/cart → CartResponse {id, user_id, guest_token, items, total_items, total_price}
+// items: CartItemResponse {id (cart_item_id), product_variant_id, qty, product_name?,
+//        variant_label?, price?, stock_qty?, subtotal?}
+async function apiGetCart() {
+  const res = await fetch(`${API_BASE}/api/cart`, { credentials: FETCH_CREDENTIALS, headers: authHeaders() });
+  if (!res.ok) throw new Error("Could not load the basket.");
+  return res.json();
+}
+
+// POST /api/cart  {product_variant_id, qty} → {message, cart_id}
+async function apiAddCartItem(productVariantId, qty) {
+  const res = await fetch(`${API_BASE}/api/cart`, {
+    method: "POST",
+    credentials: FETCH_CREDENTIALS,
+    headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
+    body: JSON.stringify({ product_variant_id: productVariantId, qty })
+  });
+  if (!res.ok) {
+    let msg = "Could not add to the basket.";
+    try { const d = await res.json(); if (d && d.detail) msg = typeof d.detail === "string" ? d.detail : msg; } catch (e) {}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+// PATCH /api/cart/{cart_item_id}  {qty} → CartResponse
+async function apiUpdateCartItem(cartItemId, qty) {
+  const res = await fetch(`${API_BASE}/api/cart/${cartItemId}`, {
+    method: "PATCH",
+    credentials: FETCH_CREDENTIALS,
+    headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
+    body: JSON.stringify({ qty })
+  });
+  if (!res.ok) throw new Error("Could not update the basket.");
+  return res.json();
+}
+
+// DELETE /api/cart/{cart_item_id} → {message, cart_id}
+async function apiDeleteCartItem(cartItemId) {
+  const res = await fetch(`${API_BASE}/api/cart/${cartItemId}`, { method: "DELETE", credentials: FETCH_CREDENTIALS, headers: authHeaders() });
+  if (!res.ok) throw new Error("Could not remove the item.");
+  return res.json();
+}
+
+// GET /orders/delivery-slots (public)
+async function apiGetSlots() {
+  const res = await fetch(`${API_BASE}/orders/delivery-slots`, { credentials: FETCH_CREDENTIALS });
+  if (!res.ok) throw new Error("Could not load delivery options.");
+  return res.json();
+}
+
+// GET /api/address (auth)
+async function apiListAddresses() {
+  const res = await fetch(`${API_BASE}/api/address`, { headers: authHeaders() });
+  if (!res.ok) throw new Error("Could not load addresses.");
+  return res.json();
+}
+
+// POST /api/address
+async function apiCreateAddress(payload) {
+  const res = await fetch(`${API_BASE}/api/address`, {
+    method: "POST",
+    headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    let msg = "Could not save the address.";
+    try {
+      const d = await res.json();
+      if (d && d.detail) {
+        msg = typeof d.detail === "string" ? d.detail : (Array.isArray(d.detail) && d.detail[0] && d.detail[0].msg ? d.detail[0].msg : msg);
+      }
+    } catch (e) {}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+// POST /api/address/{id}/set-default
+async function apiSetDefaultAddress(id) {
+  const res = await fetch(`${API_BASE}/api/address/${id}/set-default`, { method: "POST", headers: authHeaders() });
+  if (!res.ok) throw new Error("Could not set the default address.");
+  return res.json();
+}
+
+// DELETE /api/address/{id}
+async function apiDeleteAddress(id) {
+  const res = await fetch(`${API_BASE}/api/address/${id}`, { method: "DELETE", headers: authHeaders() });
+  if (!res.ok) throw new Error("Could not remove the address.");
+  return res.json();
+}
+
+// GET /orders (auth, paginated) — {items: OrderSummary[], total, page, page_size}
+async function apiListMyOrders() {
+  const res = await fetch(`${API_BASE}/orders?page=1&page_size=50`, { headers: authHeaders() });
+  if (!res.ok) throw new Error("Could not load your orders.");
+  return res.json();
+}
+
+// GET /orders/code/{order_no} (auth) — full OrderRead with items/events/payments
+async function apiGetOrder(orderNo) {
+  const res = await fetch(`${API_BASE}/orders/code/${encodeURIComponent(orderNo)}`, { headers: authHeaders() });
+  if (!res.ok) throw new Error("Could not load the order.");
+  return res.json();
+}
+
+// POST /orders/{id}/cancel (auth)
+async function apiCancelOrder(id) {
+  const res = await fetch(`${API_BASE}/orders/${id}/cancel`, { method: "POST", headers: authHeaders() });
+  if (!res.ok) {
+    let msg = "Could not cancel the order.";
+    try { const d = await res.json(); if (d && d.detail) msg = typeof d.detail === "string" ? d.detail : msg; } catch (e) {}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+// POST /orders/checkout  OrderCreate — items and money come from the server-side cart
+async function apiCheckout(payload) {
+  const res = await fetch(`${API_BASE}/orders/checkout`, {
+    method: "POST",
+    headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    let msg = "Checkout failed. Please try again.";
+    try {
+      const d = await res.json();
+      if (d && d.detail) msg = typeof d.detail === "string" ? d.detail : (Array.isArray(d.detail) && d.detail[0] && d.detail[0].msg ? d.detail[0].msg : msg);
+    } catch (e) {}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+// Backend OrderStatus → numeric step (0..4) used by the progress tracker UI.
+const ORDER_STATUS_STEP = { new: 0, packing: 1, shipped: 2, out_for_delivery: 3, delivered: 4, returned: 4, cancelled: 4 };
+const ORDER_STATUS_LABEL = { new: "Confirmed", packing: "Packing", shipped: "On the way", out_for_delivery: "Out for delivery", delivered: "Delivered", returned: "Returned", cancelled: "Cancelled" };
+const ORDER_STATUS_BADGE = {
+  new: { bg: "#fdf4e0", fg: "#a3730a" },
+  packing: { bg: "#fdf4e0", fg: "#a3730a" },
+  shipped: { bg: "#eaf6ee", fg: "#0b5c38" },
+  out_for_delivery: { bg: "#eaf6ee", fg: "#0b5c38" },
+  delivered: { bg: "#f1efe8", fg: "#6f7a72" },
+  returned: { bg: "#fdece2", fg: "#b8451f" },
+  cancelled: { bg: "#fdece2", fg: "#b8451f" }
+};
+
+const mapSlot = (s) => ({
+  id: s.id, label: s.label, note: s.note || "", fee: s.fee || 0,
+  pickup: s.kind === "pickup", cutoff: s.cutoff_time, eta: s.label
+});
+
+const mapAddress = (a) => {
+  // Map the saved lat/lng back onto the checkout map's 0–100 pin space.
+  const x = typeof a.lng === "number" ? Math.round(((a.lng - 51.38) / 0.1) * 100) : 42;
+  const y = typeof a.lat === "number" ? Math.round(((a.lat - 35.7) / 0.1) * 100) : 55;
+  return {
+    id: a.id, label: a.label, line: a.line, unit: a.unit || "", postal: a.postal_code || "",
+    phone: a.phone || "", name: "",
+    x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)),
+    meta: [a.phone, a.postal_code].filter(Boolean).join(" · "),
+    def: !!a.is_default
+  };
+};
+
+const mapOrder = (o) => ({
+  id: o.id, no: o.order_no, placed: fmtDate(o.placed_at),
+  status: ORDER_STATUS_STEP[o.status] != null ? ORDER_STATUS_STEP[o.status] : 0,
+  statusRaw: o.status,
+  badge: ORDER_STATUS_BADGE[o.status] || { bg: "#f1efe8", fg: "#6f7a72" },
+  total: o.total, paymentPaid: o.payment_status === "paid", paid: o.payment_status === "paid",
+  paymentStatus: o.payment_status,
+  items: [], // lazily hydrated via GET /orders/code/{no}
+  loaded: false,
+  rider: "Courier", eta: ORDER_STATUS_LABEL[o.status] || "",
+  pickup: false,
+  cancelled: o.status === "cancelled" || o.status === "returned",
+  canCancel: o.status === "new" || o.status === "packing"
+});
+
+function fmtDate(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) + ", " +
+      d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  } catch (e) { return ""; }
+}
 
 const NOTES = {
   spices: [
@@ -1151,55 +1369,35 @@ const FAQS = [
   { q: "Can I pay on delivery?", a: "Cash on delivery is available inside Tehran. For other cities we ask for online payment first." }
 ];
 
-const SLOTS = [
-  { label: "Today, 17:00–21:00", note: "order before 14:00", fee: 45000, eta: "Arriving today, 17:00–21:00", pickup: false },
-  { label: "Tomorrow, 9:00–13:00", note: "quiet morning slot", fee: 35000, eta: "Arriving tomorrow, 9:00–13:00", pickup: false },
-  { label: "Pick up at the shop", note: "Vali-e-Asr St, ready in 2h", fee: 0, eta: "Ready to collect from 14:00", pickup: true }
-];
-
-const MY_ORDERS = [
-  { no: "DH-4821", placed: "Today, 08:12", status: 1, items: [[101, 0, 1], [121, 0, 1], [126, 0, 1]], total: 1010000, rider: "Omid", eta: "Arriving 17:00–21:00" },
-  { no: "DH-4790", placed: "12 days ago", status: 4, items: [[113, 1, 1], [117, 0, 2]], total: 836000, rider: "Omid", eta: "Delivered 18:40" },
-  { no: "DH-4744", placed: "1 month ago", status: 4, items: [[118, 0, 1], [119, 0, 1]], total: 430000, rider: "Tipax", eta: "Delivered" }
-];
-
-const MY_REVIEWS = [
-  { pid: 126, stars: 5, date: "3 days ago", text: "The buds are whole and the cup comes out pale gold. Four minutes is exactly right.", reply: "Thank you — the new lot lands next week." },
-  { pid: 121, stars: 5, date: "2 weeks ago", text: "Arrived still warm from the roaster. Salt is light, which I prefer.", reply: "" },
-  { pid: 117, stars: 4, date: "1 month ago", text: "Very fragrant. A couple were darker than the rest but the flavour was there.", reply: "" }
-];
-
-const MY_ADDRESSES = [
-  { id: 1, label: "Home", line: "No. 18, Fifth alley, Yousefabad, Tehran", meta: "Unit 4 · postal 1436953411 · 0912 331 4408", x: 42, y: 55, def: true },
-  { id: 2, label: "Work", line: "Doone Herb office, Vali-e-Asr St, Tehran", meta: "Second floor · reception until 18:00 · 021 8842 1190", x: 64, y: 33, def: false }
-];
-
 const fmt = (n) => n.toLocaleString("en-US") + " T";
 const INK = "#12211a";
 const GREEN = "#0f7a4a";
 
 class Component extends DCLogic {
   state = {
+    // cart mirrors the server cart: product_variant_id → { itemId: cart_item_id, qty }
     screen: "home", cat: "all", q: "", pid: null, sizeIdx: 0, qty: 1, cart: {}, cartOpen: false, toast: "", faq: null,
     user: null, acctOpen: false,
     authTab: "pw", signupMode: false, forgotOpen: false, forgotSent: false, authBusy: false,
     loginUser: "", loginPass: "", loginPass2: "", signupName: "", signupPhone: "",
     forgotUser: "",
     loginPhone: "", loginCode: "", codeSent: false, loginErr: "",
-    acctTab: "orders", orders: MY_ORDERS.map((o) => Object.assign({}, o)), addresses: MY_ADDRESSES.map((a) => Object.assign({}, a)),
-    slot: 0, pay: 0, err: "", receipt: null,
+    acctTab: "orders", orders: [], addresses: [],
+    slot: 0, pay: 0, err: "", receipt: null, placing: false, addrId: null,
     form: { name: "", phone: "", addr: "", unit: "", postal: "", note: "" },
     pinX: 48, pinY: 52, addrLabel: 0,
     cats: [],
     products: [],
+    slots: [],
     dataReady: false,
   };
-
 
   componentDidMount() {
     this.loadData();
     this.applyResetLink();
     this.restoreSession();
+    this.loadSlots();
+    this.syncCart();
   }
 
   // Email links point here: /reset-password?token=…  → hand off to the dedicated reset form.
@@ -1225,35 +1423,43 @@ class Component extends DCLogic {
         user: { name: me.name || "Member", username: me.phone || "", phone: me.phone || "", role: me.role || "customer" },
         form: Object.assign({}, this.state.form, { name: me.name || "", phone: me.phone || "" })
       });
+      this.loadAddresses();
+      this.loadOrders();
     } catch (e) {
       localStorage.removeItem(AUTH_TOKEN_KEY);
     }
   }
 
-  async loadData() {
-    try {
-      const [catRes, prodRes] = await Promise.all([
-        fetch(`${API_BASE}/api/categories`),
-        fetch(`${API_BASE}/api/products`)
-      ]);
-      if (!catRes.ok) throw new Error("Failed to load categories");
-      if (!prodRes.ok) throw new Error("Failed to load products");
-      const catData = await catRes.json();
-      const prodData = await prodRes.json();
+  loadData() {
+    // Cached promise so loadOrders can await the catalogue before it maps
+    // order items back to products/variants.
+    if (this._dataP) return this._dataP;
+    this._dataP = (async () => {
+      try {
+        const [catRes, prodRes] = await Promise.all([
+          fetch(`${API_BASE}/api/categories`),
+          fetch(`${API_BASE}/api/products`)
+        ]);
+        if (!catRes.ok) throw new Error("Failed to load categories");
+        if (!prodRes.ok) throw new Error("Failed to load products");
+        const catData = await catRes.json();
+        const prodData = await prodRes.json();
 
-      const products = (Array.isArray(prodData) ? prodData : prodData.items || prodData.results || []).map(mapProduct);
-      const cats = (Array.isArray(catData) ? catData : catData.items || catData.results || []).map(mapCategory);
+        const products = (Array.isArray(prodData) ? prodData : prodData.items || prodData.results || []).map(mapProduct);
+        const cats = (Array.isArray(catData) ? catData : catData.items || catData.results || []).map(mapCategory);
 
-      this.setState({
-        cats,
-        products,
-        dataReady: true,
-        pid: products.length ? products[0].id : null
-      });
-    } catch (err) {
-      console.error(err);
-      this.flash("Could not load catalogue");
-    }
+        this.setState({
+          cats,
+          products,
+          dataReady: true,
+          pid: products.length ? products[0].id : null
+        });
+      } catch (err) {
+        console.error(err);
+        this.flash("Could not load catalogue");
+      }
+    })();
+    return this._dataP;
   }
 
   componentWillUnmount() { clearTimeout(this.toastT); }
@@ -1268,52 +1474,147 @@ class Component extends DCLogic {
 
   key = (id, i) => id + ":" + i;
 
-  add = (id, i, n) => {
-    const k = this.key(id, i);
-    const PRODUCTS = this.state.products;
-    this.setState((s) => ({ cart: Object.assign({}, s.cart, { [k]: (s.cart[k] || 0) + (n || 1) }) }));
-    const p = PRODUCTS.find((x) => x.id === id);
-    this.flash((p ? p.name : "Item") + " added");
-  };
-  bump = (k, d) => this.setState((s) => {
-    const c = Object.assign({}, s.cart);
-    c[k] = (c[k] || 0) + d;
-    if (c[k] <= 0) delete c[k];
-    return { cart: c };
-  });
-  drop = (k) => this.setState((s) => {
-    const c = Object.assign({}, s.cart);
-    delete c[k];
-    return { cart: c };
-  });
+  // --- Cart ↔ backend (/api/cart) -----------------------------------------
+  // The server cart is the source of truth. State keys are product_variant_id
+  // and each entry carries the server's cart_item_id used by PATCH / DELETE.
+  setCartFromServer(data) {
+    const cart = {};
+    (data && data.items ? data.items : []).forEach((it) => {
+      if (it && it.id != null && it.product_variant_id != null) {
+        cart[it.product_variant_id] = { itemId: it.id, qty: it.qty || 0 };
+      }
+    });
+    this.setState({ cart });
+  }
 
-  buildReceipt(lines, total) {
-    const st = this.state;
-    const sd = SLOTS[st.slot];
-    const slotNames = SLOTS.map((s) => s.label);
-    const no = "DH-" + String(Math.floor(Math.random() * 9000) + 1000);
-    const rec = {
-      no,
-      paidOnline: st.pay === 0,
-      title: st.pay === 0 ? "Paid, and we're packing" : sd.pickup ? "Confirmed — we're packing it" : "Order confirmed",
-      totalLabel: st.pay === 0 ? "Paid" : sd.pickup ? "To pay on collection" : "To pay on delivery",
-      eta: sd.label + (st.pay === 0 ? " — paid online" : sd.pickup ? " — pay at the counter" : " — pay the rider"),
-      total: fmt(total),
-      lines: lines.map((l) => ({ name: l.p.name + " · " + l.sz.label, qty: l.qty, total: fmt(l.line) })),
+  async refreshCart() {
+    try { this.setCartFromServer(await apiGetCart()); } catch (e) { /* keep the last known basket */ }
+  }
+
+  // Pull the basket once on mount. The first anonymous call also makes the
+  // backend issue the guest_cart_token cookie used by later mutations.
+  async syncCart() {
+    try { this.setCartFromServer(await apiGetCart()); } catch (e) { /* offline or no identity yet */ }
+  }
+
+  async loadSlots() {
+    try {
+      const list = await apiGetSlots();
+      const arr = Array.isArray(list) ? list : list.items || list.results || [];
+      if (arr.length) this.setState({ slots: arr.map(mapSlot) });
+    } catch (e) { /* the SLOTS fallback stays in place */ }
+  }
+
+  // --- Addresses ↔ backend (/api/address, auth) ----------------------------
+  async loadAddresses() {
+    if (!localStorage.getItem(AUTH_TOKEN_KEY)) return;
+    try {
+      const list = await apiListAddresses();
+      this.setState({ addresses: (Array.isArray(list) ? list : []).map(mapAddress) });
+    } catch (e) { /* keep whatever we already have */ }
+  }
+
+  // --- Orders ↔ backend (/orders, auth) ------------------------------------
+  async loadOrders() {
+    if (!localStorage.getItem(AUTH_TOKEN_KEY)) return;
+    try {
+      await this.loadData(); // the catalogue must be ready to map variants back
+      const data = await apiListMyOrders();
+      const arr = Array.isArray(data) ? data : data.items || [];
+      this.setState({ orders: arr.map(mapOrder) });
+      this.hydrateOrders(arr);
+    } catch (e) { /* keep the last known list */ }
+  }
+
+  // OrderSummary rows carry no line items — pull each order's full OrderRead
+  // and store items as [productId, sizeIdx, qty] triples for the UI.
+  async hydrateOrders(summaries) {
+    const details = await Promise.all(summaries.map((s) => apiGetOrder(s.order_no).catch(() => null)));
+    const orders = this.state.orders.map((o) => {
+      const d = details.find((x) => x && x.id === o.id);
+      if (!d) return o;
+      const items = (d.items || []).map((it) => {
+        const v = this.findVariant(it.product_variant_id);
+        if (!v) return null;
+        return [v.p.id, Math.max(0, v.p.sizes.indexOf(v.sz)), it.qty];
+      }).filter(Boolean);
+      return Object.assign({}, o, {
+        items,
+        loaded: true,
+        pickup: d.fulfillment_method === "pickup" || !!(d.delivery_slot && d.delivery_slot.kind === "pickup"),
+        paid: d.payment_status === "paid"
+      });
+    });
+    this.setState({ orders });
+  }
+
+  cancelOrder = (id) => {
+    apiCancelOrder(id)
+      .then(() => { this.flash("Order cancelled"); this.loadOrders(); })
+      .catch((e) => this.flash((e && e.message) || "Could not cancel the order"));
+  };
+
+  findVariant(productVariantId) {
+    const products = this.state.products;
+    const vid = +productVariantId;
+    for (let pi = 0; pi < products.length; pi++) {
+      const sizes = products[pi].sizes || [];
+      for (let si = 0; si < sizes.length; si++) {
+        if (+sizes[si].id === vid) return { p: products[pi], sz: sizes[si] };
+      }
+    }
+    return null;
+  }
+
+  add = (id, i, n) => {
+    const p = this.state.products.find((x) => x.id === id);
+    const sz = p && p.sizes && p.sizes[i];
+    if (!sz) return;
+    apiAddCartItem(sz.id, Math.max(1, n || 1))
+      .then(() => { this.refreshCart(); this.flash((p ? p.name : "Item") + " added"); })
+      .catch((e) => this.flash(e && e.message ? e.message : "Could not add to the basket"));
+  };
+  bump = (k, d) => {
+    const entry = this.state.cart[k];
+    if (!entry) return;
+    const nq = entry.qty + d;
+    if (nq <= 0) { this.drop(k); return; }
+    const v = this.findVariant(k);
+    const capped = v && v.sz.stock > 0 ? Math.min(nq, v.sz.stock) : nq;
+    apiUpdateCartItem(entry.itemId, capped)
+      .then(() => this.refreshCart())
+      .catch((e) => this.flash(e && e.message ? e.message : "Could not update the basket"));
+  };
+  drop = (k) => {
+    const entry = this.state.cart[k];
+    if (!entry) return;
+    apiDeleteCartItem(entry.itemId)
+      .then(() => this.refreshCart())
+      .catch((e) => this.flash(e && e.message ? e.message : "Could not remove the item"));
+  };
+
+  // Builds the success-screen receipt from the real OrderRead returned by
+  // POST /orders/checkout — money and lines come from the server, not the UI.
+  buildReceipt(order, f) {
+    const paid = order.payment_method === "online";
+    const pickup = order.fulfillment_method === "pickup";
+    const slotLabel = order.delivery_slot ? order.delivery_slot.label : "";
+    return {
+      no: order.order_no,
+      paidOnline: paid,
+      title: paid ? "Paid, and we're packing" : pickup ? "Confirmed — we're packing it" : "Order confirmed",
+      totalLabel: paid ? "Paid" : pickup ? "To pay on collection" : "To pay on delivery",
+      eta: slotLabel + (paid ? " — paid online" : pickup ? " — pay at the counter" : " — pay the rider"),
+      total: fmt(order.total),
+      lines: (order.items || []).map((it) => ({ name: it.name_snapshot + " · " + it.size_label_snapshot, qty: it.qty, total: fmt(it.line_total) })),
       rows: [
-        { k: sd.pickup ? "Collected by" : "Deliver to", v: st.form.name },
-        { k: "Address", v: st.form.addr + (st.form.unit ? ", unit " + st.form.unit : "") },
-        { k: "Phone", v: st.form.phone },
-        { k: "Window", v: slotNames[st.slot] },
-        { k: "Payment", v: st.pay === 0 ? "Card, paid online" : sd.pickup ? "Cash at the counter" : "Cash on delivery" }
+        { k: pickup ? "Collected by" : "Deliver to", v: f.name },
+        { k: "Address", v: f.addr + (f.unit ? ", unit " + f.unit : "") },
+        { k: "Phone", v: f.phone },
+        { k: "Window", v: slotLabel },
+        { k: "Payment", v: paid ? "Card, paid online" : pickup ? "Cash at the counter" : "Cash on delivery" }
       ]
     };
-    const items = lines.map((l) => [l.p.id, l.p.sizes.indexOf(l.sz), l.qty]);
-    setTimeout(() => this.setState((s) => ({
-      cart: {},
-      orders: [{ no, placed: "Just now", status: 0, items, total, pickup: sd.pickup, paid: s.pay === 0, rider: sd.pickup ? "Counter" : "Omid", eta: sd.eta }].concat(s.orders)
-    })), 0);
-    return rec;
   }
 
   renderVals() {
@@ -1321,6 +1622,7 @@ class Component extends DCLogic {
 
     const CATS = st.cats;
     const PRODUCTS = st.products;
+    const SLOT_DEFS = st.slots.length ? st.slots : SLOTS;
 
     const fee = this.props.deliveryFee ?? 45000;
     const freeOver = this.props.freeOver ?? 900000;
@@ -1329,17 +1631,18 @@ class Component extends DCLogic {
         id: "", name: "", tint: "#f1efe8", dot: "#7d857f", kw: "food"
       };
 
+    // Server cart model: st.cart maps product_variant_id → { itemId, qty }.
     const lines = Object.keys(st.cart).map((k) => {
-      const parts = k.split(":");
-      const p = PRODUCTS.find((x) => x.id === +parts[0]);
-      if (!p || !p.sizes[+parts[1]]) return null;
-      return { k, p, sz: p.sizes[+parts[1]], qty: st.cart[k], line: p.sizes[+parts[1]].price * st.cart[k] };
+      const entry = st.cart[k];
+      const v = this.findVariant(k);
+      if (!entry || !v) return null;
+      return { k, p: v.p, sz: v.sz, qty: entry.qty, line: v.sz.price * entry.qty };
     }).filter(Boolean);
     const count = lines.reduce((a, l) => a + l.qty, 0);
     const sub = lines.reduce((a, l) => a + l.line, 0);
-    const slotDef = SLOTS[st.slot];
+    const slotDef = SLOT_DEFS[st.slot] || SLOT_DEFS[0];
     const free = (sub >= freeOver && sub > 0) || slotDef.pickup;
-    const slotFee = slotDef.pickup ? 0 : st.slot === 1 ? 35000 : fee;
+    const slotFee = slotDef.pickup ? 0 : (slotDef.fee || fee);
     const delivery = free ? 0 : slotFee;
     const total = sub + (sub > 0 ? delivery : 0);
 
@@ -1350,8 +1653,8 @@ class Component extends DCLogic {
     const card = (p) => {
       if (!p || !p.sizes || !p.sizes.length) return null;
       const s0 = p.sizes[0];
-      const k = this.key(p.id, 0);
-      const qty = st.cart[k] || 0;
+      const k = s0.id; // product_variant_id — the server cart key
+      const qty = st.cart[k] ? st.cart[k].qty : 0;
       const disc = s0.old > 0;
       const c = catOf(p.cat);
       return {
@@ -1630,6 +1933,9 @@ class Component extends DCLogic {
             acctOpen: false, loginPass: "", authBusy: false, loginErr: "",
             form: Object.assign({}, st.form, { name, phone: me.phone || st.form.phone })
           });
+          this.syncCart(); // reload the basket under the signed-in identity
+          this.loadAddresses();
+          this.loadOrders();
           this.flash("Signed in");
         } catch (e) {
           this.setState({ authBusy: false, loginErr: e.message || "Sign-in failed. Please try again." });
@@ -1653,7 +1959,7 @@ class Component extends DCLogic {
           this.setState({ authBusy: false, loginErr: e.message || "Could not send the reset link." });
         }
       },
-      doLogout: () => { localStorage.removeItem(AUTH_TOKEN_KEY); this.setState({ user: null, acctOpen: false, screen: "home" }); this.flash("Signed out"); },
+      doLogout: () => { localStorage.removeItem(AUTH_TOKEN_KEY); this.setState({ user: null, acctOpen: false, screen: "home", orders: [], addresses: [], addrId: null }); this.syncCart(); this.flash("Signed out"); },
       myOrderCount: st.orders.length,
       myActiveCount: st.orders.filter((o) => o.status < 4).length,
       acctLinks: [
@@ -1717,10 +2023,15 @@ class Component extends DCLogic {
             : o.rider + " is bringing it" + (o.paid === false ? " · have the cash ready at the door" : " · already paid"),
           eta: o.eta,
           canReview: o.status === 4,
+          canCancel: o.canCancel,
+          onCancel: () => this.cancelOrder(o.id),
           onReorder: () => {
-            const add = {};
-            o.items.forEach((it) => { add[it[0] + ":" + it[1]] = it[2]; });
-            this.setState((s) => ({ cart: Object.assign({}, s.cart, add), cartOpen: true }));
+            Promise.all(o.items.map((it) => {
+              const prod = PRODUCTS.find((x) => x.id === it[0]);
+              const sz = prod && prod.sizes[it[1]];
+              return sz ? apiAddCartItem(sz.id, it[2]).catch(() => null) : Promise.resolve(null);
+            })).then(() => this.refreshCart());
+            this.setState({ cartOpen: true });
             this.flash("Added back to the basket");
           },
           onReview: () => { this.setState({ acctTab: "reviews" }); this.flash("Pick a product to review"); },
@@ -1743,8 +2054,8 @@ class Component extends DCLogic {
         bd: a.def ? GREEN : "#eceae3",
         tint: a.def ? "#eaf6ee" : "#f1efe8",
         iconFg: a.def ? "#0b5c38" : "#7d857f",
-        onDefault: () => this.setState((s) => ({ addresses: s.addresses.map((x) => Object.assign({}, x, { def: x.id === a.id })) })),
-        onDelete: () => { this.setState((s) => ({ addresses: s.addresses.filter((x) => x.id !== a.id) })); this.flash("Address removed"); }
+        onDefault: () => { apiSetDefaultAddress(a.id).then(() => this.loadAddresses()).catch((e) => this.flash((e && e.message) || "Could not set the default address")); },
+        onDelete: () => { apiDeleteAddress(a.id).then(() => { this.loadAddresses(); this.flash("Address removed"); }).catch((e) => this.flash((e && e.message) || "Could not remove the address")); }
       })),
       addAddress: () => { this.setState({ screen: "checkout" }); this.top(); this.flash("Drop a pin and save it with your next order"); },
 
@@ -1776,18 +2087,19 @@ class Component extends DCLogic {
         bd: st.form.addr === a.line ? GREEN : "#eceae3",
         bg: st.form.addr === a.line ? "#eaf6ee" : "#fff",
         onUse: () => this.setState((s) => ({
-          form: Object.assign({}, s.form, { addr: a.line, name: s.form.name || "Sara Ahmadi", phone: s.form.phone || "0912 331 4408" }),
+          addrId: a.id,
+          form: Object.assign({}, s.form, { addr: a.line, unit: a.unit || s.form.unit, postal: a.postal || s.form.postal, phone: a.phone || s.form.phone }),
           pinX: a.x, pinY: a.y
         }))
       })),
       form: st.form,
       onName: (e) => { const v = e.target.value; this.setState((s) => ({ form: Object.assign({}, s.form, { name: v }) })); },
       onPhone: (e) => { const v = e.target.value; this.setState((s) => ({ form: Object.assign({}, s.form, { phone: v }) })); },
-      onAddr: (e) => { const v = e.target.value; this.setState((s) => ({ form: Object.assign({}, s.form, { addr: v }) })); },
-      onUnit: (e) => { const v = e.target.value; this.setState((s) => ({ form: Object.assign({}, s.form, { unit: v }) })); },
-      onPostal: (e) => { const v = e.target.value; this.setState((s) => ({ form: Object.assign({}, s.form, { postal: v }) })); },
+      onAddr: (e) => { const v = e.target.value; this.setState((s) => ({ addrId: null, form: Object.assign({}, s.form, { addr: v }) })); },
+      onUnit: (e) => { const v = e.target.value; this.setState((s) => ({ addrId: null, form: Object.assign({}, s.form, { unit: v }) })); },
+      onPostal: (e) => { const v = e.target.value; this.setState((s) => ({ addrId: null, form: Object.assign({}, s.form, { postal: v }) })); },
       onNote: (e) => { const v = e.target.value; this.setState((s) => ({ form: Object.assign({}, s.form, { note: v }) })); },
-      slots: SLOTS.map((s, i) => ({
+      slots: SLOT_DEFS.map((s, i) => ({
         label: s.label, note: s.note,
         fee: s.fee === 0 || (sub >= freeOver && sub > 0) ? "free" : fmt(s.fee),
         bd: st.slot === i ? GREEN : "#eceae3",
@@ -1807,17 +2119,56 @@ class Component extends DCLogic {
       })),
       formError: !!st.err,
       errorText: st.err,
-      payCta: st.pay === 0 ? "Pay " + fmt(total) : "Place order · " + fmt(total),
+      payCta: st.placing ? "Placing the order…" : st.pay === 0 ? "Pay " + fmt(total) : "Place order · " + fmt(total),
       payFootnote: st.pay === 0 ? "You'll return here with your receipt." : slotDef.pickup ? "Pay at the counter when you collect." : "You can pay the rider at the door.",
       placeOrder: () => {
         const f = st.form;
+        // The backend checks out the signed-in user's cart only — guests must
+        // sign in first (their guest basket is merged into the account on login).
+        if (!st.user) { this.setState({ err: "Sign in to place the order — your basket will be waiting.", acctOpen: true }); return; }
         if (!f.name.trim() || f.phone.replace(/\D/g, "").length < 10 || !f.addr.trim()) {
           this.setState({ err: "We need a name, a mobile number and the street address before the rider can leave." });
           return;
         }
+        if (!st.addrId && !f.postal.trim()) {
+          this.setState({ err: "Add a postal code so the courier can find the door." });
+          return;
+        }
         if (count === 0) { this.setState({ err: "Your basket is empty." }); return; }
-        this.setState({ err: "", screen: st.pay === 0 ? "paying" : "success", receipt: this.buildReceipt(lines, total) });
-        this.top();
+        const SD = st.slots.length ? st.slots : SLOTS;
+        const sd = SD[st.slot] || SD[0];
+        if (!sd || sd.id == null) { this.setState({ err: "Delivery options are still loading — try again in a moment." }); return; }
+        this.setState({ placing: true, err: "" });
+        const finish = (order) => {
+          this.setState({
+            placing: false, err: "", addrId: null,
+            receipt: this.buildReceipt(order, f),
+            screen: st.pay === 0 ? "paying" : "success"
+          });
+          this.refreshCart(); // the backend emptied the cart on checkout
+          this.loadOrders();
+          this.top();
+        };
+        const makeAddress = () => apiCreateAddress({
+          label: ["Home", "Work", "Other"][st.addrLabel] || "Home",
+          line: f.addr.trim(),
+          unit: f.unit.trim() || null,
+          postal_code: f.postal.trim(),
+          phone: f.phone.trim(),
+          lat: 35.7 + (st.pinY / 100) * 0.1,
+          lng: 51.38 + (st.pinX / 100) * 0.1,
+          is_default: false
+        }).then((a) => { this.loadAddresses(); return a; });
+        (st.addrId ? Promise.resolve({ id: st.addrId }) : makeAddress())
+          .then((a) => apiCheckout({
+            address_id: a.id,
+            delivery_slot_id: sd.id,
+            fulfillment_method: sd.pickup ? "pickup" : "courier",
+            payment_method: st.pay === 0 ? "online" : "cash_on_delivery",
+            note: f.note.trim() || null
+          }))
+          .then(finish)
+          .catch((e) => this.setState({ placing: false, err: (e && e.message) || "Checkout failed. Please try again." }));
       },
       finishPayment: () => { this.setState({ screen: "success" }); this.top(); },
       receipt: st.receipt || { no: "", eta: "", total: "", title: "Order confirmed", totalLabel: "Paid", lines: [], rows: [] },

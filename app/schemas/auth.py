@@ -22,6 +22,15 @@ class Token(BaseModel):
     token_type: str
 
 
+class UserBasicResponse(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(
+            str_strip_whitespace=True,
+            from_attributes=True
+        )
+
 
 class CurrentUserInfoResponse(BaseModel):
     phone: str

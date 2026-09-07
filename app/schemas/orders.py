@@ -13,6 +13,7 @@ from app.models.order import (
     PaymentProvider,
     PaymentStatus,
 )
+from app.schemas.auth import UserBasicResponse
 
 
 class DeliverySlotRead(BaseModel):
@@ -133,6 +134,7 @@ class OrderSummary(BaseModel):
     status: OrderStatus
     payment_status: PaymentStatus
     total: int
+    user: UserBasicResponse
     placed_at: datetime
 
 

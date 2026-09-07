@@ -1,5 +1,11 @@
-from typing import Optional
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional
 from pydantic import BaseModel, ConfigDict, Field
+
+
+if TYPE_CHECKING:
+    from app.schemas.products import BaseProductResponse
+
 
 class CategoryResponse(BaseModel):
     id: int
@@ -11,6 +17,11 @@ class CategoryResponse(BaseModel):
     is_active: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+
+
+class CategoryDetails(CategoryResponse):
+    products: list[BaseProductResponse] = Field(default_factory=list)
 
 
 class NewCategoryRequest(BaseModel):
@@ -27,3 +38,10 @@ class UpdateCategoryRequest(BaseModel):
     dot_color: Optional[str] = Field(default=None, min_length=7, max_length=7, pattern=r"^#[0-9a-fA-F]{6}$")
     sort_order: Optional[int] = Field(default=None)
     is_active: Optional[bool] = Field(default=None)
+
+
+
+
+
+from app.schemas.products import BaseProductResponse  # noqa: E402
+CategoryDetails.model_rebuild()
