@@ -612,6 +612,10 @@
       <sc-if value="{{ isCats }}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 14px;">
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 9px; height: 44px; flex: 1; min-width: 220px; max-width: 340px; padding: 0 16px; border-radius: 999px; background: #f1efe8;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7d857f" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path></svg>
+              <input value="{{ catSearch }}" onChange="{{ onCatSearch }}" placeholder="جستجوی دسته‌بندی" style="flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 13.5px;" />
+            </div>
             <input value="{{ newCatName }}" onChange="{{ onNewCatName }}" placeholder="نام دسته‌بندی جدید" style="height: 44px; flex: 1; min-width: 200px; max-width: 320px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px; color: #12211a;" />
             <button onClick="{{ addCat }}" disabled="{{ catBusy }}" style="height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer; opacity: {{ catBusyOpacity }};">{{ catAddLabel }}</button>
           </div>
@@ -637,6 +641,9 @@
             </div>
           </sc-for>
           </div>
+          <sc-if value="{{ noCatResults }}" hint-placeholder-val="{{ false }}">
+            <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 52px 18px; text-align: center; font-size: 14px; color: #7d857f;">دسته‌بندی‌ای با این جستجو پیدا نشد.</div>
+          </sc-if>
         </div>
       </sc-if>
 
@@ -911,7 +918,7 @@
               <input defaultValue="دونه هرب" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
             </label>
             <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">نشانی
-              <input defaultValue="No. 42, Herb Bazaar Row, Vali-e-Asr St, Tehran" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+              <input defaultValue="تهران، خیابان ولیعصر، ردیف بازار گیاهان، پلاک ۴۲" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
             </label>
             <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">شماره پشتیبانی
               <input defaultValue="021 8842 1190" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
@@ -920,10 +927,10 @@
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
             <h2 style="font-size: 20px;">ارسال</h2>
             <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">هزینه ارسال تهران
-              <input defaultValue="45,000 T" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+              <input defaultValue="۴۵٬۰۰۰ تومان" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
             </label>
             <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">ارسال رایگان برای خرید بالای
-              <input defaultValue="900,000 T" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+              <input defaultValue="۹۰۰٬۰۰۰ تومان" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
             </label>
             <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">آخرین زمان ارسال همان‌روز
               <input defaultValue="14:00" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
@@ -1252,8 +1259,8 @@ const dayLabel = (iso) => {
   const startOfDay = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const diff = Math.round((startOfDay(new Date()) - startOfDay(d)) / 86400000);
   if (diff <= 0) return d.toTimeString().slice(0, 5);
-  if (diff === 1) return "Yesterday";
-  return diff + " days ago";
+  if (diff === 1) return "دیروز";
+  return diff + " روز پیش";
 };
 
 const mapOrder = (row) => ({
@@ -1307,23 +1314,25 @@ const MONTHS = ["ژانویه", "فوریه", "مارس", "آوریل", "مه", 
 const WEEKDAYS = ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه"];
 
 const BUYS = {
-  3: [{ title: "Pistachio, 40 kg", note: "Grower delivery, morning", amount: 22400000 }],
-  7: [{ title: "Saffron, 300 g", note: "With lab sheet", amount: 41000000 }],
-  11: [{ title: "Olive oil, 60 L", note: "Press collection", amount: 18600000 }],
-  16: [{ title: "Dried figs, 80 kg", note: "Two pallets", amount: 26800000 }],
-  22: [{ title: "Rose buds, 25 kg", note: "Booked, pay on arrival", amount: 9400000 }],
-  27: [{ title: "Barberry, 50 kg", note: "New harvest lot", amount: 14200000 }]
+  3: [{ title: "پسته، ۴۰ کیلوگرم", note: "تحویل باغدار، صبح", amount: 22400000 }],
+  7: [{ title: "زعفران، ۳۰۰ گرم", note: "همراه برگه آزمایش", amount: 41000000 }],
+  11: [{ title: "روغن زیتون، ۶۰ لیتر", note: "دریافت از محل روغن‌گیری", amount: 18600000 }],
+  16: [{ title: "انجیر خشک، ۸۰ کیلوگرم", note: "دو پالت", amount: 26800000 }],
+  22: [{ title: "غنچه گل سرخ، ۲۵ کیلوگرم", note: "رزرو شده، پرداخت هنگام دریافت", amount: 9400000 }],
+  27: [{ title: "زرشک، ۵۰ کیلوگرم", note: "محصول برداشت جدید", amount: 14200000 }]
 };
 
 const NOTES_CAL = {
-  5: [{ title: "Stocktake", note: "Close counter 9:00–11:00" }],
-  14: [{ title: "Shop closed", note: "Public holiday" }],
-  20: [{ title: "Grind day", note: "House rice blend, 6 kg" }],
-  25: [{ title: "Courier review", note: "New rates from next month" }]
+  5: [{ title: "انبارگردانی", note: "بستن پیشخوان از ۹:۰۰ تا ۱۱:۰۰" }],
+  14: [{ title: "تعطیلی فروشگاه", note: "تعطیل رسمی" }],
+  20: [{ title: "روز آسیاب", note: "ترکیب برنج مخصوص، ۶ کیلوگرم" }],
+  25: [{ title: "بررسی پیک", note: "نرخ‌های جدید از ماه آینده" }]
 };
 
-const fmt = (n) => n.toLocaleString("en-US") + " T";
-const money = (n) => (n >= 1000000 ? (n / 1000000).toFixed(1) + "M" : Math.round(n / 1000) + "k");
+const fmt = (n) => Number(n || 0).toLocaleString("fa-IR") + " تومان";
+const money = (n) => n >= 1000000
+  ? (n / 1000000).toLocaleString("fa-IR", { maximumFractionDigits: 1 }) + " میلیون تومان"
+  : Math.round(n / 1000).toLocaleString("fa-IR") + " هزار تومان";
 const parse = (v) => {
   const n = parseInt(String(v).replace(/[^0-9]/g, ""), 10);
   return isNaN(n) ? 0 : n;
@@ -1360,10 +1369,10 @@ const step = (o, i) => {
 };
 
 const RIDERS = [
-  { name: "Omid, in-house rider", note: "Motorbike · 3 drops on this run", initials: "OM", bg: "#eaf6ee", fg: "#0b5c38" },
-  { name: "Tipax courier", note: "Intercity parcel · scanned at depot", initials: "TX", bg: "#eaf2fb", fg: "#3c5c9c" },
-  { name: "National post", note: "Standard parcel · 2–4 working days", initials: "NP", bg: "#f1f2f7", fg: "#495587" },
-  { name: "Counter pickup", note: "Waiting on the shelf behind the till", initials: "PU", bg: "#fdf4e0", fg: "#a3730a" }
+  { name: "امید، پیک فروشگاه", note: "موتورسیکلت · ۳ تحویل در این مسیر", initials: "OM", bg: "#eaf6ee", fg: "#0b5c38" },
+  { name: "پیک تیپاکس", note: "مرسوله بین‌شهری · اسکن‌شده در مرکز توزیع", initials: "TX", bg: "#eaf2fb", fg: "#3c5c9c" },
+  { name: "پست", note: "مرسوله عادی · ۲ تا ۴ روز کاری", initials: "NP", bg: "#f1f2f7", fg: "#495587" },
+  { name: "تحویل حضوری", note: "منتظر روی قفسه پشت پیشخوان", initials: "PU", bg: "#fdf4e0", fg: "#a3730a" }
 ];
 const rider = (o) => {
   if (o.method === "Pickup") return RIDERS[3];
@@ -1387,32 +1396,32 @@ const etaOf = (o) => {
 const N = (id, kind, title, body, time, unread, go) => ({ id, kind, title, body, time, unread, go });
 
 const NOTIFS = [
-  N(1, "order", "New order DH-4821", "Sara Ahmadi · 1,010,000 T · cash on delivery, Yousefabad", "4 minutes ago", true, "orders"),
-  N(2, "stock", "Black pepper is out of stock", "It is still listed on the shop — mark it back in or hide it", "22 minutes ago", true, "products"),
-  N(3, "order", "DH-4823 needs a courier label", "Post to Shiraz, packed and waiting since 09:41", "1 hour ago", true, "orders"),
-  N(4, "offer", "3 offers end at midnight", "Saffron, rice blend and black seed oil go back to full price", "2 hours ago", true, "offers"),
-  N(5, "message", "Question from Bahar Ebrahimi", "\u201cCan you add a note in the parcel? It is a gift.\u201d", "3 hours ago", false, "orders"),
-  N(6, "order", "DH-4813 was refused at the door", "Pistachio 1 kg came back with the rider — call the customer", "Yesterday", false, "orders"),
-  N(7, "stock", "Saffron stock is low", "About 40 g left at the current rate — two days", "Yesterday", false, "products"),
-  N(8, "message", "Review left on Damask Rose Tea", "Five stars — \u201cbest cup I have had all year\u201d", "2 days ago", false, "products")
+  N(1, "order", "سفارش جدید DH-4821", "سارا احمدی · ۱٬۰۱۰٬۰۰۰ تومان · پرداخت در محل، یوسف‌آباد", "۴ دقیقه پیش", true, "orders"),
+  N(2, "stock", "فلفل سیاه ناموجود است", "هنوز در فروشگاه فهرست شده؛ آن را موجود کنید یا پنهان کنید", "۲۲ دقیقه پیش", true, "products"),
+  N(3, "order", "DH-4823 به برچسب پستی نیاز دارد", "ارسال به شیراز، بسته‌بندی‌شده و منتظر از ساعت ۰۹:۴۱", "۱ ساعت پیش", true, "orders"),
+  N(4, "offer", "۳ پیشنهاد تا نیمه‌شب تمام می‌شوند", "زعفران، ترکیب برنج و روغن سیاه‌دانه به قیمت کامل برمی‌گردند", "۲ ساعت پیش", true, "offers"),
+  N(5, "message", "سؤال از بهار ابراهیمی", "«می‌شود در بسته یادداشتی بگذارید؟ هدیه است.»", "۳ ساعت پیش", false, "orders"),
+  N(6, "order", "DH-4813 پشت در تحویل گرفته نشد", "پسته ۱ کیلوگرمی با پیک برگشت خورد؛ با مشتری تماس بگیرید", "دیروز", false, "orders"),
+  N(7, "stock", "موجودی زعفران کم است", "حدود ۴۰ گرم با نرخ فعلی باقی مانده؛ برای دو روز", "دیروز", false, "products"),
+  N(8, "message", "نظری درباره چای گل سرخ ثبت شد", "پنج ستاره؛ «بهترین فنجانی که امسال نوشیده‌ام»", "۲ روز پیش", false, "products")
 ];
 
 const U = (id, name, phone, city, orders, spend, last, tg, sms, tier, note) =>
   ({ id, name, phone, city, orders, spend, last, tg, sms, tier, note });
 
 const USERS = [
-  U(1, "Sara Ahmadi", "0912 331 4408", "Tehran, Yousefabad", 34, 18400000, "Today", true, true, "gold", "Buys saffron every month, asks for the lab sheet"),
-  U(2, "Reza Karimi", "0935 118 7742", "Tehran, Saadatabad", 21, 9600000, "Today", true, false, "gold", "Restaurant — bulk olive oil"),
-  U(3, "Nadia Sultani", "0901 553 2210", "Tehran, Niavaran", 12, 5200000, "Today", false, true, "silver", ""),
-  U(4, "Farid Jalali", "0938 660 1122", "Shiraz", 7, 1900000, "Today", true, true, "silver", "Always posts, never courier"),
-  U(5, "Amir Tehrani", "0912 887 0031", "Tehran, city centre", 19, 4100000, "Today", false, false, "silver", "Collects from the counter"),
-  U(6, "Leila Moradi", "0919 220 9915", "Tehran, Vanak", 9, 3800000, "Today", true, true, "silver", ""),
-  U(7, "Bahar Ebrahimi", "0902 774 5510", "Tabriz", 4, 890000, "Yesterday", true, true, "new", "Asked for gift notes in the parcel"),
-  U(8, "Hossein Bagheri", "0921 776 3320", "Tehran, Gisha", 15, 3300000, "Yesterday", false, true, "silver", ""),
-  U(9, "Mina Rostami", "0930 441 8827", "Isfahan", 6, 2700000, "2 days ago", true, false, "new", ""),
-  U(10, "Kaveh Nouri", "0913 002 5561", "Tehran, Tajrish", 28, 7400000, "2 days ago", true, true, "gold", "Tea and coffee only"),
-  U(11, "Parisa Sadeghi", "0912 118 4471", "Tehran, Zaferaniyeh", 3, 1340000, "3 days ago", false, false, "risk", "Refused a delivery — confirm before sending"),
-  U(12, "Sina Dehghan", "0917 553 8890", "Ahvaz", 2, 420000, "9 days ago", false, true, "new", "")
+  U(1, "Sara Ahmadi", "0912 331 4408", "Tehran, Yousefabad", 34, 18400000, "امروز", true, true, "gold", "هر ماه زعفران می‌خرد و برگه آزمایش می‌خواهد"),
+  U(2, "Reza Karimi", "0935 118 7742", "Tehran, Saadatabad", 21, 9600000, "امروز", true, false, "gold", "رستوران؛ روغن زیتون عمده"),
+  U(3, "Nadia Sultani", "0901 553 2210", "Tehran, Niavaran", 12, 5200000, "امروز", false, true, "silver", ""),
+  U(4, "Farid Jalali", "0938 660 1122", "Shiraz", 7, 1900000, "امروز", true, true, "silver", "همیشه پست را انتخاب می‌کند، نه پیک"),
+  U(5, "Amir Tehrani", "0912 887 0031", "Tehran, city centre", 19, 4100000, "امروز", false, false, "silver", "تحویل از پیشخوان"),
+  U(6, "Leila Moradi", "0919 220 9915", "Tehran, Vanak", 9, 3800000, "امروز", true, true, "silver", ""),
+  U(7, "Bahar Ebrahimi", "0902 774 5510", "Tabriz", 4, 890000, "دیروز", true, true, "new", "درخواست یادداشت هدیه در بسته"),
+  U(8, "Hossein Bagheri", "0921 776 3320", "Tehran, Gisha", 15, 3300000, "دیروز", false, true, "silver", ""),
+  U(9, "Mina Rostami", "0930 441 8827", "Isfahan", 6, 2700000, "۲ روز پیش", true, false, "new", ""),
+  U(10, "Kaveh Nouri", "0913 002 5561", "Tehran, Tajrish", 28, 7400000, "۲ روز پیش", true, true, "gold", "فقط چای و قهوه"),
+  U(11, "Parisa Sadeghi", "0912 118 4471", "Tehran, Zaferaniyeh", 3, 1340000, "۳ روز پیش", false, false, "risk", "تحویل را نپذیرفت؛ قبل از ارسال تأیید کنید"),
+  U(12, "Sina Dehghan", "0917 553 8890", "Ahvaz", 2, 420000, "۹ روز پیش", false, true, "new", "")
 ];
 
 const TIERS = {
@@ -1423,18 +1432,18 @@ const TIERS = {
 };
 
 const LOGS = [
-  { t: "18:42", who: "Mehdi", kind: "order", text: "DH-4817 marked out for delivery — rider Omid" },
-  { t: "17:20", who: "System", kind: "stock", text: "Black pepper 100 g hit zero and was hidden from the shop" },
-  { t: "16:05", who: "Mehdi", kind: "price", text: "Saffron 1 g discounted 240,000 → 195,000 T" },
-  { t: "15:31", who: "System", kind: "order", text: "DH-4823 paid online · 223,000 T" },
-  { t: "14:58", who: "Omid", kind: "delivery", text: "Three parcels collected for the Vanak run" },
-  { t: "14:02", who: "System", kind: "order", text: "Same-day cut-off passed — 6 orders rolled to tomorrow" },
-  { t: "12:40", who: "Mehdi", kind: "stock", text: "Pistachio restocked · 40 kg received from the grower" },
-  { t: "11:15", who: "Mehdi", kind: "product", text: "Rosewater 1 L description updated" },
-  { t: "10:35", who: "System", kind: "order", text: "DH-4817 placed · 685,000 T · Vanak" },
-  { t: "09:41", who: "System", kind: "order", text: "DH-4823 placed · Shiraz · national post" },
-  { t: "09:05", who: "Mehdi", kind: "offer", text: "Sesame brittle added to today's offers −16%" },
-  { t: "08:12", who: "System", kind: "order", text: "DH-4821 placed · 1,010,000 T · cash on delivery" }
+  { t: "18:42", who: "مهدی", kind: "order", text: "DH-4817 برای تحویل ارسال شد؛ پیک امید" },
+  { t: "17:20", who: "سیستم", kind: "stock", text: "موجودی فلفل سیاه ۱۰۰ گرم تمام شد و از فروشگاه پنهان شد" },
+  { t: "16:05", who: "مهدی", kind: "price", text: "زعفران ۱ گرم تخفیف خورد؛ ۲۴۰٬۰۰۰ ← ۱۹۵٬۰۰۰ تومان" },
+  { t: "15:31", who: "سیستم", kind: "order", text: "DH-4823 آنلاین پرداخت شد · ۲۲۳٬۰۰۰ تومان" },
+  { t: "14:58", who: "امید", kind: "delivery", text: "سه مرسوله برای مسیر ونک دریافت شد" },
+  { t: "14:02", who: "سیستم", kind: "order", text: "زمان ارسال همان‌روز گذشت؛ ۶ سفارش به فردا منتقل شد" },
+  { t: "12:40", who: "مهدی", kind: "stock", text: "موجودی پسته افزایش یافت؛ ۴۰ کیلوگرم از باغدار دریافت شد" },
+  { t: "11:15", who: "مهدی", kind: "product", text: "توضیحات گلاب ۱ لیتری به‌روزرسانی شد" },
+  { t: "10:35", who: "سیستم", kind: "order", text: "DH-4817 ثبت شد · ۶۸۵٬۰۰۰ تومان · ونک" },
+  { t: "09:41", who: "سیستم", kind: "order", text: "DH-4823 ثبت شد · شیراز · پست" },
+  { t: "09:05", who: "مهدی", kind: "offer", text: "کنجدی به پیشنهادهای امروز اضافه شد؛ ۱۶٪ تخفیف" },
+  { t: "08:12", who: "سیستم", kind: "order", text: "DH-4821 ثبت شد · ۱٬۰۱۰٬۰۰۰ تومان · پرداخت در محل" }
 ];
 
 const RANGES = [
@@ -1492,9 +1501,11 @@ class Component extends DCLogic {
     uAdvOpen: false, uChannel: "all", uCity: "all", uActive: "all", uMinSpend: 0,
     bellOpen: false, notifs: NOTIFS.map((n) => Object.assign({}, n)), notifTab: "all",
     pushText: "", pushAudience: 0,
+    catSearch: "",
     editing: null, draft: null, toast: "",
     monthOffset: 0, selDay: new Date().getDate()
   };
+  catSearchRequest = 0;
 
   componentDidMount() {
     this.restoreSession();
@@ -1564,6 +1575,35 @@ class Component extends DCLogic {
       this.flash("دریافت فهرست محصولات ناموفق بود؛ داده‌های نمونه نمایش داده می‌شوند");
     }
   }
+
+  searchCategories = async (query) => {
+    const requestId = ++this.catSearchRequest;
+    this.setState({ catSearch: query });
+    try {
+      const trimmedQuery = query.trim();
+      const searchPath = trimmedQuery
+        ? "/api/categories?search=" + encodeURIComponent(trimmedQuery)
+        : "/api/categories";
+      const data = await apiGet(searchPath);
+      const rows = (Array.isArray(data) ? data : data.items || data.results || []).map(mapCategory);
+      const details = await Promise.all(rows.map(async (category) => {
+        try {
+          return await apiGet("/api/categories/" + category._id);
+        } catch (e) {
+          console.error("Category detail failed for " + category._id, e);
+          return null;
+        }
+      }));
+      const cats = rows.map((category, index) => Object.assign({}, category, {
+        productCount: details[index] && typeof details[index].total_products === "number"
+          ? details[index].total_products
+          : category.productCount
+      }));
+          if (requestId === this.catSearchRequest) this.setState({ cats });
+    } catch (e) {
+      this.flash(e.message || "جستجوی دسته‌بندی ناموفق بود");
+    }
+  };
 
   async loadOrders() {
     try {
@@ -1749,7 +1789,7 @@ class Component extends DCLogic {
     try {
       // compare_at_price: null clears the discount on the backend.
       await apiSend("PATCH", `/api/products/${p._id}/variants/${s0._id}`, { compare_at_price: null });
-      this.flash("Offer ended for " + p.name);
+      this.flash("پیشنهاد محصول " + p.name + " پایان یافت");
     } catch (e) {
       this.patch(p.id, (x) => { x.sizes[0].old = s0.old; return x; });
       this.flash(e.message || "Could not end the offer");
@@ -1843,7 +1883,7 @@ class Component extends DCLogic {
 
   renderVals() {
     const st = this.state;
-    const catOf = (id) => st.cats.find((c) => c.id === id) || st.cats[0];
+    const catOf = (id) => st.cats.find((c) => c.id === id) || st.cats[0] || { id: "", name: "بدون دسته‌بندی", tint: "#f1efe8", kw: "food" };
     const now = new Date();
 
     const mins = Math.max(0, 24 * 60 - (now.getHours() * 60 + now.getMinutes()));
@@ -1929,9 +1969,9 @@ class Component extends DCLogic {
     const catShare = shareDefs.map((s) => ({ name: s.name, pct: s.pct + "%", w: s.pct + "%", color: s.color }));
 
     const methodSplit = [
-      { label: "Courier, Tehran", pct: "58%", w: "58%", color: "#0f7a4a", note: "same-day" },
-      { label: "Post, other cities", pct: "27%", w: "27%", color: "#3c5c9c", note: "2–4 days" },
-      { label: "Counter pickup", pct: "15%", w: "15%", color: "#a3730a", note: "free" }
+      { label: "پیک، تهران", pct: "۵۸٪", w: "58%", color: "#0f7a4a", note: "همان‌روز" },
+      { label: "پست، شهرهای دیگر", pct: "۲۷٪", w: "27%", color: "#3c5c9c", note: "۲ تا ۴ روز" },
+      { label: "تحویل حضوری", pct: "۱۵٪", w: "15%", color: "#a3730a", note: "رایگان" }
     ];
 
     const hourDefs = [4, 9, 14, 22, 31, 44, 58, 76, 92, 100, 81, 63, 47, 28];
@@ -1943,11 +1983,11 @@ class Component extends DCLogic {
     }));
 
     const topProducts = [
-      { name: "Long Pistachio, Roasted", units: "38 kg", rev: "26.2M T", w: "100%", img: photo("pistachio", 121), tint: "#f6f0e6" },
-      { name: "Golden Saffron, Sargol", units: "112 g", rev: "21.8M T", w: "83%", img: photo("saffron", 101), tint: "#fdf0e4" },
-      { name: "Cold-Pressed Olive Oil", units: "64 L", rev: "18.4M T", w: "70%", img: photo("olive,oil,bottle", 113), tint: "#f2f6e4" },
-      { name: "Sun-Dried Whole Figs", units: "41 kg", rev: "11.7M T", w: "45%", img: photo("dried,figs", 119), tint: "#fbeee9" },
-      { name: "Damask Rose Tea", units: "19 kg", rev: "9.1M T", w: "35%", img: photo("rose,tea", 126), tint: "#f3eef8" }
+      { name: "Long Pistachio, Roasted", units: "38 kg", rev: "۲۶٫۲ میلیون تومان", w: "100%", img: photo("pistachio", 121), tint: "#f6f0e6" },
+      { name: "Golden Saffron, Sargol", units: "112 g", rev: "۲۱٫۸ میلیون تومان", w: "83%", img: photo("saffron", 101), tint: "#fdf0e4" },
+      { name: "Cold-Pressed Olive Oil", units: "64 L", rev: "۱۸٫۴ میلیون تومان", w: "70%", img: photo("olive,oil,bottle", 113), tint: "#f2f6e4" },
+      { name: "Sun-Dried Whole Figs", units: "41 kg", rev: "۱۱٫۷ میلیون تومان", w: "45%", img: photo("dried,figs", 119), tint: "#fbeee9" },
+      { name: "Damask Rose Tea", units: "19 kg", rev: "۹٫۱ میلیون تومان", w: "35%", img: photo("rose,tea", 126), tint: "#f3eef8" }
     ];
 
     const custOf = (o) => USERS.find((u) => u.name === o.customer);
@@ -2081,7 +2121,7 @@ class Component extends DCLogic {
     const selEvents = [];
     if (selSell > 0) {
       const orderCount = 8 + Math.round(seeded(y + m * 7 + sel) * 22);
-      selEvents.push({ title: orderCount + " orders delivered", note: "Same-day couriers and pickups", amount: money(selSell), bg: "#eaf6ee", dot: GREEN, amountFg: "#0b5c38" });
+      selEvents.push({ title: orderCount + " سفارش تحویل‌شده", note: "پیک‌های همان‌روز و تحویل‌های حضوری", amount: money(selSell), bg: "#eaf6ee", dot: GREEN, amountFg: "#0b5c38" });
     }
     (BUYS[sel] || []).forEach((b) => selEvents.push({ title: b.title, note: b.note, amount: "−" + money(b.amount), bg: "#fff5ef", dot: ORANGE, amountFg: "#b8451f" }));
     (NOTES_CAL[sel] || []).forEach((n) => selEvents.push({ title: n.title, note: n.note, amount: "", bg: "#f1f2f7", dot: "#5b6ab0", amountFg: "#5b6ab0" }));
@@ -2124,7 +2164,7 @@ class Component extends DCLogic {
       userRole: st.userRole,
       userInitials: (st.userName || "A").trim().split(/\s+/).map((x) => x[0]).join("").slice(0, 2).toUpperCase(),
       profilePhone: st.me ? (st.me.phone || "—") : "—",
-      profileSince: st.me && st.me.created_at ? new Date(st.me.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "—",
+      profileSince: st.me && st.me.created_at ? new Date(st.me.created_at).toLocaleDateString("fa-IR", { day: "numeric", month: "long", year: "numeric" }) : "—",
       profileRows: st.me ? [
         { label: "نام و نام خانوادگی", value: st.me.name || "—" },
         { label: "تلفن", value: st.me.phone || "—" },
@@ -2139,28 +2179,28 @@ class Component extends DCLogic {
       goProducts: () => this.setState({ page: "products", stock: "out" }),
 
       today: WEEKDAYS[(now.getDay() + 1) % 7] + " " + now.getDate() + " " + MONTHS[now.getMonth()],
-      greeting: notSent + (notSent === 1 ? " order waiting to be packed" : " orders waiting to be packed"),
+      greeting: notSent + (notSent === 1 ? " سفارش در انتظار بسته‌بندی" : " سفارش در انتظار بسته‌بندی"),
       dashLine: "آخرین زمان ارسال همان‌روز ۱۴:۰۰ است؛ " + outCount + " محصول نیازمند تأمین موجودی است.",
 
       stats: [
-        { label: "فروش امروز", value: money(todayRevenue) + " T", delta: todayOrders.length + " سفارش ثبت‌شده امروز", bg: "#eaf6ee", fg: "#0b5c38" },
+        { label: "فروش امروز", value: money(todayRevenue), delta: todayOrders.length + " سفارش ثبت‌شده امروز", bg: "#eaf6ee", fg: "#0b5c38" },
         { label: "سفارش‌های باز", value: String(liveOrders.length), delta: notSent + " سفارش در انتظار بسته‌بندی", bg: "#f1efe8", fg: "#5c665f" },
-        { label: "میانگین سبد امروز", value: money(todayBasket) + " T", delta: "+۷٪ این هفته", bg: "#f1f2f7", fg: "#495587" },
+        { label: "میانگین سبد امروز", value: money(todayBasket), delta: "+۷٪ این هفته", bg: "#f1f2f7", fg: "#495587" },
         { label: "ناموجود", value: String(outCount), delta: "نیازمند تأمین موجودی", bg: "#fff5ef", fg: "#b8451f" }
       ],
       chart,
-      chartSummary: money(chartTotal) + " T across 14 days · peak " + money(peak) + " T",
+      chartSummary: money(chartTotal) + " در ۱۴ روز · اوج " + money(peak),
 
       fulfil: [
-        { label: "Not sent yet", value: String(notSent), note: "packing or waiting", pct: Math.round((notSent / sendTotal) * 100) + "%", bar: ORANGE, bg: "#fff5ef", fg: "#b8451f", onClick: () => this.setState({ page: "orders", orderFilter: "open" }) },
-        { label: "On the way", value: String(inTransit), note: "riders and post", pct: Math.round((inTransit / sendTotal) * 100) + "%", bar: "#3c5c9c", bg: "#eaf2fb", fg: "#3c5c9c", onClick: () => this.setState({ page: "orders", orderFilter: "transit" }) },
+        { label: "هنوز ارسال نشده", value: String(notSent), note: "در انتظار بسته‌بندی یا ارسال", pct: Math.round((notSent / sendTotal) * 100) + "%", bar: ORANGE, bg: "#fff5ef", fg: "#b8451f", onClick: () => this.setState({ page: "orders", orderFilter: "open" }) },
+        { label: "در مسیر", value: String(inTransit), note: "پیک و پست", pct: Math.round((inTransit / sendTotal) * 100) + "%", bar: "#3c5c9c", bg: "#eaf2fb", fg: "#3c5c9c", onClick: () => this.setState({ page: "orders", orderFilter: "transit" }) },
         { label: "تحویل‌شده", value: String(delivered), note: "تأیید دریافت شده", pct: Math.round((delivered / sendTotal) * 100) + "%", bar: GREEN, bg: "#eaf6ee", fg: "#0b5c38", onClick: () => this.setState({ page: "orders", orderFilter: "done" }) },
         { label: "مرجوع‌شده", value: String(returned), note: "نیازمند تماس", pct: Math.round((returned / sendTotal) * 100) + "%", bar: "#a33232", bg: "#fbe9e9", fg: "#a33232", onClick: () => this.setState({ page: "orders", orderFilter: "issue" }) }
       ],
       sendNotes: [
-        { label: "Waiting at the counter", value: pickups + " pickups" },
+        { label: "منتظر در پیشخوان", value: pickups + " تحویل حضوری" },
         { label: "مبلغ نقدی هنگام تحویل", value: fmt(codOpen) },
-        { label: "Cut-off for same-day", value: "14:00" }
+        { label: "آخرین زمان ارسال همان‌روز", value: "۱۴:۰۰" }
       ],
 
       recentOrders: st.orders.slice(0, 5).map((o) => ({
@@ -2168,9 +2208,9 @@ class Component extends DCLogic {
         status: STATUS[o.status].label, bg: STATUS[o.status].bg, fg: STATUS[o.status].fg
       })),
       alerts: [
-        { title: outCount + " products are out of stock", note: "Black pepper, date spread, walnut halves, brass mortar", color: ORANGE },
-        { title: "Saffron stock is low", note: "About 40 g left at the current rate — two days", color: "#d99a1c" },
-        { title: offerProducts.length + " offers end at midnight", note: "Extend them from the Offers page if you want another day", color: GREEN }
+        { title: outCount + " محصول ناموجود است", note: "فلفل سیاه، کرم خرما، مغز گردو و هاون برنجی", color: ORANGE },
+        { title: "موجودی زعفران کم است", note: "حدود ۴۰ گرم با نرخ فعلی باقی مانده؛ برای دو روز", color: "#d99a1c" },
+        { title: offerProducts.length + " پیشنهاد تا نیمه‌شب فعال است", note: "برای تمدید، از صفحه پیشنهادها اقدام کنید", color: GREEN }
       ],
       bestSellers: [
         { name: "Long Pistachio", units: "38 kg", bar: "100%", tint: "#f6f0e6", img: photo("pistachio", 121) },
@@ -2189,9 +2229,9 @@ class Component extends DCLogic {
       selectedEvents: selEvents,
       selectedEmpty: selEvents.length === 0,
       monthTotals: [
-        { label: "Sold", value: money(monthSell) + " T" },
-        { label: "Bought in", value: money(monthBuy) + " T" },
-        { label: "Margin", value: Math.round(((monthSell - monthBuy) / monthSell) * 100) + "%" }
+        { label: "فروش", value: money(monthSell) },
+        { label: "خرید", value: money(monthBuy) },
+        { label: "حاشیه سود", value: Math.round(((monthSell - monthBuy) / monthSell) * 100) + "٪" }
       ],
 
       query: st.q,
@@ -2216,7 +2256,7 @@ class Component extends DCLogic {
           size: p.sizes.length > 1 ? p.sizes.length + " sizes · " + s0.label : s0.label,
           price: fmt(s0.price),
           discounted: s0.old > 0,
-          discount: "was " + fmt(s0.old),
+          discount: "قیمت قبلی " + fmt(s0.old),
           stockLabel: s0.out ? "ناموجود" : "موجود",
           stockBg: s0.out ? "#fdece2" : "#eaf6ee",
           stockFg: s0.out ? "#b8451f" : "#0b5c38",
@@ -2247,6 +2287,9 @@ class Component extends DCLogic {
           onDelete: () => this.deleteCat(c)
         };
       }),
+      catSearch: st.catSearch,
+      onCatSearch: (e) => this.searchCategories(e.target.value),
+      noCatResults: st.catSearch.trim().length > 0 && st.cats.length === 0,
       catBusy: !!st.catBusy,
       catBusyOpacity: st.catBusy ? 0.6 : 1,
       catAddLabel: st.catBusy ? "در حال افزودن…" : "افزودن دسته‌بندی",
@@ -2279,11 +2322,11 @@ class Component extends DCLogic {
       })),
       orderCount: orderList.length + " of " + st.orders.length,
       noOrders: orderList.length === 0,
-      emptyTitle: custUser ? "Nothing for " + custUser.name + " here" : "No orders match",
-      emptyNote: custUser ? "They have " + custUser.orders + " orders in total — widen the filters to see them." : "Try a different search or clear the filters.",
+      emptyTitle: custUser ? "برای " + custUser.name + " موردی پیدا نشد" : "سفارشی مطابق فیلترها نیست",
+      emptyNote: custUser ? "این مشتری در مجموع " + custUser.orders + " سفارش دارد؛ برای مشاهده، فیلترها را گسترده‌تر کنید." : "جستجوی دیگری را امتحان کنید یا فیلترها را پاک کنید.",
       custBanner: !!custUser,
       custBannerName: custUser ? custUser.name : "",
-      custBannerMeta: custUser ? custUser.phone + " · " + custUser.city + " · " + custUser.orders + " orders, " + money(custUser.spend) + " T lifetime" : "",
+      custBannerMeta: custUser ? custUser.phone + " · " + custUser.city + " · " + custUser.orders + " سفارش، مجموع خرید " + money(custUser.spend) : "",
       custBannerInitials: custUser ? custUser.name.split(" ").map((x) => x[0]).join("").slice(0, 2) : "",
       custBannerBg: custUser ? TIERS[custUser.tier].bg : "#f1efe8",
       custBannerFg: custUser ? TIERS[custUser.tier].fg : "#7d857f",
@@ -2316,7 +2359,7 @@ class Component extends DCLogic {
         { label: "حامل", opts: optGroup("fCourier", [{ id: "all", label: "همه" }, { id: "In-house rider", label: "پیک فروشگاه" }, { id: "Tipax", label: "تیپاکس" }, { id: "National post", label: "پست" }, { id: "—", label: "پیشخوان" }]) }
       ],
       minValue: st.minValue,
-      minValueLabel: st.minValue > 0 ? "over " + fmt(st.minValue) : "any value",
+      minValueLabel: st.minValue > 0 ? "بیش از " + fmt(st.minValue) : "هر مبلغی",
       onMinValue: (e) => { const v = +e.target.value; this.setState({ minValue: v }); },
       resetAdvanced: () => this.setState({ fMethod: "all", fPay: "all", fWhen: "all", fCourier: "all", minValue: 0, orderQuery: "", orderFilter: "all", custFilter: null, orderPage: 0 }),
       orderRows: pageSlice.map((o) => {
@@ -2348,7 +2391,7 @@ class Component extends DCLogic {
           custTier: custOf(o) ? TIERS[custOf(o).tier].label : "",
           custTierBg: custOf(o) ? TIERS[custOf(o).tier].bg : "#f1efe8",
           custTierFg: custOf(o) ? TIERS[custOf(o).tier].fg : "#7d857f",
-          custHistory: custOf(o) ? custOf(o).orders + " orders · " + money(custOf(o).spend) + " T lifetime" : "",
+          custHistory: custOf(o) ? custOf(o).orders + " سفارش · مجموع خرید " + money(custOf(o).spend) : "",
           custNote: custOf(o) ? custOf(o).note : "",
           hasCustNote: !!(custOf(o) && custOf(o).note),
           onOpenCustomer: () => this.setState({ page: "users", userTab: "all", userQuery: o.customer }),
@@ -2374,9 +2417,9 @@ class Component extends DCLogic {
       draft: d0,
       catList: st.cats,
       draftPhotos: [
-        { slotId: "dh-" + d0.id, label: "main photo", img: photo(d0.kw, d0.id === "new" ? 999 : d0.id) },
-        { slotId: "dh-" + d0.id + "-b", label: "detail", img: "" },
-        { slotId: "dh-" + d0.id + "-c", label: "pack", img: "" }
+        { slotId: "dh-" + d0.id, label: "تصویر اصلی", img: photo(d0.kw, d0.id === "new" ? 999 : d0.id) },
+        { slotId: "dh-" + d0.id + "-b", label: "جزئیات", img: "" },
+        { slotId: "dh-" + d0.id + "-c", label: "بسته‌بندی", img: "" }
       ],
       onDraftName: (e) => { const v = e.target.value; this.setDraft({ name: v }); },
       onDraftCat: (e) => { const v = e.target.value; this.setDraft({ cat: v }); },
@@ -2409,15 +2452,15 @@ class Component extends DCLogic {
       })),
       rangeLabel: RANGES[st.range].label,
       rangeDates: rangeText,
-      exportPdf: () => this.flash("Report for " + RANGES[st.range].label.toLowerCase() + " sent to PDF"),
+      exportPdf: () => this.flash("گزارش " + RANGES[st.range].label + " به PDF ارسال شد"),
       kpis: [
-        { label: "Revenue", value: money(rangeSell) + " T", delta: "+18% vs previous", bg: "#eaf6ee", fg: "#0b5c38" },
+        { label: "درآمد", value: money(rangeSell), delta: "+۱۸٪ نسبت به قبل", bg: "#eaf6ee", fg: "#0b5c38" },
         { label: "سفارش‌ها", value: String(rangeOrders), delta: "+۹٪ نسبت به قبل", bg: "#f1efe8", fg: "#5c665f" },
-        { label: "Average basket", value: money(Math.round(rangeSell / rangeOrders)) + " T", delta: "+7% vs previous", bg: "#f1f2f7", fg: "#495587" },
-        { label: "Returns", value: "1.4%", delta: "−0.3pt vs previous", bg: "#fff5ef", fg: "#b8451f" }
+        { label: "میانگین سبد", value: money(Math.round(rangeSell / rangeOrders)), delta: "+۷٪ نسبت به قبل", bg: "#f1f2f7", fg: "#495587" },
+        { label: "مرجوعی", value: "۱٫۴٪", delta: "۰٫۳ واحد کمتر از قبل", bg: "#fff5ef", fg: "#b8451f" }
       ],
       revBars: revSeries,
-      revPeak: money(revPeak) + " T peak",
+      revPeak: "اوج " + money(revPeak),
       catShare: catShare,
       methodSplit: methodSplit,
       hourBars: hourBars,
@@ -2438,9 +2481,9 @@ class Component extends DCLogic {
       })),
       userStats: [
         { label: "مشتریان", value: String(USERS.length), bg: "#f1efe8", fg: "#5c665f" },
-        { label: "On Telegram", value: tgCount + " of " + USERS.length, bg: "#eaf2fb", fg: "#3c5c9c" },
-        { label: "SMS opted in", value: smsCount + " of " + USERS.length, bg: "#eaf6ee", fg: "#0b5c38" },
-        { label: "Need a call", value: String(USERS.filter((u) => u.tier === "risk").length), bg: "#fbe9e9", fg: "#a33232" }
+        { label: "عضو تلگرام", value: tgCount + " از " + USERS.length, bg: "#eaf2fb", fg: "#3c5c9c" },
+        { label: "پیامک فعال", value: smsCount + " از " + USERS.length, bg: "#eaf6ee", fg: "#0b5c38" },
+        { label: "نیازمند تماس", value: String(USERS.filter((u) => u.tier === "risk").length), bg: "#fbe9e9", fg: "#a33232" }
       ],
       userCount: userList.length + " of " + USERS.length,
       uAdvOpen: st.uAdvOpen,
@@ -2454,7 +2497,7 @@ class Component extends DCLogic {
         { label: "سفارش‌ها", opts: uOpt("uActive", [{ id: "all", label: "همه" }, { id: "open", label: "سفارش باز دارد" }, { id: "none", label: "تاکنون سفارشی نداشته" }]) }
       ],
       uMinSpend: st.uMinSpend,
-      uMinSpendLabel: st.uMinSpend > 0 ? "spent over " + money(st.uMinSpend) + " T" : "any spend",
+      uMinSpendLabel: st.uMinSpend > 0 ? "بیش از " + money(st.uMinSpend) : "هر مبلغی",
       onUMinSpend: (e) => { const v = +e.target.value; this.setState({ uMinSpend: v }); },
       resetUserFilters: () => this.setState({ userQuery: "", userTab: "all", uChannel: "all", uCity: "all", uActive: "all", uMinSpend: 0 }),
       users: userList.map((u) => ({
@@ -2462,7 +2505,7 @@ class Component extends DCLogic {
         initials: u.name.split(" ").map((x) => x[0]).join("").slice(0, 2),
         tier: TIERS[u.tier].label, tierBg: TIERS[u.tier].bg, tierFg: TIERS[u.tier].fg,
         orders: u.orders + " سفارش",
-        spend: money(u.spend) + " T",
+        spend: money(u.spend),
         last: "آخرین سفارش " + u.last,
         tgLabel: u.tg ? "تلگرام متصل است" : "تلگرام ندارد",
         tgBg: u.tg ? "#eaf2fb" : "#f1efe8",
@@ -2471,12 +2514,12 @@ class Component extends DCLogic {
         smsBg: u.sms ? "#eaf6ee" : "#f1efe8",
         smsFg: u.sms ? "#0b5c38" : "#9aa39c",
         ordersLabel: "مشاهده " + u.orders + " سفارش",
-        lastLabel: "میانگین سبد " + money(Math.round(u.spend / u.orders)) + " T",
+        lastLabel: "میانگین سبد " + money(Math.round(u.spend / u.orders)),
         lastSub: "آخرین سفارش " + u.last,
         onAllOrders: () => this.setState({ page: "orders", custFilter: u.id, orderQuery: "", orderFilter: "all", fMethod: "all", fPay: "all", fWhen: "all", fCourier: "all", minValue: 0, orderPage: 0 }),
         onTelegram: () => this.flash(u.tg ? "Telegram message opened for " + u.name : u.name + " has no Telegram linked"),
-        onSms: () => this.flash("SMS composer opened for " + u.phone),
-        onCall: () => this.flash("Calling " + u.phone)
+        onSms: () => this.flash("پیامک برای " + u.phone + " آماده شد"),
+        onCall: () => this.flash("در حال تماس با " + u.phone)
       })),
       noUsers: userList.length === 0,
 
@@ -2487,7 +2530,7 @@ class Component extends DCLogic {
       bellFg: st.bellOpen ? LIME : INK,
       toggleBell: () => this.setState((s) => ({ bellOpen: !s.bellOpen })),
       closeBell: () => this.setState({ bellOpen: false }),
-      markAllRead: () => { this.setState((s) => ({ notifs: s.notifs.map((n) => Object.assign({}, n, { unread: false })) })); this.flash("All notifications marked read"); },
+      markAllRead: () => { this.setState((s) => ({ notifs: s.notifs.map((n) => Object.assign({}, n, { unread: false })) })); this.flash("همه اعلان‌ها خوانده شدند"); },
       notifTabs: [{ id: "all", label: "همه" }, { id: "order", label: "سفارش‌ها" }, { id: "stock", label: "موجودی" }, { id: "offer", label: "پیشنهادها" }, { id: "message", label: "پیام‌ها" }].map((t) => ({
         label: t.label,
         count: t.id === "all" ? st.notifs.length : st.notifs.filter((n) => n.kind === t.id).length,
@@ -2519,9 +2562,9 @@ class Component extends DCLogic {
       })),
       pushCount: PUSH_AUD[st.pushAudience].count,
       sendPush: () => {
-        if (!st.pushText.trim()) { this.flash("Write the message first"); return; }
+        if (!st.pushText.trim()) { this.flash("ابتدا پیام را بنویسید"); return; }
         this.setState({ pushText: "", bellOpen: false });
-        this.flash("Sent to " + PUSH_AUD[st.pushAudience].count);
+        this.flash("برای " + PUSH_AUD[st.pushAudience].count + " ارسال شد");
       },
 
       hasToast: !!st.toast,
