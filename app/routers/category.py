@@ -2,13 +2,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from slugify import slugify
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 
 from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
 from app.models.category import Category, Product, ProductVariant
 from app.schemas.categories import CategoryDetails, CategoryResponse, NewCategoryRequest, UpdateCategoryRequest
 from sqlalchemy.orm import selectinload
+
+from app.schemas.products import BaseProductResponse
 router = APIRouter()
 
 
@@ -47,16 +49,31 @@ async def get_category_details(
     category_id: int,
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
-    category_res = await db.execute(
+    stmt = (
         select(Category)
         .where(Category.id == category_id)
-        .options(
-            selectinload(Category.products)
-        )
+        .options(selectinload(Category.products))
     )
+    category_res = await db.execute(stmt)
+    category = category_res.scalar_one_or_none()
 
-    return category_res.scalar_one_or_none()
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Category does not exist"
+        )
 
+    return CategoryDetails(
+        id=category.id,
+        slug=category.slug,
+        name=category.name,
+        tint_color=category.tint_color,
+        dot_color=category.dot_color,
+        sort_order=category.sort_order,
+        is_active=category.is_active,
+        products=[BaseProductResponse.model_validate(p) for p in category.products],
+        total_products=len(category.products),
+    )
 
 # ================= ADMIN OPERATIONS ===================
 

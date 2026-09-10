@@ -22,7 +22,7 @@ class CategoryResponse(BaseModel):
 
 class CategoryDetails(CategoryResponse):
     products: list[BaseProductResponse] = Field(default_factory=list)
-
+    total_products: int
     model_config = ConfigDict(from_attributes=True)
 
 

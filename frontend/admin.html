@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,15 +10,15 @@
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <script src="./image-slot.js"></script>
 <style>
-  body { margin: 0; background: #fbfaf7; color: #12211a; font-family: "Plus Jakarta Sans", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { margin: 0; background: #fbfaf7; color: #12211a; font-family: "Vazirmatn", system-ui, sans-serif; direction: rtl; -webkit-font-smoothing: antialiased; }
   * { box-sizing: border-box; }
   a { color: #0f7a4a; text-decoration: none; }
   a:hover { color: #0b5c38; }
   button, input, textarea, select { font: inherit; color: inherit; }
-  h1, h2, h3 { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; letter-spacing: -0.03em; margin: 0; }
+  h1, h2, h3 { font-family: "Vazirmatn", system-ui, sans-serif; font-weight: 800; margin: 0; }
   .noscroll::-webkit-scrollbar { width: 0; height: 0; }
   .side { display: none !important; }
   .shell { display: block; }
@@ -53,18 +53,18 @@
 <div style="min-height: 100vh; background: #fbfaf7;">
 <div class="shell">
 
-  <div class="side" style="flex-direction: column; gap: 3px; position: sticky; top: 0; height: 100vh; padding: 18px 14px; border-right: 1px solid #eceae3;">
+  <div class="side" style="flex-direction: column; gap: 3px; position: sticky; top: 0; height: 100vh; padding: 18px 14px; border-left: 1px solid #eceae3;">
     <div style="display: flex; align-items: center; gap: 10px; padding: 6px 10px 20px;">
       <span style="width: 30px; height: 30px; border-radius: 10px; background: #0f7a4a; display: flex; align-items: center; justify-content: center;">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"></path><path d="M2 21c0-3 1.9-5.4 5.1-6C9.5 14.5 12 13 13 12"></path></svg>
       </span>
       <span style="display: flex; flex-direction: column;">
-        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -0.03em;">Doone Herb</span>
-        <span style="font-size: 11.5px; color: #7d857f;">Shop admin</span>
+        <span style="font-family: 'Vazirmatn', sans-serif; font-weight: 800; font-size: 17px;">دونه هرب</span>
+        <span style="font-size: 11.5px; color: #7d857f;">مدیریت فروشگاه</span>
       </span>
     </div>
     <sc-for list="{{ nav }}" as="n" hint-placeholder-count="7">
-      <button onClick="{{ n.onClick }}" style="display: flex; align-items: center; gap: 11px; height: 42px; padding: 0 13px; border: 0; border-radius: 14px; cursor: pointer; text-align: left; font-size: 14px; font-weight: {{ n.weight }}; background: {{ n.bg }}; color: {{ n.fg }};">
+      <button onClick="{{ n.onClick }}" style="display: flex; align-items: center; gap: 11px; height: 42px; padding: 0 13px; border: 0; border-radius: 14px; cursor: pointer; text-align: right; font-size: 14px; font-weight: {{ n.weight }}; background: {{ n.bg }}; color: {{ n.fg }};">
         <span style="width: 8px; height: 8px; border-radius: 999px; background: {{ n.dot }};"></span>
         {{ n.label }}
         <span style="margin-left: auto; font-size: 12px; opacity: 0.65; font-variant-numeric: tabular-nums;">{{ n.badge }}</span>
@@ -76,7 +76,7 @@
         <span style="font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ userName }}</span>
         <span style="font-size: 11.5px; color: #7d857f;">{{ userRole }}</span>
       </span>
-      <button onClick="{{ doLogout }}" title="Sign out" style="flex: none; width: 34px; height: 34px; border: 0; border-radius: 999px; background: #f1efe8; color: #7d857f; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Sign out">
+      <button onClick="{{ doLogout }}" title="خروج" style="flex: none; width: 34px; height: 34px; border: 0; border-radius: 999px; background: #f1efe8; color: #7d857f; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="خروج">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
       </button>
     </div>
@@ -92,10 +92,10 @@
       <sc-if value="{{ isProducts }}" hint-placeholder-val="{{ false }}">
         <button onClick="{{ newProduct }}" style="flex: none; height: 44px; padding: 0 18px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14px; font-weight: 700; cursor: pointer;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-          New product
+          محصول جدید
         </button>
       </sc-if>
-      <button onClick="{{ toggleBell }}" style="position: relative; flex: none; width: 44px; height: 44px; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: {{ bellBg }}; color: {{ bellFg }};" aria-label="Notifications">
+      <button onClick="{{ toggleBell }}" style="position: relative; flex: none; width: 44px; height: 44px; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: {{ bellBg }}; color: {{ bellFg }};" aria-label="اعلان‌ها">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"></path><path d="M18 8a6 6 0 1 0-12 0c0 6-3 7-3 7h18s-3-1-3-7"></path></svg>
         <sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ true }}">
           <span style="position: absolute; top: -2px; right: -2px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: #e4572e; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #fbfaf7; font-variant-numeric: tabular-nums;">{{ unread }}</span>
@@ -118,8 +118,8 @@
                 <p style="margin: 8px 0 0; font-size: 14px; opacity: 0.86;">{{ dashLine }}</p>
               </div>
               <div style="display: flex; gap: 10px;">
-                <button onClick="{{ goOrders }}" style="height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: #d8f24b; color: #12211a; font-size: 14px; font-weight: 700; cursor: pointer;">Open orders</button>
-                <button onClick="{{ newProduct }}" style="height: 44px; padding: 0 18px; border: 1px solid rgba(255,255,255,0.4); background: none; color: #fff; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer;">Add product</button>
+                <button onClick="{{ goOrders }}" style="height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: #d8f24b; color: #12211a; font-size: 14px; font-weight: 700; cursor: pointer;">مشاهده سفارش‌ها</button>
+                <button onClick="{{ newProduct }}" style="height: 44px; padding: 0 18px; border: 1px solid rgba(255,255,255,0.4); background: none; color: #fff; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer;">افزودن محصول</button>
               </div>
             </div>
           </div>
@@ -128,7 +128,7 @@
             <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
               <div style="border-radius: 22px; background: {{ s.bg }}; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;">
                 <span style="font-size: 12px; font-weight: 600; color: {{ s.fg }};">{{ s.label }}</span>
-                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;">{{ s.value }}</span>
+                <span style="font-family: 'Vazirmatn', sans-serif; font-weight: 800; font-size: 28px; font-variant-numeric: tabular-nums;">{{ s.value }}</span>
                 <span style="font-size: 12.5px; color: #6f7a72;">{{ s.delta }}</span>
               </div>
             </sc-for>
@@ -137,17 +137,17 @@
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 16px;">
             <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
               <div>
-                <h2 style="font-size: 20px;">Sending today</h2>
-                <span style="font-size: 13px; color: #7d857f;">Where every order stands right now</span>
+                <h2 style="font-size: 20px;">ارسال‌های امروز</h2>
+                <span style="font-size: 13px; color: #7d857f;">وضعیت فعلی همه سفارش‌ها</span>
               </div>
-              <button onClick="{{ goOrders }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #0f7a4a;">Open orders</button>
+              <button onClick="{{ goOrders }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #0f7a4a;">مشاهده سفارش‌ها</button>
             </div>
             <div class="stats">
               <sc-for list="{{ fulfil }}" as="f" hint-placeholder-count="4">
-                <button onClick="{{ f.onClick }}" style="border: 0; cursor: pointer; text-align: left; border-radius: 18px; background: {{ f.bg }}; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+                <button onClick="{{ f.onClick }}" style="border: 0; cursor: pointer; text-align: right; border-radius: 18px; background: {{ f.bg }}; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
                   <span style="font-size: 12px; font-weight: 700; color: {{ f.fg }};">{{ f.label }}</span>
                   <span style="display: flex; align-items: baseline; gap: 8px;">
-                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;">{{ f.value }}</span>
+                    <span style="font-family: 'Vazirmatn', sans-serif; font-weight: 800; font-size: 26px; font-variant-numeric: tabular-nums;">{{ f.value }}</span>
                     <span style="font-size: 12px; color: #6f7a72;">{{ f.note }}</span>
                   </span>
                   <span style="width: 100%; height: 6px; border-radius: 999px; background: rgba(18,33,26,0.08); overflow: hidden; display: block;">
@@ -169,12 +169,12 @@
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px;">
             <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-bottom: 16px;">
               <div>
-                <h2 style="font-size: 20px;">Sales, last 14 days</h2>
+                <h2 style="font-size: 20px;">فروش، ۱۴ روز گذشته</h2>
                 <span style="font-size: 13px; color: #7d857f;">{{ chartSummary }}</span>
               </div>
               <div style="display: flex; gap: 16px;">
-                <span style="display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #6f7a72;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #0f7a4a;"></span>Sales</span>
-                <span style="display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #6f7a72;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #e4572e;"></span>Restocks</span>
+                <span style="display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #6f7a72;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #0f7a4a;"></span>فروش</span>
+                <span style="display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #6f7a72;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #e4572e;"></span>تأمین موجودی</span>
               </div>
             </div>
             <div style="display: flex; align-items: flex-end; gap: 6px; height: 176px;">
@@ -194,8 +194,8 @@
           <div class="dash">
             <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; overflow: hidden;">
               <div style="padding: 16px 18px 12px; display: flex; align-items: baseline; justify-content: space-between;">
-                <h2 style="font-size: 20px;">Today's orders</h2>
-                <button onClick="{{ goOrders }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #0f7a4a;">See all</button>
+                <h2 style="font-size: 20px;">سفارش‌های امروز</h2>
+                <button onClick="{{ goOrders }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #0f7a4a;">مشاهده همه</button>
               </div>
               <sc-for list="{{ recentOrders }}" as="o" hint-placeholder-count="5">
                 <div style="display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-top: 1px solid #f4f2ec;">
@@ -210,8 +210,8 @@
             <div style="display: flex; flex-direction: column; gap: 16px;">
               <div style="border-radius: 22px; background: #fff5ef; border: 1px solid #f7ddcd; padding: 18px; display: flex; flex-direction: column; gap: 13px;">
                 <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
-                  <h2 style="font-size: 20px;">Needs attention</h2>
-                  <button onClick="{{ toggleBell }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #b8451f;">{{ unread }} new</button>
+                  <h2 style="font-size: 20px;">نیازمند توجه</h2>
+                  <button onClick="{{ toggleBell }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #b8451f;">{{ unread }} جدید</button>
                 </div>
                 <sc-for list="{{ alerts }}" as="a" hint-placeholder-count="3">
                   <div style="display: flex; align-items: flex-start; gap: 10px;">
@@ -222,11 +222,11 @@
                     </span>
                   </div>
                 </sc-for>
-                <button onClick="{{ goProducts }}" style="height: 42px; border: 0; border-radius: 999px; background: #e4572e; color: #fff; font-size: 13.5px; font-weight: 700; cursor: pointer;">Fix stock</button>
+                <button onClick="{{ goProducts }}" style="height: 42px; border: 0; border-radius: 999px; background: #e4572e; color: #fff; font-size: 13.5px; font-weight: 700; cursor: pointer;">اصلاح موجودی</button>
               </div>
 
               <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 18px; display: flex; flex-direction: column; gap: 14px;">
-                <h2 style="font-size: 20px;">Best sellers, 7 days</h2>
+                <h2 style="font-size: 20px;">پرفروش‌ترین‌ها، ۷ روز گذشته</h2>
                 <sc-for list="{{ bestSellers }}" as="b" hint-placeholder-count="4">
                   <div style="display: flex; align-items: center; gap: 12px;">
                     <div style="width: 42px; height: 42px; flex: none; border-radius: 12px; background: {{ b.tint }}; background-image: url({{ b.img }}); background-size: cover; background-position: center;"></div>
@@ -254,9 +254,9 @@
               <button onClick="{{ r.onClick }}" style="height: 42px; padding: 0 17px; border: 0; border-radius: 999px; cursor: pointer; font-size: 13.5px; font-weight: 600; background: {{ r.bg }}; color: {{ r.fg }};">{{ r.label }}</button>
             </sc-for>
             <span style="font-size: 12.5px; color: #8b918c;">{{ rangeDates }}</span>
-            <button onClick="{{ exportPdf }}" style="margin-left: auto; height: 42px; padding: 0 18px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer;">
+              <button onClick="{{ exportPdf }}" style="margin-left: auto; height: 42px; padding: 0 18px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 21h16"></path></svg>
-              Export PDF
+              خروجی PDF
             </button>
           </div>
 
@@ -264,7 +264,7 @@
             <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
               <div style="border-radius: 22px; background: {{ k.bg }}; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;">
                 <span style="font-size: 12px; font-weight: 700; color: {{ k.fg }};">{{ k.label }}</span>
-                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;">{{ k.value }}</span>
+                <span style="font-family: 'Vazirmatn', sans-serif; font-weight: 800; font-size: 28px; font-variant-numeric: tabular-nums;">{{ k.value }}</span>
                 <span style="font-size: 12px; color: #6f7a72;">{{ k.delta }}</span>
               </div>
             </sc-for>
@@ -290,7 +290,7 @@
           <div class="dash">
             <div style="display: flex; flex-direction: column; gap: 16px;">
               <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
-                <h2 style="font-size: 20px;">Where the money comes from</h2>
+                <h2 style="font-size: 20px;">منبع درآمد</h2>
                 <div style="display: flex; height: 16px; border-radius: 999px; overflow: hidden;">
                   <sc-for list="{{ catShare }}" as="c" hint-placeholder-count="6">
                     <span style="height: 100%; background: {{ c.color }}; width: {{ c.w }};"></span>
@@ -306,7 +306,7 @@
               </div>
 
               <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
-                <h2 style="font-size: 20px;">Busiest hours</h2>
+                <h2 style="font-size: 20px;">شلوغ‌ترین ساعت‌ها</h2>
                 <div style="display: flex; align-items: flex-end; gap: 5px; height: 130px;">
                   <sc-for list="{{ hourBars }}" as="h" hint-placeholder-count="14">
                     <div style="flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px;">
@@ -322,7 +322,7 @@
 
             <div style="display: flex; flex-direction: column; gap: 16px;">
               <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
-                <h2 style="font-size: 20px;">How it ships</h2>
+                <h2 style="font-size: 20px;">روش ارسال</h2>
                 <sc-for list="{{ methodSplit }}" as="m" hint-placeholder-count="3">
                   <div style="display: flex; flex-direction: column; gap: 6px;">
                     <div style="display: flex; justify-content: space-between; gap: 10px; font-size: 13px;">
@@ -337,7 +337,7 @@
               </div>
 
               <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
-                <h2 style="font-size: 20px;">Top products</h2>
+                <h2 style="font-size: 20px;">محصولات برتر</h2>
                 <sc-for list="{{ topProducts }}" as="p" hint-placeholder-count="5">
                   <div style="display: flex; align-items: center; gap: 12px;">
                     <div style="width: 40px; height: 40px; flex: none; border-radius: 12px; background: {{ p.tint }}; background-image: url({{ p.img }}); background-size: cover; background-position: center;"></div>
@@ -359,8 +359,8 @@
 
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; overflow: hidden;">
             <div style="padding: 18px 20px 12px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
-              <h2 style="font-size: 20px;">Activity log</h2>
-              <span style="font-size: 12.5px; color: #8b918c;">Today, newest first</span>
+              <h2 style="font-size: 20px;">گزارش فعالیت‌ها</h2>
+              <span style="font-size: 12.5px; color: #8b918c;">امروز، جدیدترین ابتدا</span>
             </div>
             <sc-for list="{{ logs }}" as="l" hint-placeholder-count="12">
               <div style="display: flex; align-items: center; gap: 12px; padding: 11px 20px; border-top: 1px solid #f4f2ec;">
@@ -380,7 +380,7 @@
             <sc-for list="{{ userStats }}" as="s" hint-placeholder-count="4">
               <div style="border-radius: 22px; background: {{ s.bg }}; padding: 16px 18px; display: flex; flex-direction: column; gap: 5px;">
                 <span style="font-size: 12px; font-weight: 700; color: {{ s.fg }};">{{ s.label }}</span>
-                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;">{{ s.value }}</span>
+                <span style="font-family: 'Vazirmatn', sans-serif; font-weight: 800; font-size: 26px; font-variant-numeric: tabular-nums;">{{ s.value }}</span>
               </div>
             </sc-for>
           </div>
@@ -388,14 +388,14 @@
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 9px; height: 42px; flex: 1; min-width: 220px; max-width: 300px; padding: 0 16px; border-radius: 999px; background: #f1efe8;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7d857f" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path></svg>
-              <input value="{{ userSearch }}" onChange="{{ onUserSearch }}" placeholder="Name, phone or city" style="flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 13.5px;" />
+              <input value="{{ userSearch }}" onChange="{{ onUserSearch }}" placeholder="نام، تلفن یا شهر" style="flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 13.5px;" />
             </div>
             <sc-for list="{{ userTabs }}" as="t" hint-placeholder-count="5">
               <button onClick="{{ t.onClick }}" style="height: 42px; padding: 0 16px; border: 0; border-radius: 999px; cursor: pointer; font-size: 13.5px; font-weight: 600; background: {{ t.bg }}; color: {{ t.fg }};">{{ t.label }} <span style="opacity: 0.6; font-variant-numeric: tabular-nums;">{{ t.count }}</span></button>
             </sc-for>
-            <button onClick="{{ toggleUserAdv }}" style="height: 42px; padding: 0 16px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; cursor: pointer; font-size: 13.5px; font-weight: 600; background: {{ uAdvBg }}; color: {{ uAdvFg }};">
+              <button onClick="{{ toggleUserAdv }}" style="height: 42px; padding: 0 16px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; cursor: pointer; font-size: 13.5px; font-weight: 600; background: {{ uAdvBg }}; color: {{ uAdvFg }};">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18"></path><path d="M7 12h10"></path><path d="M10 18h4"></path></svg>
-              Filters {{ uAdvCount }}
+              فیلترها {{ uAdvCount }}
             </button>
             <span style="margin-left: auto; font-size: 12.5px; color: #8b918c; font-variant-numeric: tabular-nums;">{{ userCount }}</span>
           </div>
@@ -411,11 +411,11 @@
                 </div>
               </sc-for>
               <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <span style="width: 108px; flex: none; font-size: 12.5px; font-weight: 700; color: #7d857f;">Lifetime spend</span>
+                  <span style="width: 108px; flex: none; font-size: 12.5px; font-weight: 700; color: #7d857f;">مجموع خرید</span>
                 <input type="range" min="0" max="18000000" step="500000" value="{{ uMinSpend }}" onChange="{{ onUMinSpend }}" style="flex: 1; min-width: 180px; max-width: 320px; accent-color: #0f7a4a;" />
                 <span style="font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;">{{ uMinSpendLabel }}</span>
               </div>
-              <button onClick="{{ resetUserFilters }}" style="align-self: flex-start; height: 38px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">Clear all</button>
+              <button onClick="{{ resetUserFilters }}" style="align-self: flex-start; height: 38px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">پاک کردن همه</button>
             </div>
           </sc-if>
 
@@ -457,9 +457,9 @@
                 </button>
 
                 <div style="display: flex; gap: 8px; margin-top: auto;">
-                  <button onClick="{{ u.onTelegram }}" style="flex: 1; min-width: 0; height: 42px; border: 0; border-radius: 999px; background: #eaf2fb; color: #3c5c9c; font-size: 13px; font-weight: 700; cursor: pointer;">Telegram</button>
-                  <button onClick="{{ u.onSms }}" style="flex: 1; min-width: 0; height: 42px; border: 0; border-radius: 999px; background: #f1efe8; color: #12211a; font-size: 13px; font-weight: 700; cursor: pointer;">SMS</button>
-                  <button onClick="{{ u.onCall }}" title="Call" style="flex: none; width: 42px; height: 42px; border: 0; border-radius: 999px; background: #eaf6ee; color: #0b5c38; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Call">
+                  <button onClick="{{ u.onTelegram }}" style="flex: 1; min-width: 0; height: 42px; border: 0; border-radius: 999px; background: #eaf2fb; color: #3c5c9c; font-size: 13px; font-weight: 700; cursor: pointer;">تلگرام</button>
+                  <button onClick="{{ u.onSms }}" style="flex: 1; min-width: 0; height: 42px; border: 0; border-radius: 999px; background: #f1efe8; color: #12211a; font-size: 13px; font-weight: 700; cursor: pointer;">پیامک</button>
+                  <button onClick="{{ u.onCall }}" title="تماس" style="flex: none; width: 42px; height: 42px; border: 0; border-radius: 999px; background: #eaf6ee; color: #0b5c38; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="تماس">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"></path></svg>
                   </button>
                 </div>
@@ -468,7 +468,7 @@
           </div>
 
           <sc-if value="{{ noUsers }}" hint-placeholder-val="{{ false }}">
-            <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 56px 18px; text-align: center; font-size: 14px; color: #7d857f;">No customers match that search.</div>
+            <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 56px 18px; text-align: center; font-size: 14px; color: #7d857f;">هیچ مشتری‌ای با این جستجو پیدا نشد.</div>
           </sc-if>
         </div>
       </sc-if>
@@ -478,10 +478,10 @@
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px;">
             <div style="display: flex; align-items: center; gap: 12px; padding-bottom: 16px;">
               <h2 style="flex: 1; font-size: 20px;">{{ monthLabel }}</h2>
-              <button onClick="{{ prevMonth }}" style="width: 38px; height: 38px; border: 0; border-radius: 999px; background: #f1efe8; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Previous month">
+                <button onClick="{{ prevMonth }}" style="width: 38px; height: 38px; border: 0; border-radius: 999px; background: #f1efe8; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="ماه قبل">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
               </button>
-              <button onClick="{{ nextMonth }}" style="width: 38px; height: 38px; border: 0; border-radius: 999px; background: #f1efe8; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Next month">
+                <button onClick="{{ nextMonth }}" style="width: 38px; height: 38px; border: 0; border-radius: 999px; background: #f1efe8; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="ماه بعد">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
               </button>
             </div>
@@ -514,9 +514,9 @@
             </div>
 
             <div style="display: flex; gap: 16px; flex-wrap: wrap; padding-top: 14px;">
-              <span style="display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #6f7a72;"><span style="width: 9px; height: 9px; border-radius: 999px; background: #0f7a4a;"></span>Selling — orders out</span>
-              <span style="display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #6f7a72;"><span style="width: 9px; height: 9px; border-radius: 999px; background: #e4572e;"></span>Buying — stock in</span>
-              <span style="display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #6f7a72;"><span style="width: 9px; height: 9px; border-radius: 999px; background: #5b6ab0;"></span>Note</span>
+              <span style="display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #6f7a72;"><span style="width: 9px; height: 9px; border-radius: 999px; background: #0f7a4a;"></span>فروش، سفارش‌های ارسال‌شده</span>
+              <span style="display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #6f7a72;"><span style="width: 9px; height: 9px; border-radius: 999px; background: #e4572e;"></span>خرید، ورود موجودی</span>
+              <span style="display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #6f7a72;"><span style="width: 9px; height: 9px; border-radius: 999px; background: #5b6ab0;"></span>یادداشت</span>
             </div>
           </div>
 
@@ -537,12 +537,12 @@
                 </div>
               </sc-for>
               <sc-if value="{{ selectedEmpty }}" hint-placeholder-val="{{ false }}">
-                <div style="padding: 26px 8px; text-align: center; font-size: 13px; color: #8b918c;">Nothing booked for this day.</div>
+                <div style="padding: 26px 8px; text-align: center; font-size: 13px; color: #8b918c;">برای این روز موردی ثبت نشده است.</div>
               </sc-if>
             </div>
 
             <div style="border-radius: 22px; background: #eaf6ee; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
-              <h2 style="font-size: 20px;">This month</h2>
+              <h2 style="font-size: 20px;">این ماه</h2>
               <sc-for list="{{ monthTotals }}" as="m" hint-placeholder-count="3">
                 <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
                   <span style="font-size: 13.5px; color: #3f5548;">{{ m.label }}</span>
@@ -559,7 +559,7 @@
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 9px; height: 44px; width: 250px; padding: 0 16px; border-radius: 999px; background: #f1efe8;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7d857f" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path></svg>
-              <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Search products" style="flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 13.5px;" />
+              <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="جستجوی محصولات" style="flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 13.5px;" />
             </div>
             <select value="{{ filterCat }}" onChange="{{ onFilterCat }}" style="height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13.5px; cursor: pointer;">
               <sc-for list="{{ catOptions }}" as="c" hint-placeholder-count="5">
@@ -590,19 +590,19 @@
                   </sc-if>
                 </div>
                 <button onClick="{{ r.onToggleStock }}" style="flex: none; width: 108px; height: 32px; border: 0; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 700; background: {{ r.stockBg }}; color: {{ r.stockFg }};">{{ r.stockLabel }}</button>
-                <button onClick="{{ r.onFeature }}" title="Feature on the shop" style="flex: none; width: 34px; height: 34px; border: 0; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: {{ r.featBg }}; color: {{ r.featFg }};">
+                <button onClick="{{ r.onFeature }}" title="نمایش ویژه در فروشگاه" style="flex: none; width: 34px; height: 34px; border: 0; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: {{ r.featBg }}; color: {{ r.featFg }};">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="{{ r.featFill }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"></polygon></svg>
                 </button>
-                <button onClick="{{ r.onEdit }}" style="flex: none; height: 34px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">Edit</button>
-                <button onClick="{{ r.onDelete }}" title="Delete product" style="flex: none; width: 34px; height: 34px; border: 0; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fdece2; color: #b8451f;" aria-label="Delete">
+                <button onClick="{{ r.onEdit }}" style="flex: none; height: 34px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">ویرایش</button>
+                <button onClick="{{ r.onDelete }}" title="حذف محصول" style="flex: none; width: 34px; height: 34px; border: 0; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fdece2; color: #b8451f;" aria-label="حذف">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 </button>
               </div>
             </sc-for>
             <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
               <div style="padding: 52px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                <h2 style="font-size: 20px;">Nothing matches that filter</h2>
-                <button onClick="{{ resetFilters }}" style="height: 40px; padding: 0 18px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer;">Reset filters</button>
+                <h2 style="font-size: 20px;">موردی با این فیلتر پیدا نشد</h2>
+                <button onClick="{{ resetFilters }}" style="height: 40px; padding: 0 18px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer;">بازنشانی فیلترها</button>
               </div>
             </sc-if>
           </div>
@@ -612,22 +612,27 @@
       <sc-if value="{{ isCats }}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 14px;">
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <input value="{{ newCatName }}" onChange="{{ onNewCatName }}" placeholder="New category name" style="height: 44px; flex: 1; min-width: 200px; max-width: 320px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px; color: #12211a;" />
-            <button onClick="{{ addCat }}" disabled="{{ catBusy }}" style="height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer; opacity: {{ catBusy ? 0.6 : 1 }};">{{ catBusy ? "Adding…" : "Add category" }}</button>
+            <input value="{{ newCatName }}" onChange="{{ onNewCatName }}" placeholder="نام دسته‌بندی جدید" style="height: 44px; flex: 1; min-width: 200px; max-width: 320px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px; color: #12211a;" />
+            <button onClick="{{ addCat }}" disabled="{{ catBusy }}" style="height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer; opacity: {{ catBusyOpacity }};">{{ catAddLabel }}</button>
           </div>
           <div class="catgrid">
           <sc-for list="{{ catCards }}" as="c" hint-placeholder-count="8">
             <div style="border-radius: 22px; overflow: hidden; background: #fff; border: 1px solid #eceae3; display: flex; flex-direction: column;">
               <div style="aspect-ratio: 16 / 9; background: {{ c.tint }}; background-image: url({{ c.img }}); background-size: cover; background-position: center; opacity: {{ c.dim }};"></div>
-              <div style="padding: 13px 15px 15px; display: flex; align-items: center; gap: 10px;">
-                <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
-                  <span style="font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.name }}</span>
+              <div style="padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 10px;">
+                <span style="display: flex; min-width: 0; flex-direction: column; gap: 1px;">
+                  <span style="font-size: 14px; font-weight: 700; line-height: 1.45; overflow-wrap: anywhere;">{{ c.name }}</span>
                   <span style="font-size: 12px; color: #8b918c;">{{ c.count }}</span>
                 </span>
-                <button onClick="{{ c.onToggle }}" style="flex: none; height: 30px; padding: 0 13px; border: 0; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 700; background: {{ c.bg }}; color: {{ c.fg }};">{{ c.state }}</button>
-                <button onClick="{{ c.onDelete }}" title="Delete category" style="flex: none; width: 30px; height: 30px; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fdece2; color: #b8451f;" aria-label="Delete">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button onClick="{{ c.onEdit }}" title="ویرایش نام دسته‌بندی" style="flex: none; width: 34px; height: 30px; padding: 0; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #f1f2f7; color: #495587;" aria-label="ویرایش نام دسته‌بندی">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>
+                  </button>
+                  <button onClick="{{ c.onToggle }}" style="flex: 1; min-width: 0; height: 30px; padding: 0 13px; border: 0; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 700; background: {{ c.bg }}; color: {{ c.fg }};">{{ c.state }}</button>
+                  <button onClick="{{ c.onDelete }}" title="حذف دسته‌بندی" style="flex: none; width: 30px; height: 30px; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fdece2; color: #b8451f;" aria-label="حذف">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
+                  </button>
+                </div>
               </div>
             </div>
           </sc-for>
@@ -640,8 +645,8 @@
           <div style="border-radius: 22px; background: #fff5ef; border: 1px solid #f7ddcd; padding: 18px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
             <span style="width: 10px; height: 10px; border-radius: 999px; background: #e4572e;"></span>
             <div style="flex: 1; min-width: 220px;">
-              <h2 style="font-size: 20px;">Offer of the day</h2>
-              <p style="margin: 4px 0 0; font-size: 13px; color: #8a7466;">Runs until midnight, then the strip on the shop empties on its own.</p>
+              <h2 style="font-size: 20px;">پیشنهاد امروز</h2>
+              <p style="margin: 4px 0 0; font-size: 13px; color: #8a7466;">تا نیمه‌شب فعال است و پس از آن نوار پیشنهاد فروشگاه خودکار خالی می‌شود.</p>
             </div>
             <span style="font-size: 13px; font-weight: 700; color: #b8451f;">{{ countdown }}</span>
             <button onClick="{{ toggleOffers }}" style="height: 40px; padding: 0 17px; border: 0; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 700; background: {{ offersBg }}; color: {{ offersFg }};">{{ offersState }}</button>
@@ -658,13 +663,13 @@
                 <span class="hide-s" style="flex: none; width: 104px; justify-content: flex-end; font-size: 13px; color: #a2a89f; text-decoration: line-through; font-variant-numeric: tabular-nums;">{{ o.old }}</span>
                 <span style="flex: none; width: 108px; text-align: right; font-size: 14px; font-weight: 700; color: #b8451f; font-variant-numeric: tabular-nums;">{{ o.now }}</span>
                 <span style="flex: none; padding: 4px 11px; border-radius: 999px; background: #fdece2; color: #b8451f; font-size: 12px; font-weight: 700;">{{ o.pct }}</span>
-                <button onClick="{{ o.onEnd }}" style="flex: none; height: 34px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; color: #b8451f; font-size: 13px; font-weight: 700; cursor: pointer;">End</button>
+                <button onClick="{{ o.onEnd }}" style="flex: none; height: 34px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; color: #b8451f; font-size: 13px; font-weight: 700; cursor: pointer;">پایان</button>
               </div>
             </sc-for>
             <sc-if value="{{ noOffers }}" hint-placeholder-val="{{ false }}">
               <div style="padding: 52px 16px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;">
-                <h2 style="font-size: 20px;">No offers running today</h2>
-                <span style="font-size: 13px; color: #7d857f;">Set an old price on a product and it shows up here.</span>
+                <h2 style="font-size: 20px;">امروز پیشنهادی فعال نیست</h2>
+                <span style="font-size: 13px; color: #7d857f;">برای نمایش پیشنهاد، قیمت قبلی یک محصول را وارد کنید.</span>
               </div>
             </sc-if>
           </div>
@@ -677,20 +682,20 @@
             <div style="border-radius: 22px; background: #fff; border: 1px solid #eceae3; padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
               <span style="width: 42px; height: 42px; flex: none; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: {{ custBannerBg }}; color: {{ custBannerFg }};">{{ custBannerInitials }}</span>
               <span style="flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 2px;">
-                <span style="font-size: 15px; font-weight: 700;">Orders from {{ custBannerName }}</span>
+                <span style="font-size: 15px; font-weight: 700;">سفارش‌های {{ custBannerName }}</span>
                 <span style="font-size: 12.5px; color: #7d857f;">{{ custBannerMeta }}</span>
               </span>
-              <button onClick="{{ backToCustomer }}" style="height: 38px; padding: 0 15px; border: 0; border-radius: 999px; background: #eaf2fb; color: #3c5c9c; font-size: 13px; font-weight: 700; cursor: pointer;">Customer card</button>
-              <button onClick="{{ clearCust }}" style="height: 38px; padding: 0 15px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">Show all orders</button>
+              <button onClick="{{ backToCustomer }}" style="height: 38px; padding: 0 15px; border: 0; border-radius: 999px; background: #eaf2fb; color: #3c5c9c; font-size: 13px; font-weight: 700; cursor: pointer;">کارت مشتری</button>
+              <button onClick="{{ clearCust }}" style="height: 38px; padding: 0 15px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">نمایش همه سفارش‌ها</button>
             </div>
           </sc-if>
 
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 9px; height: 42px; flex: 1; min-width: 240px; max-width: 320px; padding: 0 16px; border-radius: 999px; background: #f1efe8;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7d857f" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path></svg>
-              <input value="{{ orderQuery }}" onChange="{{ onOrderQuery }}" placeholder="Order no, name, phone, city, tracking" style="flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 13.5px;" />
+              <input value="{{ orderQuery }}" onChange="{{ onOrderQuery }}" placeholder="شماره سفارش، نام، تلفن، شهر یا رهگیری" style="flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 13.5px;" />
               <sc-if value="{{ hasOrderQuery }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ clearOrderQuery }}" style="border: 0; background: none; cursor: pointer; padding: 2px; display: flex; color: #7d857f;" aria-label="Clear">
+                <button onClick="{{ clearOrderQuery }}" style="border: 0; background: none; cursor: pointer; padding: 2px; display: flex; color: #7d857f;" aria-label="پاک کردن">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
                 </button>
               </sc-if>
@@ -698,9 +703,9 @@
             <sc-for list="{{ orderFilters }}" as="f" hint-placeholder-count="5">
               <button onClick="{{ f.onClick }}" style="height: 42px; padding: 0 16px; border: 0; border-radius: 999px; cursor: pointer; font-size: 13.5px; font-weight: 600; background: {{ f.bg }}; color: {{ f.fg }};">{{ f.label }} <span style="opacity: 0.6; font-variant-numeric: tabular-nums;">{{ f.count }}</span></button>
             </sc-for>
-            <button onClick="{{ toggleAdvanced }}" style="height: 42px; padding: 0 16px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; cursor: pointer; font-size: 13.5px; font-weight: 600; background: {{ advBg }}; color: {{ advFg }};">
+              <button onClick="{{ toggleAdvanced }}" style="height: 42px; padding: 0 16px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; cursor: pointer; font-size: 13.5px; font-weight: 600; background: {{ advBg }}; color: {{ advFg }};">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18"></path><path d="M7 12h10"></path><path d="M10 18h4"></path></svg>
-              Filters {{ advCount }}
+              فیلترها {{ advCount }}
             </button>
             <span style="margin-left: auto; font-size: 12.5px; color: #8b918c; font-variant-numeric: tabular-nums;">{{ orderCount }}</span>
           </div>
@@ -716,12 +721,12 @@
                 </div>
               </sc-for>
               <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <span style="width: 104px; flex: none; font-size: 12.5px; font-weight: 700; color: #7d857f;">Order value</span>
+                <span style="width: 104px; flex: none; font-size: 12.5px; font-weight: 700; color: #7d857f;">ارزش سفارش</span>
                 <input type="range" min="0" max="1400000" step="50000" value="{{ minValue }}" onChange="{{ onMinValue }}" style="flex: 1; min-width: 180px; max-width: 320px; accent-color: #0f7a4a;" />
                 <span style="font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;">{{ minValueLabel }}</span>
               </div>
               <div style="display: flex; gap: 10px; flex-wrap: wrap; padding-top: 2px;">
-                <button onClick="{{ resetAdvanced }}" style="height: 38px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">Clear all</button>
+                <button onClick="{{ resetAdvanced }}" style="height: 38px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">پاک کردن همه</button>
                 <span style="display: flex; align-items: center; font-size: 12.5px; color: #8b918c;">{{ advSummary }}</span>
               </div>
             </div>
@@ -731,7 +736,7 @@
             <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 56px 18px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
               <h2 style="font-size: 20px;">{{ emptyTitle }}</h2>
               <span style="font-size: 13px; color: #7d857f;">{{ emptyNote }}</span>
-              <button onClick="{{ resetAdvanced }}" style="margin-top: 4px; height: 40px; padding: 0 18px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer;">Clear filters</button>
+              <button onClick="{{ resetAdvanced }}" style="margin-top: 4px; height: 40px; padding: 0 18px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer;">پاک کردن فیلترها</button>
             </div>
           </sc-if>
 
@@ -739,9 +744,9 @@
           <sc-for list="{{ orderRows }}" as="o" hint-placeholder-count="6">
             <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 16px; display: flex; flex-direction: column; gap: 13px;">
               <div style="display: flex; align-items: flex-start; gap: 10px;">
-                <button onClick="{{ o.onOpenCustomer }}" title="Open customer" style="width: 40px; height: 40px; flex: none; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: {{ o.custTierBg }}; color: {{ o.custTierFg }};">{{ o.custInitials }}</button>
+                <button onClick="{{ o.onOpenCustomer }}" title="مشاهده مشتری" style="width: 40px; height: 40px; flex: none; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: {{ o.custTierBg }}; color: {{ o.custTierFg }};">{{ o.custInitials }}</button>
                 <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
-                  <button onClick="{{ o.onOpenCustomer }}" style="border: 0; background: none; padding: 0; cursor: pointer; text-align: left; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ o.customer }}</button>
+                  <button onClick="{{ o.onOpenCustomer }}" style="border: 0; background: none; padding: 0; cursor: pointer; text-align: right; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ o.customer }}</button>
                   <span style="font-size: 12px; color: #7d857f; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ o.no }} · {{ o.phone }}</span>
                 </span>
                 <span style="flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
@@ -751,7 +756,7 @@
               </div>
 
               <sc-if value="{{ o.hasCust }}" hint-placeholder-val="{{ true }}">
-                <button onClick="{{ o.onOpenCustomer }}" style="border: 0; cursor: pointer; text-align: left; border-radius: 14px; background: #fbfaf7; padding: 11px 12px; display: flex; flex-direction: column; gap: 5px;">
+                <button onClick="{{ o.onOpenCustomer }}" style="border: 0; cursor: pointer; text-align: right; border-radius: 14px; background: #fbfaf7; padding: 11px 12px; display: flex; flex-direction: column; gap: 5px;">
                   <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                     <span style="padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; background: {{ o.custTierBg }}; color: {{ o.custTierFg }};">{{ o.custTier }}</span>
                     <span style="font-size: 12px; color: #6f7a72; font-variant-numeric: tabular-nums;">{{ o.custHistory }}</span>
@@ -765,7 +770,7 @@
               <span style="font-size: 12.5px; color: #55605a; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ o.detail }}</span>
 
               <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: {{ o.methodBg }}; color: {{ o.methodFg }};">{{ o.method }} · {{ o.dest }}</span>
+                <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: {{ o.methodBg }}; color: {{ o.methodFg }};">{{ o.methodLabel }} · {{ o.dest }}</span>
                 <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: {{ o.paidBg }}; color: {{ o.paidFg }};">{{ o.paidLabel }}</span>
                 <sc-if value="{{ o.hasTracking }}" hint-placeholder-val="{{ false }}">
                   <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #f1f2f7; color: #495587; font-variant-numeric: tabular-nums;">{{ o.tracking }}</span>
@@ -782,7 +787,7 @@
                       </span>
                       <span style="flex: 1; height: 3px; border-radius: 999px; background: {{ o.s1.after }};"></span>
                     </div>
-                    <span style="font-size: 10px; font-weight: {{ o.s1.weight }}; color: {{ o.s1.text }}; text-align: center; line-height: 1.2;">Order in</span>
+                    <span style="font-size: 10px; font-weight: {{ o.s1.weight }}; color: {{ o.s1.text }}; text-align: center; line-height: 1.2;">ثبت سفارش</span>
                     <span style="font-size: 9.5px; color: #a2a89f; font-variant-numeric: tabular-nums;">{{ o.s1.time }}</span>
                   </div>
                   <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 7px;">
@@ -793,7 +798,7 @@
                       </span>
                       <span style="flex: 1; height: 3px; border-radius: 999px; background: {{ o.s2.after }};"></span>
                     </div>
-                    <span style="font-size: 10px; font-weight: {{ o.s2.weight }}; color: {{ o.s2.text }}; text-align: center; line-height: 1.2;">Packing</span>
+                    <span style="font-size: 10px; font-weight: {{ o.s2.weight }}; color: {{ o.s2.text }}; text-align: center; line-height: 1.2;">بسته‌بندی</span>
                     <span style="font-size: 9.5px; color: #a2a89f; font-variant-numeric: tabular-nums;">{{ o.s2.time }}</span>
                   </div>
                   <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 7px;">
@@ -804,7 +809,7 @@
                       </span>
                       <span style="flex: 1; height: 3px; border-radius: 999px; background: {{ o.s3.after }};"></span>
                     </div>
-                    <span style="font-size: 10px; font-weight: {{ o.s3.weight }}; color: {{ o.s3.text }}; text-align: center; line-height: 1.2;">Handed over</span>
+                    <span style="font-size: 10px; font-weight: {{ o.s3.weight }}; color: {{ o.s3.text }}; text-align: center; line-height: 1.2;">تحویل به پیک</span>
                     <span style="font-size: 9.5px; color: #a2a89f; font-variant-numeric: tabular-nums;">{{ o.s3.time }}</span>
                   </div>
                   <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 7px;">
@@ -815,7 +820,7 @@
                       </span>
                       <span style="flex: 1; height: 3px; border-radius: 999px; background: {{ o.s4.after }};"></span>
                     </div>
-                    <span style="font-size: 10px; font-weight: {{ o.s4.weight }}; color: {{ o.s4.text }}; text-align: center; line-height: 1.2;">On the way</span>
+                    <span style="font-size: 10px; font-weight: {{ o.s4.weight }}; color: {{ o.s4.text }}; text-align: center; line-height: 1.2;">در مسیر</span>
                     <span style="font-size: 9.5px; color: #a2a89f; font-variant-numeric: tabular-nums;">{{ o.s4.time }}</span>
                   </div>
                   <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 7px;">
@@ -847,7 +852,7 @@
 
               <div style="display: flex; gap: 8px; margin-top: auto;">
                 <button onClick="{{ o.onAdvance }}" disabled="{{ o.nextDisabled }}" style="flex: 1; min-width: 0; height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: {{ o.nextBg }}; color: {{ o.nextFg }}; font-size: 13px; font-weight: 700; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ o.nextLabel }}</button>
-                <button onClick="{{ o.onReturn }}" disabled="{{ o.returnDisabled }}" title="Mark returned" style="flex: none; width: 44px; height: 44px; border: 0; border-radius: 999px; background: {{ o.returnBg }}; color: {{ o.returnFg }}; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Mark returned">
+                <button onClick="{{ o.onReturn }}" disabled="{{ o.returnDisabled }}" title="ثبت مرجوعی" style="flex: none; width: 44px; height: 44px; border: 0; border-radius: 999px; background: {{ o.returnBg }}; color: {{ o.returnFg }}; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="ثبت مرجوعی">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"></path><path d="M4 9h11a5 5 0 0 1 0 10H9"></path></svg>
                 </button>
               </div>
@@ -860,10 +865,10 @@
               <span style="font-size: 12.5px; color: #8b918c; font-variant-numeric: tabular-nums;">{{ pageRange }}</span>
               <span style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;">{{ pageLabel }}</span>
-                <button onClick="{{ prevPage }}" disabled="{{ prevDisabled }}" style="width: 42px; height: 42px; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: {{ prevBg }};" aria-label="Previous page">
+                <button onClick="{{ prevPage }}" disabled="{{ prevDisabled }}" style="width: 42px; height: 42px; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: {{ prevBg }};" aria-label="صفحه قبل">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
                 </button>
-                <button onClick="{{ nextPage }}" disabled="{{ nextDisabled }}" style="width: 42px; height: 42px; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: {{ nextBg }}; color: {{ nextFg }};" aria-label="Next page">
+                <button onClick="{{ nextPage }}" disabled="{{ nextDisabled }}" style="width: 42px; height: 42px; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: {{ nextBg }}; color: {{ nextFg }};" aria-label="صفحه بعد">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
                 </button>
               </span>
@@ -880,11 +885,11 @@
               <span style="font-size: 19px; font-weight: 800;">{{ userName }}</span>
               <span style="font-size: 13px; color: #7d857f;">{{ profilePhone }}</span>
               <span style="display: inline-flex; align-self: flex-start; height: 24px; padding: 0 12px; align-items: center; border-radius: 999px; background: #eaf6ee; color: #0b5c38; font-size: 11.5px; font-weight: 700; text-transform: capitalize;">{{ userRole }}</span>
-              <span style="font-size: 12px; color: #a2a89f;">Member since {{ profileSince }}</span>
+              <span style="font-size: 12px; color: #a2a89f;">عضویت از {{ profileSince }}</span>
             </span>
           </div>
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 22px; display: flex; flex-direction: column; gap: 12px;">
-            <h2 style="font-size: 20px;">Account details</h2>
+            <h2 style="font-size: 20px;">جزئیات حساب</h2>
             <sc-for list="{{ profileRows }}" as="r" hint-placeholder-count="6">
               <div style="display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid #f1efe8;">
                 <span style="width: 150px; flex: none; font-size: 12.5px; color: #7d857f;">{{ r.label }}</span>
@@ -894,33 +899,33 @@
             </sc-for>
           </div>
           <div style="display: flex; gap: 10px;">
-            <button onClick="{{ doLogout }}" style="height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; font-size: 13.5px; font-weight: 700; cursor: pointer;">Log out</button>
+            <button onClick="{{ doLogout }}" style="height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; font-size: 13.5px; font-weight: 700; cursor: pointer;">خروج</button>
           </div>
         </div>
       </sc-if>
       <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
         <div class="setgrid">
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
-            <h2 style="font-size: 20px;">Store</h2>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">Store name
-              <input defaultValue="Doone Herb" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+            <h2 style="font-size: 20px;">فروشگاه</h2>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">نام فروشگاه
+              <input defaultValue="دونه هرب" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
             </label>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">Address
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">نشانی
               <input defaultValue="No. 42, Herb Bazaar Row, Vali-e-Asr St, Tehran" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
             </label>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">Support number
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">شماره پشتیبانی
               <input defaultValue="021 8842 1190" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
             </label>
           </div>
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
-            <h2 style="font-size: 20px;">Delivery</h2>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">Tehran delivery fee
+            <h2 style="font-size: 20px;">ارسال</h2>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">هزینه ارسال تهران
               <input defaultValue="45,000 T" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
             </label>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">Free delivery over
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">ارسال رایگان برای خرید بالای
               <input defaultValue="900,000 T" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
             </label>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">Same-day cut-off
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">آخرین زمان ارسال همان‌روز
               <input defaultValue="14:00" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
             </label>
           </div>
@@ -936,9 +941,9 @@
       <div onClick="{{ closeBell }}" style="flex: 1;"></div>
       <div class="drawer" style="height: 100%; background: #fbfaf7; display: flex; flex-direction: column; animation: slideIn 0.22s ease-out;">
         <div style="padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #eceae3;">
-          <h2 style="flex: 1; font-size: 22px;">Notifications</h2>
-          <button onClick="{{ markAllRead }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #0f7a4a;">Mark all read</button>
-          <button onClick="{{ closeBell }}" style="width: 40px; height: 40px; border: 0; border-radius: 999px; background: #f1efe8; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Close">
+          <h2 style="flex: 1; font-size: 22px;">اعلان‌ها</h2>
+          <button onClick="{{ markAllRead }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #0f7a4a;">خواندن همه</button>
+          <button onClick="{{ closeBell }}" style="width: 40px; height: 40px; border: 0; border-radius: 999px; background: #f1efe8; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="بستن">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
           </button>
         </div>
@@ -970,15 +975,15 @@
               <span style="width: 54px; height: 54px; border-radius: 999px; background: #f1efe8; display: flex; align-items: center; justify-content: center;">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9aa39c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"></path><path d="M18 8a6 6 0 1 0-12 0c0 6-3 7-3 7h18s-3-1-3-7"></path></svg>
               </span>
-              <span style="font-size: 15px; font-weight: 700;">Nothing here</span>
-              <span style="font-size: 13px; color: #7d857f;">You're all caught up.</span>
+              <span style="font-size: 15px; font-weight: 700;">اینجا چیزی نیست</span>
+              <span style="font-size: 13px; color: #7d857f;">همه اعلان‌ها را دیدید.</span>
             </div>
           </sc-if>
         </div>
 
         <div style="padding: 16px 20px 20px; border-top: 1px solid #eceae3; display: flex; flex-direction: column; gap: 12px;">
-          <span style="font-size: 12.5px; font-weight: 700; color: #7d857f;">Send a notice to customers</span>
-          <input value="{{ pushText }}" onChange="{{ onPushText }}" placeholder="e.g. New saffron batch just landed" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+          <span style="font-size: 12.5px; font-weight: 700; color: #7d857f;">ارسال اطلاعیه برای مشتریان</span>
+          <input value="{{ pushText }}" onChange="{{ onPushText }}" placeholder="مثلاً محموله جدید زعفران رسید" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <sc-for list="{{ pushAudiences }}" as="a" hint-placeholder-count="3">
               <button onClick="{{ a.onClick }}" style="height: 36px; padding: 0 14px; border: 0; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 600; background: {{ a.bg }}; color: {{ a.fg }};">{{ a.label }}</button>
@@ -996,15 +1001,15 @@
       <div class="drawer" style="height: 100%; background: #fbfaf7; display: flex; flex-direction: column; animation: slideIn 0.22s ease-out;">
         <div style="padding: 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #eceae3;">
           <h2 style="flex: 1; font-size: 22px;">{{ editorTitle }}</h2>
-          <button onClick="{{ closeEditor }}" style="width: 40px; height: 40px; border: 0; border-radius: 999px; background: #f1efe8; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Close">
+          <button onClick="{{ closeEditor }}" style="width: 40px; height: 40px; border: 0; border-radius: 999px; background: #f1efe8; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="بستن">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
           </button>
         </div>
         <div class="noscroll" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px;">
-          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">Product name
-            <input value="{{ draft.name }}" onChange="{{ onDraftName }}" placeholder="e.g. Dried Barberry" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px; color: #12211a;" />
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">نام محصول
+            <input value="{{ draft.name }}" onChange="{{ onDraftName }}" placeholder="مثلاً زرشک خشک" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px; color: #12211a;" />
           </label>
-          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">Category
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">دسته‌بندی
             <select value="{{ draft.cat }}" onChange="{{ onDraftCat }}" style="height: 48px; padding: 0 15px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 14.5px; cursor: pointer;">
               <sc-for list="{{ catList }}" as="c" hint-placeholder-count="6">
                 <option value="{{ c.id }}">{{ c.name }}</option>
@@ -1013,7 +1018,7 @@
           </label>
 
           <div style="display: flex; flex-direction: column; gap: 7px;">
-            <span style="font-size: 12.5px; color: #7d857f;">Photos — drag an image onto a slot</span>
+            <span style="font-size: 12.5px; color: #7d857f;">تصاویر، یک عکس را روی جایگاه بکشید</span>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
               <sc-for list="{{ draftPhotos }}" as="ph" hint-placeholder-count="3">
                 <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #f1efe8;">
@@ -1025,23 +1030,23 @@
 
           <div style="display: flex; flex-direction: column; gap: 9px;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span style="font-size: 12.5px; color: #7d857f;">Packages &amp; prices</span>
-              <button onClick="{{ addSize }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #0f7a4a;">+ Add size</button>
+              <span style="font-size: 12.5px; color: #7d857f;">بسته‌ها و قیمت‌ها</span>
+              <button onClick="{{ addSize }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #0f7a4a;">+ افزودن اندازه</button>
             </div>
             <sc-for list="{{ draftSizes }}" as="s" hint-placeholder-count="2">
               <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 42px; gap: 8px; align-items: center;">
                 <input value="{{ s.label }}" onChange="{{ s.onLabel }}" placeholder="250 g" style="height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px;" />
-                <input value="{{ s.price }}" onChange="{{ s.onPrice }}" placeholder="price" style="height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px;" />
-                <input value="{{ s.old }}" onChange="{{ s.onOld }}" placeholder="was" style="height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px;" />
-                <button onClick="{{ s.onRemove }}" style="width: 42px; height: 44px; border: 0; border-radius: 999px; background: #fdece2; cursor: pointer; color: #b8451f; display: flex; align-items: center; justify-content: center;" aria-label="Remove size">
+                <input value="{{ s.price }}" onChange="{{ s.onPrice }}" placeholder="قیمت" style="height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px;" />
+                <input value="{{ s.old }}" onChange="{{ s.onOld }}" placeholder="قیمت قبلی" style="height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px;" />
+                <button onClick="{{ s.onRemove }}" style="width: 42px; height: 44px; border: 0; border-radius: 999px; background: #fdece2; cursor: pointer; color: #b8451f; display: flex; align-items: center; justify-content: center;" aria-label="حذف اندازه">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
                 </button>
               </div>
             </sc-for>
           </div>
 
-          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">Description
-            <textarea value="{{ draft.desc }}" onChange="{{ onDraftDesc }}" rows="4" placeholder="What makes it good, how to use it." style="padding: 14px 16px; border: 0; border-radius: 18px; background: #f1efe8; outline: none; font-size: 14px; resize: none; color: #12211a;"></textarea>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">توضیحات
+            <textarea value="{{ draft.desc }}" onChange="{{ onDraftDesc }}" rows="4" placeholder="چه چیزی آن را خوب می‌کند و چگونه استفاده شود؟" style="padding: 14px 16px; border: 0; border-radius: 18px; background: #f1efe8; outline: none; font-size: 14px; resize: none; color: #12211a;"></textarea>
           </label>
 
           <div style="display: flex; gap: 10px;">
@@ -1050,7 +1055,7 @@
           </div>
         </div>
         <div style="padding: 16px 20px 20px; border-top: 1px solid #eceae3; display: flex; gap: 10px;">
-          <button onClick="{{ closeEditor }}" style="flex: none; height: 48px; padding: 0 22px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 14px; font-weight: 700; cursor: pointer;">Cancel</button>
+          <button onClick="{{ closeEditor }}" style="flex: none; height: 48px; padding: 0 22px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 14px; font-weight: 700; cursor: pointer;">انصراف</button>
           <button onClick="{{ saveDraft }}" disabled="{{ saving }}" style="flex: 1; height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14.5px; font-weight: 700; cursor: pointer; opacity: {{ saving ? 0.6 : 1 }};">{{ saveLabel }}</button>
         </div>
       </div>
@@ -1062,31 +1067,31 @@
       <span style="display: flex; align-items: center; justify-content: center; width: 46px; height: 28px; border-radius: 999px; background: {{ tab.dash.pill }};">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8H9v8"></path><path d="M3 10a2 2 0 0 1 .7-1.5l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
       </span>
-      <span style="font-size: 10.5px; font-weight: {{ tab.dash.weight }};">Home</span>
+      <span style="font-size: 10.5px; font-weight: {{ tab.dash.weight }};">خانه</span>
     </button>
     <button onClick="{{ tab.analytics.onClick }}" style="border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: {{ tab.analytics.fg }};">
       <span style="display: flex; align-items: center; justify-content: center; width: 46px; height: 28px; border-radius: 999px; background: {{ tab.analytics.pill }};">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M7 15v-3"></path><path d="M12 15V8"></path><path d="M17 15v-5"></path></svg>
       </span>
-      <span style="font-size: 10.5px; font-weight: {{ tab.analytics.weight }};">Analytics</span>
+      <span style="font-size: 10.5px; font-weight: {{ tab.analytics.weight }};">تحلیل‌ها</span>
     </button>
     <button onClick="{{ tab.orders.onClick }}" style="border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: {{ tab.orders.fg }};">
       <span style="display: flex; align-items: center; justify-content: center; width: 46px; height: 28px; border-radius: 999px; background: {{ tab.orders.pill }};">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 4 6v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6l-2-4z"></path><path d="M4 6h16"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
       </span>
-      <span style="font-size: 10.5px; font-weight: {{ tab.orders.weight }};">Orders</span>
+      <span style="font-size: 10.5px; font-weight: {{ tab.orders.weight }};">سفارش‌ها</span>
     </button>
     <button onClick="{{ tab.users.onClick }}" style="border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: {{ tab.users.fg }};">
       <span style="display: flex; align-items: center; justify-content: center; width: 46px; height: 28px; border-radius: 999px; background: {{ tab.users.pill }};">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.9"></path><path d="M16 3.1a4 4 0 0 1 0 7.8"></path></svg>
       </span>
-      <span style="font-size: 10.5px; font-weight: {{ tab.users.weight }};">Customers</span>
+      <span style="font-size: 10.5px; font-weight: {{ tab.users.weight }};">مشتریان</span>
     </button>
     <button onClick="{{ tab.products.onClick }}" style="border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: {{ tab.products.fg }};">
       <span style="display: flex; align-items: center; justify-content: center; width: 46px; height: 28px; border-radius: 999px; background: {{ tab.products.pill }};">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7l11 11-7 7L3 10z"></path><circle cx="7.5" cy="7.5" r="1.4"></circle></svg>
       </span>
-      <span style="font-size: 10.5px; font-weight: {{ tab.products.weight }};">Products</span>
+      <span style="font-size: 10.5px; font-weight: {{ tab.products.weight }};">محصولات</span>
     </button>
   </div>
 
@@ -1151,6 +1156,7 @@ const mapCategory = (c) => ({
   dot: c.dot_color || "#7d857f",
   sort_order: c.sort_order || 0,
   is_active: c.is_active !== false,
+  productCount: typeof c.total_products === "number" ? c.total_products : null,
   kw: c.slug
 });
 
@@ -1159,6 +1165,7 @@ const mapProduct = (p) => ({
   id: p.slug,
   name: p.name,
   cat: p.category ? p.category.slug : "",
+  categoryId: p.category ? p.category.id : null,
   desc: p.description || "",
   kw: (Array.isArray(p.keyword_tags) && p.keyword_tags.length ? p.keyword_tags.join(",") : (p.category ? p.category.slug : "food")),
   featured: !!p.is_featured,
@@ -1235,6 +1242,7 @@ const statusIndex = (s) => {
   return i < 0 ? 0 : i;
 };
 const METHOD_LABELS = { courier: "Courier", post: "Post", pickup: "Pickup" };
+const METHOD_PERSIAN = { Courier: "پیک", Post: "پست", Pickup: "تحویل حضوری" };
 // Backend-legal forward transitions, keyed by numeric status index.
 const NEXT_STATUS = { 0: "packing", 1: "shipped", 2: "out_for_delivery", 3: "delivered" };
 
@@ -1286,17 +1294,17 @@ const blankOrder = (base) => Object.assign(base, {
 });
 
 const STATUS = [
-  { label: "New", bg: "#fdece2", fg: "#b8451f" },
-  { label: "Packing", bg: "#fdf4e0", fg: "#a3730a" },
-  { label: "Shipped", bg: "#eaf2fb", fg: "#3c5c9c" },
-  { label: "Out for delivery", bg: "#eaf6ee", fg: "#0f7a4a" },
-  { label: "Delivered", bg: "#f1efe8", fg: "#6f7a72" },
-  { label: "Returned", bg: "#fbe9e9", fg: "#a33232" },
-  { label: "Cancelled", bg: "#f1f2f7", fg: "#6a7180" }
+  { label: "جدید", bg: "#fdece2", fg: "#b8451f" },
+  { label: "در حال بسته‌بندی", bg: "#fdf4e0", fg: "#a3730a" },
+  { label: "ارسال‌شده", bg: "#eaf2fb", fg: "#3c5c9c" },
+  { label: "در حال تحویل", bg: "#eaf6ee", fg: "#0f7a4a" },
+  { label: "تحویل‌شده", bg: "#f1efe8", fg: "#6f7a72" },
+  { label: "مرجوع‌شده", bg: "#fbe9e9", fg: "#a33232" },
+  { label: "لغوشده", bg: "#f1f2f7", fg: "#6a7180" }
 ];
 
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const WEEKDAYS = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"];
+const MONTHS = ["ژانویه", "فوریه", "مارس", "آوریل", "مه", "ژوئن", "ژوئیه", "اوت", "سپتامبر", "اکتبر", "نوامبر", "دسامبر"];
+const WEEKDAYS = ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه"];
 
 const BUYS = {
   3: [{ title: "Pistachio, 40 kg", note: "Grower delivery, morning", amount: 22400000 }],
@@ -1365,15 +1373,15 @@ const rider = (o) => {
 };
 
 const etaOf = (o) => {
-  if (o.status === 5) return { label: "Needs a call back", bg: "#fbe9e9", fg: "#a33232" };
-  if (o.status === 6) return { label: "Cancelled — no delivery", bg: "#f1f2f7", fg: "#6a7180" };
-  if (o.status === 4) return { label: o.method === "Pickup" ? "Collected 18:05" : "Delivered 16:40", bg: "#f1efe8", fg: "#6f7a72" };
-  if (o.method === "Pickup") return { label: "Ready from 14:00", bg: "#fdf4e0", fg: "#a3730a" };
-  if (o.method === "Post") return { label: o.status >= 2 ? "Arrives in 2 days" : "Ships tomorrow 09:00", bg: "#eaf2fb", fg: "#3c5c9c" };
-  if (o.status === 3) return { label: "Arriving in ~25 min", bg: "#eaf6ee", fg: "#0b5c38" };
-  if (o.status === 2) return { label: "On the van, ETA 17:40", bg: "#eaf6ee", fg: "#0b5c38" };
-  if (o.status === 1) return { label: "Leaves at 16:00", bg: "#fdf4e0", fg: "#a3730a" };
-  return { label: "Pack before 14:00", bg: "#fff5ef", fg: "#b8451f" };
+  if (o.status === 5) return { label: "نیازمند تماس مجدد", bg: "#fbe9e9", fg: "#a33232" };
+  if (o.status === 6) return { label: "لغو شده، بدون تحویل", bg: "#f1f2f7", fg: "#6a7180" };
+  if (o.status === 4) return { label: o.method === "Pickup" ? "تحویل‌شده در ۱۸:۰۵" : "تحویل‌شده در ۱۶:۴۰", bg: "#f1efe8", fg: "#6f7a72" };
+  if (o.method === "Pickup") return { label: "آماده از ساعت ۱۴:۰۰", bg: "#fdf4e0", fg: "#a3730a" };
+  if (o.method === "Post") return { label: o.status >= 2 ? "تحویل طی ۲ روز" : "ارسال فردا ساعت ۰۹:۰۰", bg: "#eaf2fb", fg: "#3c5c9c" };
+  if (o.status === 3) return { label: "رسیدن تا حدود ۲۵ دقیقه دیگر", bg: "#eaf6ee", fg: "#0b5c38" };
+  if (o.status === 2) return { label: "در مسیر، زمان تقریبی ۱۷:۴۰", bg: "#eaf6ee", fg: "#0b5c38" };
+  if (o.status === 1) return { label: "ارسال در ساعت ۱۶:۰۰", bg: "#fdf4e0", fg: "#a3730a" };
+  return { label: "بسته‌بندی تا قبل از ۱۴:۰۰", bg: "#fff5ef", fg: "#b8451f" };
 };
 
 const N = (id, kind, title, body, time, unread, go) => ({ id, kind, title, body, time, unread, go });
@@ -1408,10 +1416,10 @@ const USERS = [
 ];
 
 const TIERS = {
-  gold: { label: "Regular", bg: "#fdf4e0", fg: "#a3730a" },
-  silver: { label: "Returning", bg: "#eaf6ee", fg: "#0b5c38" },
-  new: { label: "New", bg: "#f1f2f7", fg: "#495587" },
-  risk: { label: "Needs care", bg: "#fbe9e9", fg: "#a33232" }
+  gold: { label: "همیشگی", bg: "#fdf4e0", fg: "#a3730a" },
+  silver: { label: "بازگشتی", bg: "#eaf6ee", fg: "#0b5c38" },
+  new: { label: "جدید", bg: "#f1f2f7", fg: "#495587" },
+  risk: { label: "نیازمند توجه", bg: "#fbe9e9", fg: "#a33232" }
 };
 
 const LOGS = [
@@ -1430,10 +1438,10 @@ const LOGS = [
 ];
 
 const RANGES = [
-  { label: "7 days", days: 7 },
-  { label: "30 days", days: 30 },
-  { label: "90 days", days: 90 },
-  { label: "This year", days: 180 }
+  { label: "۷ روز", days: 7 },
+  { label: "۳۰ روز", days: 30 },
+  { label: "۹۰ روز", days: 90 },
+  { label: "امسال", days: 180 }
 ];
 
 const LOGKIND = {
@@ -1446,16 +1454,16 @@ const LOGKIND = {
 };
 
 const PUSH_AUD = [
-  { label: "Everyone", count: "2,140 customers" },
-  { label: "Ordered in 30 days", count: "612 customers" },
-  { label: "Tehran only", count: "1,388 customers" }
+  { label: "همه", count: "۲٬۱۴۰ مشتری" },
+  { label: "سفارش در ۳۰ روز اخیر", count: "۶۱۲ مشتری" },
+  { label: "فقط تهران", count: "۱٬۳۸۸ مشتری" }
 ];
 
 const NKIND = {
-  order: { short: "OR", iconBg: "#eaf6ee", iconFg: "#0b5c38", label: "Orders" },
-  stock: { short: "ST", iconBg: "#fff5ef", iconFg: "#b8451f", label: "Stock" },
-  offer: { short: "OF", iconBg: "#fdf4e0", iconFg: "#a3730a", label: "Offers" },
-  message: { short: "MS", iconBg: "#f1f2f7", iconFg: "#495587", label: "Messages" }
+  order: { short: "OR", iconBg: "#eaf6ee", iconFg: "#0b5c38", label: "سفارش‌ها" },
+  stock: { short: "ST", iconBg: "#fff5ef", iconFg: "#b8451f", label: "موجودی" },
+  offer: { short: "OF", iconBg: "#fdf4e0", iconFg: "#a3730a", label: "پیشنهادها" },
+  message: { short: "MS", iconBg: "#f1f2f7", iconFg: "#495587", label: "پیام‌ها" }
 };
 
 const seeded = (n) => {
@@ -1523,13 +1531,37 @@ class Component extends DCLogic {
         apiGet("/api/categories"),
         apiGet("/api/products")
       ]);
-      const cats = (Array.isArray(catData) ? catData : catData.items || catData.results || []).map(mapCategory);
+      let cats = (Array.isArray(catData) ? catData : catData.items || catData.results || []).map(mapCategory);
+      const categoryDetails = await Promise.all(cats.map(async (category) => {
+        try {
+          return await apiGet("/api/categories/" + category._id);
+        } catch (e) {
+          console.error("Category detail failed for " + category._id, e);
+          return null;
+        }
+      }));
+      cats = cats.map((category, index) => Object.assign({}, category, {
+        productCount: categoryDetails[index] && typeof categoryDetails[index].total_products === "number"
+          ? categoryDetails[index].total_products
+          : category.productCount
+      }));
       const products = (Array.isArray(prodData) ? prodData : prodData.items || prodData.results || []).map(mapProduct);
+      const loadedCatIds = new Set(cats.map((c) => c._id));
+      products.forEach((p) => {
+        if (p.categoryId && !loadedCatIds.has(p.categoryId)) {
+          const source = (Array.isArray(prodData) ? prodData : prodData.items || prodData.results || [])
+            .find((item) => item.id === p._id);
+          if (source && source.category) {
+            cats = cats.concat([mapCategory(source.category)]);
+            loadedCatIds.add(p.categoryId);
+          }
+        }
+      });
       this.setState({ cats, products });
-      this.flash("Catalogue loaded from the backend");
+      this.flash("فهرست محصولات از سرور دریافت شد");
     } catch (err) {
       console.error(err);
-      this.flash("Could not load catalogue — showing sample data");
+      this.flash("دریافت فهرست محصولات ناموفق بود؛ داده‌های نمونه نمایش داده می‌شوند");
     }
   }
 
@@ -1550,7 +1582,7 @@ class Component extends DCLogic {
       return orders;
     } catch (err) {
       console.error(err);
-      this.flash("Could not load orders — " + err.message);
+      this.flash("دریافت سفارش‌ها ناموفق بود؛ " + err.message);
       return [];
     }
   }
@@ -1571,12 +1603,12 @@ class Component extends DCLogic {
 
   advanceOrder = async (o) => {
     const next = NEXT_STATUS[o.status];
-    if (!next) { this.flash("This order has no next step"); return; }
+    if (!next) { this.flash("این سفارش مرحله بعدی ندارد"); return; }
     await this.setOrderStatus(o, next, "Order " + o.no + " marked " + next.replace(/_/g, " "));
   };
 
   returnOrder = async (o) => {
-    if (o.status !== 2 && o.status !== 3) { this.flash("Only shipped or out-for-delivery orders can be returned"); return; }
+    if (o.status !== 2 && o.status !== 3) { this.flash("فقط سفارش‌های ارسال‌شده یا در حال تحویل قابل مرجوعی هستند"); return; }
     await this.setOrderStatus(o, "returned", "Order " + o.no + " marked returned");
   };
 
@@ -1598,8 +1630,8 @@ class Component extends DCLogic {
   openEditor = (p) => this.setState({
     editing: p ? p.id : "new",
     draft: p
-      ? { _id: p._id, id: p.id, name: p.name, cat: p.cat, desc: p.desc, featured: p.featured, kw: p.kw, sizes: p.sizes.map((s) => ({ _id: s._id, label: s.label, price: String(s.price), old: s.old ? String(s.old) : "", out: s.out, qty: s.qty || 0 })) }
-      : { id: "new", name: "", cat: this.state.cats.length ? this.state.cats[0].id : "", desc: "", featured: false, kw: "food", sizes: [{ label: "", price: "", old: "", out: false, qty: 10 }] }
+      ? { _id: p._id, id: p.id, name: p.name, cat: p.cat, categoryId: p.categoryId, desc: p.desc, featured: p.featured, kw: p.kw, sizes: p.sizes.map((s) => ({ _id: s._id, label: s.label, price: String(s.price), old: s.old ? String(s.old) : "", out: s.out, qty: s.qty || 0 })) }
+      : { id: "new", name: "", cat: this.state.cats.length ? this.state.cats[0].id : "", categoryId: this.state.cats.length ? this.state.cats[0]._id : null, desc: "", featured: false, kw: "food", sizes: [{ label: "", price: "", old: "", out: false, qty: 10 }] }
   });
 
   setDraft = (patch) => this.setState((s) => ({ draft: Object.assign({}, s.draft, patch) }));
@@ -1607,11 +1639,11 @@ class Component extends DCLogic {
   save = async () => {
     const d = this.state.draft;
     const wasNew = this.state.editing === "new";
-    if (!d.name.trim()) { this.flash("Give the product a name first"); return; }
+    if (!d.name.trim()) { this.flash("ابتدا نام محصول را وارد کنید"); return; }
     const sizes = d.sizes.filter((s) => s.label.trim()).map((s) => ({ _id: s._id, label: s.label, price: parse(s.price), old: parse(s.old), out: !!s.out, qty: s.qty || 0 }));
-    if (!sizes.length) { this.flash("Add at least one package size"); return; }
-    const cat = this.state.cats.find((c) => c.id === d.cat) || this.state.cats[0];
-    if (!cat || !cat._id) { this.flash("Pick a category first"); return; }
+    if (!sizes.length) { this.flash("حداقل یک اندازه بسته اضافه کنید"); return; }
+    const cat = this.state.cats.find((c) => c.id === d.cat) || this.state.cats.find((c) => c._id === d.categoryId);
+    if (!cat || !cat._id) { this.flash("ابتدا یک دسته‌بندی انتخاب کنید"); return; }
     this.setState({ saving: true });
     try {
       if (wasNew) {
@@ -1632,7 +1664,7 @@ class Component extends DCLogic {
         const created = await apiSend("POST", "/api/products", body);
         const rec = mapProduct(created);
         this.setState((s) => ({ products: [rec].concat(s.products), editing: null, draft: null, saving: false }));
-        this.flash("Product added — live on the shop");
+        this.flash("محصول اضافه شد و در فروشگاه فعال است");
       } else {
         // PATCH /api/products/{id} — UpdateProductRequest
         const body = {
@@ -1678,12 +1710,12 @@ class Component extends DCLogic {
         }
         this.setState((s) => ({
           products: s.products.map((p) => (p.id === d.id ? Object.assign({}, p, {
-            name: body.name, cat: cat.id, desc: body.description, featured: body.is_featured,
+            name: body.name, cat: cat.id, categoryId: cat._id, desc: body.description, featured: body.is_featured,
             sizes: sizes.map((s) => Object.assign({}, s))
           }) : p)),
           editing: null, draft: null, saving: false
         }));
-        this.flash("Changes saved");
+        this.flash("تغییرات ذخیره شد");
       }
     } catch (e) {
       this.setState({ saving: false });
@@ -1693,7 +1725,7 @@ class Component extends DCLogic {
 
   toggleStock = async (p) => {
     const s0 = p.sizes[0];
-    if (!s0 || !s0._id) { this.flash("This product has no package sizes"); return; }
+    if (!s0 || !s0._id) { this.flash("این محصول اندازه بسته ندارد"); return; }
     const nextOut = !s0.out;
     // Optimistic flip, then PATCH stock_qty on the variant (UpdateProductVariantRequest).
     this.patch(p.id, (x) => { x.sizes[0].out = nextOut; return x; });
@@ -1741,7 +1773,7 @@ class Component extends DCLogic {
     try {
       await apiSend("DELETE", "/api/products/" + p._id);
       this.setState((s) => ({ products: s.products.filter((x) => x.id !== p.id) }));
-      this.flash("Product deleted");
+      this.flash("محصول حذف شد");
     } catch (e) {
       this.flash(e.message || "Could not delete the product");
     }
@@ -1760,9 +1792,26 @@ class Component extends DCLogic {
     }
   };
 
+  editCat = async (c) => {
+    const name = window.prompt("نام جدید دسته‌بندی", c.name);
+    if (name === null) return;
+    const nextName = name.trim();
+    if (!nextName) { this.flash("نام دسته‌بندی نمی‌تواند خالی باشد"); return; }
+    if (nextName === c.name) return;
+    try {
+      const updated = await apiSend("PATCH", "/api/categories/" + c._id, { name: nextName });
+      this.setState((s) => ({
+        cats: s.cats.map((x) => (x.id === c.id ? Object.assign({}, x, mapCategory(updated)) : x))
+      }));
+      this.flash("نام دسته‌بندی ویرایش شد");
+    } catch (e) {
+      this.flash(e.message || "ویرایش دسته‌بندی ناموفق بود");
+    }
+  };
+
   addCat = async () => {
     const name = (this.state.newCatName || "").trim();
-    if (name.length < 1) { this.flash("Give the category a name"); return; }
+    if (name.length < 1) { this.flash("نام دسته‌بندی را وارد کنید"); return; }
     this.setState({ catBusy: true });
     try {
       // POST /api/categories — NewCategoryRequest
@@ -1774,7 +1823,7 @@ class Component extends DCLogic {
         is_active: true
       });
       this.setState((s) => ({ cats: s.cats.concat([mapCategory(created)]), newCatName: "", catBusy: false }));
-      this.flash("Category added");
+      this.flash("دسته‌بندی اضافه شد");
     } catch (e) {
       this.setState({ catBusy: false });
       this.flash(e.message || "Could not add the category");
@@ -1786,7 +1835,7 @@ class Component extends DCLogic {
     try {
       await apiSend("DELETE", "/api/categories/" + c._id);
       this.setState((s) => ({ cats: s.cats.filter((x) => x.id !== c.id) }));
-      this.flash("Category deleted");
+      this.flash("دسته‌بندی حذف شد");
     } catch (e) {
       this.flash(e.message || "Could not delete the category");
     }
@@ -1943,29 +1992,29 @@ class Component extends DCLogic {
     const todayBasket = todayOrders.length ? Math.round(todayRevenue / todayOrders.length) : 0;
 
     const navDefs = [
-      { id: "dash", label: "Dashboard", badge: "", dot: GREEN },
-      { id: "analytics", label: "Analytics", badge: "", dot: "#8a6bb0" },
-      { id: "users", label: "Customers", badge: String(USERS.length), dot: "#3c5c9c" },
-      { id: "calendar", label: "Calendar", badge: "", dot: "#5b6ab0" },
-      { id: "products", label: "Products", badge: String(st.products.length), dot: "#b08b52" },
-      { id: "cats", label: "Categories", badge: String(st.cats.length), dot: "#8a6bb0" },
-      { id: "offers", label: "Offers", badge: String(offerProducts.length), dot: ORANGE },
-      { id: "orders", label: "Orders", badge: String(st.orders.filter((o) => o.status < 3).length), dot: "#4a9b62" },
-      { id: "profile", label: "Profile", badge: "", dot: "#b08b52" },
-      { id: "settings", label: "Settings", badge: "", dot: "#7f8896" }
+      { id: "dash", label: "داشبورد", badge: "", dot: GREEN },
+      { id: "analytics", label: "تحلیل‌ها", badge: "", dot: "#8a6bb0" },
+      { id: "users", label: "مشتریان", badge: String(USERS.length), dot: "#3c5c9c" },
+      { id: "calendar", label: "تقویم", badge: "", dot: "#5b6ab0" },
+      { id: "products", label: "محصولات", badge: String(st.products.length), dot: "#b08b52" },
+      { id: "cats", label: "دسته‌بندی‌ها", badge: String(st.cats.length), dot: "#8a6bb0" },
+      { id: "offers", label: "پیشنهادها", badge: String(offerProducts.length), dot: ORANGE },
+      { id: "orders", label: "سفارش‌ها", badge: String(st.orders.filter((o) => o.status < 3).length), dot: "#4a9b62" },
+      { id: "profile", label: "پروفایل", badge: "", dot: "#b08b52" },
+      { id: "settings", label: "تنظیمات", badge: "", dot: "#7f8896" }
     ];
 
     const titles = {
-      dash: ["Good morning, " + st.userName, "Everything that needs you today, in one place."],
-      analytics: ["Analytics", "Every number the shop makes, over a range you choose."],
-      users: ["Customers", "Who buys, how to reach them, and what they asked for."],
-      calendar: ["Calendar", "Selling, buying and shop notes, month by month."],
-      products: ["Products", "Everything you sell. Edits go live immediately."],
-      cats: ["Categories", "Hide a shelf and it disappears from the shop."],
-      offers: ["Offers", "Daily discounts shown at the top of the shop."],
-      orders: ["Orders", "Tap a status to move it along."],
-      profile: ["Profile", "Your account details, straight from the shop's records."],
-      settings: ["Settings", "Store details and delivery rules."]
+      dash: ["صبح بخیر، " + st.userName, "هر چیزی که امروز نیاز به توجه دارد، یکجا."],
+      analytics: ["تحلیل‌ها", "همه اعداد فروشگاه در بازه‌ای که انتخاب می‌کنید."],
+      users: ["مشتریان", "چه کسی خرید می‌کند، چگونه با او تماس بگیرید و چه خواسته‌ای دارد."],
+      calendar: ["تقویم", "فروش، خرید و یادداشت‌های فروشگاه، ماه‌به‌ماه."],
+      products: ["محصولات", "همه چیزهایی که می‌فروشید؛ ویرایش‌ها بلافاصله اعمال می‌شوند."],
+      cats: ["دسته‌بندی‌ها", "یک قفسه را پنهان کنید تا از فروشگاه حذف شود."],
+      offers: ["پیشنهادها", "تخفیف‌های روزانه در بالای فروشگاه نمایش داده می‌شوند."],
+      orders: ["سفارش‌ها", "با انتخاب وضعیت، سفارش را به مرحله بعد ببرید."],
+      profile: ["پروفایل", "جزئیات حساب شما از اطلاعات فروشگاه."],
+      settings: ["تنظیمات", "جزئیات فروشگاه و قوانین ارسال."]
     };
 
     // ---- chart: last 14 days
@@ -2077,27 +2126,27 @@ class Component extends DCLogic {
       profilePhone: st.me ? (st.me.phone || "—") : "—",
       profileSince: st.me && st.me.created_at ? new Date(st.me.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "—",
       profileRows: st.me ? [
-        { label: "Full name", value: st.me.name || "—" },
-        { label: "Phone", value: st.me.phone || "—" },
-        { label: "Role", value: st.me.role || "—" },
-        { label: "Tier", value: st.me.tier || "—" },
-        { label: "SMS updates", value: st.me.sms_opt_in ? "On" : "Off" },
-        { label: "Telegram updates", value: st.me.telegram_opt_in ? "On" : "Off" },
-        { label: "Last seen", value: st.me.last_seen_at ? new Date(st.me.last_seen_at).toLocaleString("en-GB") : "—" },
-        { label: "Joined", value: st.me.created_at ? new Date(st.me.created_at).toLocaleDateString("en-GB") : "—", last: true }
+        { label: "نام و نام خانوادگی", value: st.me.name || "—" },
+        { label: "تلفن", value: st.me.phone || "—" },
+        { label: "نقش", value: st.me.role || "—" },
+        { label: "سطح", value: st.me.tier || "—" },
+        { label: "به‌روزرسانی پیامکی", value: st.me.sms_opt_in ? "فعال" : "غیرفعال" },
+        { label: "به‌روزرسانی تلگرام", value: st.me.telegram_opt_in ? "فعال" : "غیرفعال" },
+        { label: "آخرین بازدید", value: st.me.last_seen_at ? new Date(st.me.last_seen_at).toLocaleString("fa-IR") : "—" },
+        { label: "عضویت از", value: st.me.created_at ? new Date(st.me.created_at).toLocaleDateString("fa-IR") : "—", last: true }
       ] : [],
       goOrders: () => this.setState({ page: "orders" }),
       goProducts: () => this.setState({ page: "products", stock: "out" }),
 
       today: WEEKDAYS[(now.getDay() + 1) % 7] + " " + now.getDate() + " " + MONTHS[now.getMonth()],
       greeting: notSent + (notSent === 1 ? " order waiting to be packed" : " orders waiting to be packed"),
-      dashLine: "Cut-off for same-day delivery is 14:00 — " + outCount + " products need restocking.",
+      dashLine: "آخرین زمان ارسال همان‌روز ۱۴:۰۰ است؛ " + outCount + " محصول نیازمند تأمین موجودی است.",
 
       stats: [
-        { label: "Today's sales", value: money(todayRevenue) + " T", delta: todayOrders.length + " orders placed today", bg: "#eaf6ee", fg: "#0b5c38" },
-        { label: "Open orders", value: String(liveOrders.length), delta: notSent + " still to pack", bg: "#f1efe8", fg: "#5c665f" },
-        { label: "Average basket today", value: money(todayBasket) + " T", delta: "+7% this week", bg: "#f1f2f7", fg: "#495587" },
-        { label: "Out of stock", value: String(outCount), delta: "restock before Monday", bg: "#fff5ef", fg: "#b8451f" }
+        { label: "فروش امروز", value: money(todayRevenue) + " T", delta: todayOrders.length + " سفارش ثبت‌شده امروز", bg: "#eaf6ee", fg: "#0b5c38" },
+        { label: "سفارش‌های باز", value: String(liveOrders.length), delta: notSent + " سفارش در انتظار بسته‌بندی", bg: "#f1efe8", fg: "#5c665f" },
+        { label: "میانگین سبد امروز", value: money(todayBasket) + " T", delta: "+۷٪ این هفته", bg: "#f1f2f7", fg: "#495587" },
+        { label: "ناموجود", value: String(outCount), delta: "نیازمند تأمین موجودی", bg: "#fff5ef", fg: "#b8451f" }
       ],
       chart,
       chartSummary: money(chartTotal) + " T across 14 days · peak " + money(peak) + " T",
@@ -2105,12 +2154,12 @@ class Component extends DCLogic {
       fulfil: [
         { label: "Not sent yet", value: String(notSent), note: "packing or waiting", pct: Math.round((notSent / sendTotal) * 100) + "%", bar: ORANGE, bg: "#fff5ef", fg: "#b8451f", onClick: () => this.setState({ page: "orders", orderFilter: "open" }) },
         { label: "On the way", value: String(inTransit), note: "riders and post", pct: Math.round((inTransit / sendTotal) * 100) + "%", bar: "#3c5c9c", bg: "#eaf2fb", fg: "#3c5c9c", onClick: () => this.setState({ page: "orders", orderFilter: "transit" }) },
-        { label: "Delivered", value: String(delivered), note: "signed for", pct: Math.round((delivered / sendTotal) * 100) + "%", bar: GREEN, bg: "#eaf6ee", fg: "#0b5c38", onClick: () => this.setState({ page: "orders", orderFilter: "done" }) },
-        { label: "Returned", value: String(returned), note: "needs a call", pct: Math.round((returned / sendTotal) * 100) + "%", bar: "#a33232", bg: "#fbe9e9", fg: "#a33232", onClick: () => this.setState({ page: "orders", orderFilter: "issue" }) }
+        { label: "تحویل‌شده", value: String(delivered), note: "تأیید دریافت شده", pct: Math.round((delivered / sendTotal) * 100) + "%", bar: GREEN, bg: "#eaf6ee", fg: "#0b5c38", onClick: () => this.setState({ page: "orders", orderFilter: "done" }) },
+        { label: "مرجوع‌شده", value: String(returned), note: "نیازمند تماس", pct: Math.round((returned / sendTotal) * 100) + "%", bar: "#a33232", bg: "#fbe9e9", fg: "#a33232", onClick: () => this.setState({ page: "orders", orderFilter: "issue" }) }
       ],
       sendNotes: [
         { label: "Waiting at the counter", value: pickups + " pickups" },
-        { label: "Cash to collect on delivery", value: fmt(codOpen) },
+        { label: "مبلغ نقدی هنگام تحویل", value: fmt(codOpen) },
         { label: "Cut-off for same-day", value: "14:00" }
       ],
 
@@ -2150,7 +2199,7 @@ class Component extends DCLogic {
       filterCat: st.filterCat,
       onFilterCat: (e) => { const v = e.target.value; this.setState({ filterCat: v }); },
       catOptions: [{ id: "all", name: "All categories" }].concat(st.cats),
-      stockFilters: [{ id: "all", label: "All" }, { id: "in", label: "In stock" }, { id: "out", label: "Out" }].map((f) => ({
+      stockFilters: [{ id: "all", label: "همه" }, { id: "in", label: "موجود" }, { id: "out", label: "ناموجود" }].map((f) => ({
         label: f.label,
         bg: st.stock === f.id ? INK : "#f1efe8",
         fg: st.stock === f.id ? LIME : INK,
@@ -2168,7 +2217,7 @@ class Component extends DCLogic {
           price: fmt(s0.price),
           discounted: s0.old > 0,
           discount: "was " + fmt(s0.old),
-          stockLabel: s0.out ? "Out of stock" : "In stock",
+          stockLabel: s0.out ? "ناموجود" : "موجود",
           stockBg: s0.out ? "#fdece2" : "#eaf6ee",
           stockFg: s0.out ? "#b8451f" : "#0b5c38",
           onToggleStock: () => this.toggleStock(p),
@@ -2183,25 +2232,30 @@ class Component extends DCLogic {
       newProduct: () => this.openEditor(null),
 
       catCards: st.cats.map((c) => {
-        const n = st.products.filter((p) => p.cat === c.id).length;
+        const n = c.productCount !== null && c.productCount !== undefined
+          ? c.productCount
+          : st.products.filter((p) => p.cat === c.id).length;
         const hidden = !c.is_active;
         return {
           name: c.name, count: n + (n === 1 ? " product" : " products"),
           tint: c.tint, img: photo(c.kw, 200 + (c._id || 0), 400), dim: hidden ? 0.35 : 1,
-          state: hidden ? "Hidden" : "Visible",
+          state: hidden ? "پنهان" : "نمایش داده‌شده",
           bg: hidden ? "#f1efe8" : "#eaf6ee",
           fg: hidden ? "#7d857f" : "#0b5c38",
+          onEdit: () => this.editCat(c),
           onToggle: () => this.toggleCat(c),
           onDelete: () => this.deleteCat(c)
         };
       }),
       catBusy: !!st.catBusy,
+      catBusyOpacity: st.catBusy ? 0.6 : 1,
+      catAddLabel: st.catBusy ? "در حال افزودن…" : "افزودن دسته‌بندی",
       newCatName: st.newCatName,
       onNewCatName: (e) => { const v = e.target.value; this.setState({ newCatName: v }); },
       addCat: () => this.addCat(),
 
       countdown,
-      offersState: st.offersOn ? "Live" : "Paused",
+      offersState: st.offersOn ? "فعال" : "متوقف",
       offersBg: st.offersOn ? "#eaf6ee" : "#f1efe8",
       offersFg: st.offersOn ? "#0b5c38" : "#7d857f",
       toggleOffers: () => this.setState((s) => ({ offersOn: !s.offersOn })),
@@ -2216,7 +2270,7 @@ class Component extends DCLogic {
       }),
       noOffers: offerProducts.length === 0,
 
-      orderFilters: [{ id: "all", label: "All" }, { id: "open", label: "To send" }, { id: "transit", label: "In transit" }, { id: "done", label: "Delivered" }, { id: "issue", label: "Issues" }].map((f) => ({
+      orderFilters: [{ id: "all", label: "همه" }, { id: "open", label: "در انتظار ارسال" }, { id: "transit", label: "در مسیر" }, { id: "done", label: "تحویل‌شده" }, { id: "issue", label: "مشکلات" }].map((f) => ({
         label: f.label,
         count: tabCount(f.id),
         bg: st.orderFilter === f.id ? INK : "#f1efe8",
@@ -2256,10 +2310,10 @@ class Component extends DCLogic {
       advCount: advActive ? "· " + advActive : "",
       advSummary: advActive ? advActive + (advActive === 1 ? " filter applied" : " filters applied") : "No extra filters",
       advGroups: [
-        { label: "Method", opts: optGroup("fMethod", [{ id: "all", label: "Any" }, { id: "Courier", label: "Courier" }, { id: "Post", label: "Post" }, { id: "Pickup", label: "Pickup" }]) },
-        { label: "Payment", opts: optGroup("fPay", [{ id: "all", label: "Any" }, { id: "paid", label: "Paid" }, { id: "cod", label: "Cash on delivery" }]) },
-        { label: "Placed", opts: optGroup("fWhen", [{ id: "all", label: "Any" }, { id: "today", label: "Today" }, { id: "earlier", label: "Earlier" }]) },
-        { label: "Carrier", opts: optGroup("fCourier", [{ id: "all", label: "Any" }, { id: "In-house rider", label: "In-house rider" }, { id: "Tipax", label: "Tipax" }, { id: "National post", label: "National post" }, { id: "—", label: "Counter" }]) }
+        { label: "روش", opts: optGroup("fMethod", [{ id: "all", label: "همه" }, { id: "Courier", label: "پیک" }, { id: "Post", label: "پست" }, { id: "Pickup", label: "تحویل حضوری" }]) },
+        { label: "پرداخت", opts: optGroup("fPay", [{ id: "all", label: "همه" }, { id: "paid", label: "پرداخت‌شده" }, { id: "cod", label: "پرداخت در محل" }]) },
+        { label: "زمان ثبت", opts: optGroup("fWhen", [{ id: "all", label: "همه" }, { id: "today", label: "امروز" }, { id: "earlier", label: "قبلی" }]) },
+        { label: "حامل", opts: optGroup("fCourier", [{ id: "all", label: "همه" }, { id: "In-house rider", label: "پیک فروشگاه" }, { id: "Tipax", label: "تیپاکس" }, { id: "National post", label: "پست" }, { id: "—", label: "پیشخوان" }]) }
       ],
       minValue: st.minValue,
       minValueLabel: st.minValue > 0 ? "over " + fmt(st.minValue) : "any value",
@@ -2269,12 +2323,12 @@ class Component extends DCLogic {
         const i = st.orders.indexOf(o);
         return {
           no: o.no, customer: o.customer, phone: o.phone, detail: o.detail,
-          method: o.method, dest: o.dest, slot: o.slot, placed: "Placed " + o.placed,
+          method: o.method, methodLabel: METHOD_PERSIAN[o.method] || o.method, dest: o.dest, slot: o.slot, placed: "ثبت‌شده " + o.placed,
           courier: o.courier, tracking: o.tracking || "no tracking yet",
           hasTracking: !!o.tracking,
           methodBg: o.method === "Pickup" ? "#f1f2f7" : o.method === "Post" ? "#eaf2fb" : "#eaf6ee",
           methodFg: o.method === "Pickup" ? "#495587" : o.method === "Post" ? "#3c5c9c" : "#0b5c38",
-          paidLabel: o.paid ? "Paid" : "Cash on delivery",
+          paidLabel: o.paid ? "پرداخت‌شده" : "پرداخت در محل",
           paidBg: o.paid ? "#eaf6ee" : "#fdf4e0",
           paidFg: o.paid ? "#0b5c38" : "#a3730a",
           total: fmt(o.total),
@@ -2299,8 +2353,8 @@ class Component extends DCLogic {
           hasCustNote: !!(custOf(o) && custOf(o).note),
           onOpenCustomer: () => this.setState({ page: "users", userTab: "all", userQuery: o.customer }),
           nextLabel: NEXT_STATUS[o.status]
-            ? "Mark " + STATUS[o.status + 1].label.toLowerCase()
-            : o.status === 4 ? "Delivered — all done" : o.status === 5 ? "Returned — needs care" : "Cancelled",
+            ? "ثبت " + STATUS[o.status + 1].label
+            : o.status === 4 ? "تحویل‌شده، تمام" : o.status === 5 ? "مرجوع‌شده، نیازمند پیگیری" : "لغو شده",
           nextDisabled: !NEXT_STATUS[o.status],
           nextBg: NEXT_STATUS[o.status] ? "#12211a" : "#f1efe8",
           nextFg: NEXT_STATUS[o.status] ? "#d8f24b" : "#a2a89f",
@@ -2335,11 +2389,11 @@ class Component extends DCLogic {
         onRemove: () => this.setDraft({ sizes: d0.sizes.filter((x, j) => j !== i) })
       })),
       addSize: () => this.setDraft({ sizes: d0.sizes.concat([{ label: "", price: "", old: "", out: false }]) }),
-      draftStockLabel: draftOut ? "Out of stock" : "In stock",
+      draftStockLabel: draftOut ? "ناموجود" : "موجود",
       draftStockBg: draftOut ? "#fdece2" : "#eaf6ee",
       draftStockFg: draftOut ? "#b8451f" : "#0b5c38",
       toggleDraftStock: () => this.setDraft({ sizes: d0.sizes.map((x, j) => (j === 0 ? Object.assign({}, x, { out: !x.out }) : x)) }),
-      draftFeatLabel: d0.featured ? "Featured" : "Not featured",
+      draftFeatLabel: d0.featured ? "ویژه" : "غیرویژه",
       draftFeatBg: d0.featured ? "#fdf4e0" : "#f1efe8",
       draftFeatFg: d0.featured ? "#8a6508" : "#5c665f",
       toggleDraftFeature: () => this.setDraft({ featured: !d0.featured }),
@@ -2358,7 +2412,7 @@ class Component extends DCLogic {
       exportPdf: () => this.flash("Report for " + RANGES[st.range].label.toLowerCase() + " sent to PDF"),
       kpis: [
         { label: "Revenue", value: money(rangeSell) + " T", delta: "+18% vs previous", bg: "#eaf6ee", fg: "#0b5c38" },
-        { label: "Orders", value: String(rangeOrders), delta: "+9% vs previous", bg: "#f1efe8", fg: "#5c665f" },
+        { label: "سفارش‌ها", value: String(rangeOrders), delta: "+۹٪ نسبت به قبل", bg: "#f1efe8", fg: "#5c665f" },
         { label: "Average basket", value: money(Math.round(rangeSell / rangeOrders)) + " T", delta: "+7% vs previous", bg: "#f1f2f7", fg: "#495587" },
         { label: "Returns", value: "1.4%", delta: "−0.3pt vs previous", bg: "#fff5ef", fg: "#b8451f" }
       ],
@@ -2375,7 +2429,7 @@ class Component extends DCLogic {
 
       userSearch: st.userQuery,
       onUserSearch: (e) => { const v = e.target.value; this.setState({ userQuery: v }); },
-      userTabs: [{ id: "all", label: "All" }, { id: "gold", label: "Regulars" }, { id: "silver", label: "Returning" }, { id: "new", label: "New" }, { id: "risk", label: "Needs care" }].map((t) => ({
+      userTabs: [{ id: "all", label: "همه" }, { id: "gold", label: "همیشگی" }, { id: "silver", label: "بازگشتی" }, { id: "new", label: "جدید" }, { id: "risk", label: "نیازمند توجه" }].map((t) => ({
         label: t.label,
         count: t.id === "all" ? USERS.length : USERS.filter((u) => u.tier === t.id).length,
         bg: st.userTab === t.id ? INK : "#f1efe8",
@@ -2383,7 +2437,7 @@ class Component extends DCLogic {
         onClick: () => this.setState({ userTab: t.id })
       })),
       userStats: [
-        { label: "Customers", value: String(USERS.length), bg: "#f1efe8", fg: "#5c665f" },
+        { label: "مشتریان", value: String(USERS.length), bg: "#f1efe8", fg: "#5c665f" },
         { label: "On Telegram", value: tgCount + " of " + USERS.length, bg: "#eaf2fb", fg: "#3c5c9c" },
         { label: "SMS opted in", value: smsCount + " of " + USERS.length, bg: "#eaf6ee", fg: "#0b5c38" },
         { label: "Need a call", value: String(USERS.filter((u) => u.tier === "risk").length), bg: "#fbe9e9", fg: "#a33232" }
@@ -2395,9 +2449,9 @@ class Component extends DCLogic {
       uAdvFg: st.uAdvOpen || uAdvActive ? LIME : INK,
       uAdvCount: uAdvActive ? "· " + uAdvActive : "",
       uAdvGroups: [
-        { label: "Reachable on", opts: uOpt("uChannel", [{ id: "all", label: "Any" }, { id: "tg", label: "Telegram" }, { id: "sms", label: "SMS" }]) },
-        { label: "Where", opts: uOpt("uCity", [{ id: "all", label: "Anywhere" }, { id: "tehran", label: "Tehran" }, { id: "other", label: "Other cities" }]) },
-        { label: "Orders", opts: uOpt("uActive", [{ id: "all", label: "Any" }, { id: "open", label: "Has an open order" }, { id: "none", label: "Never ordered" }]) }
+        { label: "راه ارتباطی", opts: uOpt("uChannel", [{ id: "all", label: "همه" }, { id: "tg", label: "تلگرام" }, { id: "sms", label: "پیامک" }]) },
+        { label: "مکان", opts: uOpt("uCity", [{ id: "all", label: "همه‌جا" }, { id: "tehran", label: "تهران" }, { id: "other", label: "شهرهای دیگر" }]) },
+        { label: "سفارش‌ها", opts: uOpt("uActive", [{ id: "all", label: "همه" }, { id: "open", label: "سفارش باز دارد" }, { id: "none", label: "تاکنون سفارشی نداشته" }]) }
       ],
       uMinSpend: st.uMinSpend,
       uMinSpendLabel: st.uMinSpend > 0 ? "spent over " + money(st.uMinSpend) + " T" : "any spend",
@@ -2407,18 +2461,18 @@ class Component extends DCLogic {
         name: u.name, phone: u.phone, city: u.city, note: u.note, hasNote: !!u.note,
         initials: u.name.split(" ").map((x) => x[0]).join("").slice(0, 2),
         tier: TIERS[u.tier].label, tierBg: TIERS[u.tier].bg, tierFg: TIERS[u.tier].fg,
-        orders: u.orders + " orders",
+        orders: u.orders + " سفارش",
         spend: money(u.spend) + " T",
-        last: "Last order " + u.last,
-        tgLabel: u.tg ? "Telegram linked" : "No Telegram",
+        last: "آخرین سفارش " + u.last,
+        tgLabel: u.tg ? "تلگرام متصل است" : "تلگرام ندارد",
         tgBg: u.tg ? "#eaf2fb" : "#f1efe8",
         tgFg: u.tg ? "#3c5c9c" : "#9aa39c",
-        smsLabel: u.sms ? "SMS on" : "SMS off",
+        smsLabel: u.sms ? "پیامک فعال" : "پیامک غیرفعال",
         smsBg: u.sms ? "#eaf6ee" : "#f1efe8",
         smsFg: u.sms ? "#0b5c38" : "#9aa39c",
-        ordersLabel: "View " + u.orders + " orders",
-        lastLabel: "avg " + money(Math.round(u.spend / u.orders)) + " T a basket",
-        lastSub: "Last order " + u.last,
+        ordersLabel: "مشاهده " + u.orders + " سفارش",
+        lastLabel: "میانگین سبد " + money(Math.round(u.spend / u.orders)) + " T",
+        lastSub: "آخرین سفارش " + u.last,
         onAllOrders: () => this.setState({ page: "orders", custFilter: u.id, orderQuery: "", orderFilter: "all", fMethod: "all", fPay: "all", fWhen: "all", fCourier: "all", minValue: 0, orderPage: 0 }),
         onTelegram: () => this.flash(u.tg ? "Telegram message opened for " + u.name : u.name + " has no Telegram linked"),
         onSms: () => this.flash("SMS composer opened for " + u.phone),
@@ -2434,7 +2488,7 @@ class Component extends DCLogic {
       toggleBell: () => this.setState((s) => ({ bellOpen: !s.bellOpen })),
       closeBell: () => this.setState({ bellOpen: false }),
       markAllRead: () => { this.setState((s) => ({ notifs: s.notifs.map((n) => Object.assign({}, n, { unread: false })) })); this.flash("All notifications marked read"); },
-      notifTabs: [{ id: "all", label: "All" }, { id: "order", label: "Orders" }, { id: "stock", label: "Stock" }, { id: "offer", label: "Offers" }, { id: "message", label: "Messages" }].map((t) => ({
+      notifTabs: [{ id: "all", label: "همه" }, { id: "order", label: "سفارش‌ها" }, { id: "stock", label: "موجودی" }, { id: "offer", label: "پیشنهادها" }, { id: "message", label: "پیام‌ها" }].map((t) => ({
         label: t.label,
         count: t.id === "all" ? st.notifs.length : st.notifs.filter((n) => n.kind === t.id).length,
         bg: st.notifTab === t.id ? INK : "#f1efe8",
