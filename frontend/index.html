@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,15 +10,15 @@
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <script src="./image-slot.js"></script>
 <style>
-  body { margin: 0; background: #fbfaf7; color: #12211a; font-family: "Plus Jakarta Sans", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { margin: 0; background: #fbfaf7; color: #12211a; font-family: "Vazirmatn", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
   * { box-sizing: border-box; }
   a { color: #0f7a4a; text-decoration: none; }
   a:hover { color: #0b5c38; }
   button, input, textarea, select { font: inherit; color: inherit; }
-  h1, h2, h3 { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; letter-spacing: -0.03em; margin: 0; }
+  h1, h2, h3 { font-family: "Vazirmatn", system-ui, sans-serif; font-weight: 800; margin: 0; }
   .noscroll::-webkit-scrollbar { width: 0; height: 0; }
   .wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
   .pgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -43,7 +43,7 @@
     .drawer { width: 420px; }
   }
   @keyframes riseIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+  @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 </style>
 </helmet>
 
@@ -55,25 +55,25 @@
         <span style="width: 30px; height: 30px; border-radius: 10px; background: #0f7a4a; display: flex; align-items: center; justify-content: center;">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"></path><path d="M2 21c0-3 1.9-5.4 5.1-6C9.5 14.5 12 13 13 12"></path></svg>
         </span>
-        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -0.03em;">Doone Herb</span>
+        <span style="font-family: 'Vazirmatn', sans-serif; font-weight: 800; font-size: 19px;">دونه هرب</span>
       </button>
 
-      <div class="d-only" style="flex: 1; max-width: 460px; margin-left: 14px; align-items: center; gap: 10px; height: 42px; padding: 0 16px; border-radius: 999px; background: #f1efe8;">
+      <div class="d-only" style="flex: 1; max-width: 460px; margin-right: 14px; align-items: center; gap: 10px; height: 42px; padding: 0 16px; border-radius: 999px; background: #f1efe8;">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7d857f" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path></svg>
-        <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Search saffron, pistachio, rosewater…" style="flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 14px;" />
+        <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="جستجوی زعفران، پسته، گلاب…" style="flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 14px;" />
       </div>
 
-      <button onClick="{{ goHelp }}" class="d-only" style="margin-left: auto; border: 0; background: none; cursor: pointer; font-size: 14px; font-weight: 500;">Delivery &amp; help</button>
+      <button onClick="{{ goHelp }}" class="d-only" style="margin-right: auto; border: 0; background: none; cursor: pointer; font-size: 14px; font-weight: 500;">ارسال و راهنما</button>
 
-      <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+      <div style="margin-right: auto; display: flex; align-items: center; gap: 8px;">
         <div style="position: relative;">
           <button onClick="{{ toggleAccount }}" style="height: 42px; padding: 0 6px 0 6px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: {{ acctBg }}; color: {{ acctFg }}; cursor: pointer; font-size: 13.5px; font-weight: 600;">
             <span style="width: 32px; height: 32px; border-radius: 999px; background: {{ avatarBg }}; color: {{ avatarFg }}; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">{{ avatarText }}</span>
-            <span class="d-only" style="padding-right: 10px; white-space: nowrap;">{{ acctLabel }}</span>
+            <span class="d-only" style="padding-left: 10px; white-space: nowrap;">{{ acctLabel }}</span>
           </button>
 
           <sc-if value="{{ acctOpen }}" hint-placeholder-val="{{ false }}">
-            <div style="position: absolute; top: 52px; right: 0; z-index: 60; width: 290px; max-width: calc(100vw - 32px); border-radius: 22px; background: #fff; border: 1px solid #eceae3; box-shadow: 0 22px 50px -22px rgba(18,33,26,0.4); padding: 16px; display: flex; flex-direction: column; gap: 12px; animation: riseIn 0.16s ease-out;">
+            <div style="position: absolute; top: 52px; left: 0; z-index: 60; width: 290px; max-width: calc(100vw - 32px); border-radius: 22px; background: #fff; border: 1px solid #eceae3; box-shadow: 0 22px 50px -22px rgba(18,33,26,0.4); padding: 16px; display: flex; flex-direction: column; gap: 12px; animation: riseIn 0.16s ease-out;">
               <sc-if value="{{ loggedOut }}" hint-placeholder-val="{{ true }}">
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                   <div>
@@ -83,29 +83,29 @@
 
                   <sc-if value="{{ forgotClosed }}" hint-placeholder-val="{{ true }}">
                     <div style="display: flex; gap: 6px; padding: 4px; border-radius: 999px; background: #f1efe8;">
-                      <button onClick="{{ tabPw.onClick }}" style="flex: 1; height: 34px; border: 0; border-radius: 999px; background: {{ tabPw.bg }}; color: {{ tabPw.fg }}; font-size: 12.5px; font-weight: 700; cursor: pointer;">Password</button>
-                      <button onClick="{{ tabOtp.onClick }}" style="flex: 1; height: 34px; border: 0; border-radius: 999px; background: {{ tabOtp.bg }}; color: {{ tabOtp.fg }}; font-size: 12.5px; font-weight: 700; cursor: pointer;">SMS code</button>
+                      <button onClick="{{ tabPw.onClick }}" style="flex: 1; height: 34px; border: 0; border-radius: 999px; background: {{ tabPw.bg }}; color: {{ tabPw.fg }}; font-size: 12.5px; font-weight: 700; cursor: pointer;">رمز عبور</button>
+                      <button onClick="{{ tabOtp.onClick }}" style="flex: 1; height: 34px; border: 0; border-radius: 999px; background: {{ tabOtp.bg }}; color: {{ tabOtp.fg }}; font-size: 12.5px; font-weight: 700; cursor: pointer;">کد پیامکی</button>
                     </div>
                   </sc-if>
 
                   <sc-if value="{{ showPwForm }}" hint-placeholder-val="{{ true }}">
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                       <sc-if value="{{ signupMode }}" hint-placeholder-val="{{ false }}">
-                        <input value="{{ signupName }}" onChange="{{ onSignupName }}" placeholder="Full name" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                        <input value="{{ signupName }}" onChange="{{ onSignupName }}" placeholder="نام و نام خانوادگی" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
                       </sc-if>
-                      <input value="{{ loginUser }}" onChange="{{ onLoginUser }}" placeholder="Email" autocomplete="email" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                      <input value="{{ loginUser }}" onChange="{{ onLoginUser }}" placeholder="ایمیل" autocomplete="email" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
                       <input type="password" value="{{ loginPass }}" onChange="{{ onLoginPass }}" placeholder="{{ pwPlaceholder }}" autocomplete="current-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
                       <sc-if value="{{ signupMode }}" hint-placeholder-val="{{ false }}">
-                        <input value="{{ signupPhone }}" onChange="{{ onSignupPhone }}" placeholder="Phone · 0912 000 0000" autocomplete="tel" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                        <input value="{{ signupPhone }}" onChange="{{ onSignupPhone }}" placeholder="موبایل · ۰۹۱۲ ۰۰۰ ۰۰۰۰" autocomplete="tel" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
                       </sc-if>
                       <sc-if value="{{ signupMode }}" hint-placeholder-val="{{ false }}">
-                        <input type="password" value="{{ signupPass2 }}" onChange="{{ onSignupPass2 }}" placeholder="Repeat password" autocomplete="new-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                        <input type="password" value="{{ signupPass2 }}" onChange="{{ onSignupPass2 }}" placeholder="تکرار رمز عبور" autocomplete="new-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
                       </sc-if>
                       <button onClick="{{ doPwAuth }}" disabled="{{ authBusy }}" style="height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14.5px; font-weight: 700; cursor: pointer; opacity: {{ authBusy ? 0.6 : 1 }};">{{ pwCta }}</button>
                       <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                         <button onClick="{{ toggleSignup }}" style="border: 0; background: none; padding: 0; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #0f7a4a;">{{ signupToggleLabel }}</button>
                         <sc-if value="{{ signinMode }}" hint-placeholder-val="{{ true }}">
-                          <button onClick="{{ openForgot }}" style="border: 0; background: none; padding: 0; cursor: pointer; font-size: 12.5px; font-weight: 500; color: #7d857f;">Forgot password?</button>
+                          <button onClick="{{ openForgot }}" style="border: 0; background: none; padding: 0; cursor: pointer; font-size: 12.5px; font-weight: 500; color: #7d857f;">رمز عبور را فراموش کرده‌اید؟</button>
                         </sc-if>
                       </div>
                     </div>
@@ -113,23 +113,23 @@
 
                   <sc-if value="{{ showOtpForm }}" hint-placeholder-val="{{ false }}">
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                      <input value="{{ loginPhone }}" onChange="{{ onLoginPhone }}" placeholder="0912 000 0000" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                      <input value="{{ loginPhone }}" onChange="{{ onLoginPhone }}" placeholder="۰۹۱۲ ۰۰۰ ۰۰۰۰" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
                       <sc-if value="{{ codeSent }}" hint-placeholder-val="{{ false }}">
-                        <input value="{{ loginCode }}" onChange="{{ onLoginCode }}" placeholder="4-digit code · 1234" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; letter-spacing: 0.2em;" />
+                        <input value="{{ loginCode }}" onChange="{{ onLoginCode }}" placeholder="کد ۴ رقمی · ۱۲۳۴" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; letter-spacing: 0.2em;" />
                       </sc-if>
                       <button onClick="{{ doLogin }}" style="height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14.5px; font-weight: 700; cursor: pointer;">{{ loginCta }}</button>
-                      <span style="font-size: 12px; color: #8b918c; line-height: 1.5;">Prefer a code? We text a one-time password to your mobile — no password to remember.</span>
+                      <span style="font-size: 12px; color: #8b918c; line-height: 1.5;">رمز عبور را فراموش کرده‌اید؟ یک رمز یک‌بارمصرف برایتان پیامک می‌کنیم — نیازی به به‌خاطر سپردن رمز نیست.</span>
                     </div>
                   </sc-if>
 
                   <sc-if value="{{ forgotOpen }}" hint-placeholder-val="{{ false }}">
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                      <input value="{{ forgotUser }}" onChange="{{ onForgotUser }}" placeholder="Email" autocomplete="email" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+                      <input value="{{ forgotUser }}" onChange="{{ onForgotUser }}" placeholder="ایمیل" autocomplete="email" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
                       <sc-if value="{{ forgotSent }}" hint-placeholder-val="{{ false }}">
-                        <div style="background: #eaf6ee; border-radius: 16px; padding: 12px 14px; font-size: 12.5px; color: #0b5c38; line-height: 1.55;">Reset link sent to <b>{{ forgotUser }}</b>. Open it from your email to choose a new password — the link expires in one hour.</div>
+                        <div style="background: #eaf6ee; border-radius: 16px; padding: 12px 14px; font-size: 12.5px; color: #0b5c38; line-height: 1.55;">لینک بازیابی به <b>{{ forgotUser }}</b> ارسال شد. آن را از ایمیل خود باز کنید و رمز جدید انتخاب کنید — لینک یک ساعت اعتبار دارد.</div>
                       </sc-if>
                       <button onClick="{{ doForgot }}" disabled="{{ authBusy }}" style="height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14.5px; font-weight: 700; cursor: pointer; opacity: {{ authBusy ? 0.6 : 1 }};">{{ forgotCta }}</button>
-                      <button onClick="{{ closeForgot }}" style="border: 0; background: none; padding: 0; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #0f7a4a; align-self: flex-start;">← Back to sign in</button>
+                      <button onClick="{{ closeForgot }}" style="border: 0; background: none; padding: 0; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #0f7a4a; align-self: flex-start;">→ بازگشت به ورود</button>
                     </div>
                   </sc-if>
 
@@ -151,11 +151,11 @@
                   <div style="display: flex; gap: 8px;">
                     <span style="flex: 1; border-radius: 14px; background: #fbfaf7; padding: 9px 12px; display: flex; flex-direction: column;">
                       <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums;">{{ myOrderCount }}</span>
-                      <span style="font-size: 11px; color: #8b918c;">orders</span>
+                      <span style="font-size: 11px; color: #8b918c;">سفارش</span>
                     </span>
                     <span style="flex: 1; border-radius: 14px; background: #fbfaf7; padding: 9px 12px; display: flex; flex-direction: column;">
                       <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums;">{{ myActiveCount }}</span>
-                      <span style="font-size: 11px; color: #8b918c;">on the way</span>
+                      <span style="font-size: 11px; color: #8b918c;">در راه</span>
                     </span>
                   </div>
                   <sc-for list="{{ acctLinks }}" as="l" hint-placeholder-count="4">
@@ -164,14 +164,14 @@
                       <span style="font-size: 12px; opacity: 0.6; font-variant-numeric: tabular-nums;">{{ l.badge }}</span>
                     </button>
                   </sc-for>
-                  <button onClick="{{ doLogout }}" style="height: 42px; border: 0; border-radius: 999px; background: #fff; color: #b8451f; font-size: 13px; font-weight: 700; cursor: pointer;">Sign out</button>
+                  <button onClick="{{ doLogout }}" style="height: 42px; border: 0; border-radius: 999px; background: #fff; color: #b8451f; font-size: 13px; font-weight: 700; cursor: pointer;">خروج از حساب</button>
                 </div>
               </sc-if>
             </div>
           </sc-if>
         </div>
 
-        <button onClick="{{ openCart }}" style="flex: none; height: 42px; padding: 0 8px 0 18px; display: flex; align-items: center; gap: 10px; border: 0; border-radius: 999px; background: #12211a; color: #fbfaf7; cursor: pointer; font-size: 14px; font-weight: 600;">
+        <button onClick="{{ openCart }}" style="flex: none; height: 42px; padding: 0 18px 0 8px; display: flex; align-items: center; gap: 10px; border: 0; border-radius: 999px; background: #12211a; color: #fbfaf7; cursor: pointer; font-size: 14px; font-weight: 600;">
           <span class="d-only" style="font-variant-numeric: tabular-nums;">{{ cartTotal }}</span>
           <span style="min-width: 26px; height: 26px; padding: 0 7px; border-radius: 999px; background: #d8f24b; color: #12211a; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums;">{{ cartCount }}</span>
         </button>
@@ -185,15 +185,15 @@
       <div class="wrap" style="padding-top: 16px;">
         <div class="banner">
           <div style="position: relative; min-height: 260px; border-radius: 24px; overflow: hidden; background: #0f7a4a; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 24px;">
-            <div style="position: absolute; inset: 0; background-image: url('https://loremflickr.com/1600/900/saffron,pistachio,dried,fruit?lock=42'); background-size: cover; background-position: center; -webkit-mask-image: linear-gradient(100deg, transparent 6%, rgba(0,0,0,0.55) 34%, #000 62%, #000 100%); mask-image: linear-gradient(100deg, transparent 6%, rgba(0,0,0,0.55) 34%, #000 62%, #000 100%); pointer-events: none;"></div>
-            <div style="position: absolute; inset: 0; background: linear-gradient(100deg, #0b3a24 0%, rgba(11,58,36,0.94) 30%, rgba(60,52,28,0.55) 56%, rgba(122,62,24,0.78) 82%, #7a3c14 100%); pointer-events: none;"></div>
+            <div style="position: absolute; inset: 0; background-image: url('https://loremflickr.com/1600/900/saffron,pistachio,dried,fruit?lock=42'); background-size: cover; background-position: center; -webkit-mask-image: linear-gradient(260deg, transparent 6%, rgba(0,0,0,0.55) 34%, #000 62%, #000 100%); mask-image: linear-gradient(260deg, transparent 6%, rgba(0,0,0,0.55) 34%, #000 62%, #000 100%); pointer-events: none;"></div>
+            <div style="position: absolute; inset: 0; background: linear-gradient(260deg, #0b3a24 0%, rgba(11,58,36,0.94) 30%, rgba(60,52,28,0.55) 56%, rgba(122,62,24,0.78) 82%, #7a3c14 100%); pointer-events: none;"></div>
             <div style="position: relative; display: flex; flex-direction: column; gap: 14px; max-width: 460px;">
-              <span style="align-self: flex-start; padding: 5px 12px; border-radius: 999px; background: #d8f24b; color: #12211a; font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">{{ countdown }}</span>
-              <h1 style="font-size: 38px; line-height: 1.02; color: #fff;">Fresh from the bazaar, at your door by tonight.</h1>
-              <p style="margin: 0; font-size: 14.5px; line-height: 1.6; opacity: 0.85; text-wrap: pretty;">Order before 14:00 in Tehran. Everything weighed and packed the same morning.</p>
+              <span style="align-self: flex-start; padding: 5px 12px; border-radius: 999px; background: #d8f24b; color: #12211a; font-size: 11.5px; font-weight: 700;">{{ countdown }}</span>
+              <h1 style="font-size: 38px; line-height: 1.35; color: #fff;">تازه از بازار، امشب درِ خانه شما.</h1>
+              <p style="margin: 0; font-size: 14.5px; line-height: 1.8; opacity: 0.85; text-wrap: pretty;">در تهران تا قبل از ساعت ۱۴ سفارش دهید. همه‌چیز صبحِ همان روز توزین و بسته‌بندی می‌شود.</p>
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onClick="{{ scrollShop }}" style="height: 48px; padding: 0 22px; border: 0; border-radius: 999px; background: #d8f24b; color: #12211a; font-size: 15px; font-weight: 700; cursor: pointer;">Start shopping</button>
-                <button onClick="{{ scrollOffers }}" style="height: 48px; padding: 0 22px; border: 1px solid rgba(255,255,255,0.4); background: none; color: #fff; border-radius: 999px; font-size: 15px; font-weight: 600; cursor: pointer;">See offers</button>
+                <button onClick="{{ scrollShop }}" style="height: 48px; padding: 0 22px; border: 0; border-radius: 999px; background: #d8f24b; color: #12211a; font-size: 15px; font-weight: 700; cursor: pointer;">شروع خرید</button>
+                <button onClick="{{ scrollOffers }}" style="height: 48px; padding: 0 22px; border: 1px solid rgba(255,255,255,0.4); background: none; color: #fff; border-radius: 999px; font-size: 15px; font-weight: 600; cursor: pointer;">مشاهده تخفیف‌ها</button>
               </div>
             </div>
           </div>
@@ -204,8 +204,8 @@
                 <image-slot id="v2-promo-a" src="https://loremflickr.com/300/300/saffron,spice?lock=11" shape="rect" placeholder="saffron"></image-slot>
               </div>
               <div style="min-width: 0;">
-                <h3 style="font-size: 19px; line-height: 1.1;">Saffron, graded</h3>
-                <p style="margin: 5px 0 0; font-size: 13px; line-height: 1.5; color: #6b5c4c;">Every batch ships with its lab sheet.</p>
+                <h3 style="font-size: 19px; line-height: 1.4;">زعفران، درجه‌بندی‌شده</h3>
+                <p style="margin: 5px 0 0; font-size: 13px; line-height: 1.7; color: #6b5c4c;">هر محموله همراه با برگه آزمایش ارسال می‌شود.</p>
               </div>
             </div>
             <div style="flex: 1; min-height: 120px; border-radius: 24px; background: #eaf2ff; padding: 20px; display: flex; align-items: center; gap: 16px;">
@@ -213,8 +213,8 @@
                 <image-slot id="v2-promo-b" src="https://loremflickr.com/300/300/grocery,delivery,box?lock=13" shape="rect" placeholder="delivery box"></image-slot>
               </div>
               <div style="min-width: 0;">
-                <h3 style="font-size: 19px; line-height: 1.1;">Free over 900k</h3>
-                <p style="margin: 5px 0 0; font-size: 13px; line-height: 1.5; color: #4d5b70;">Same-day courier across Tehran.</p>
+                <h3 style="font-size: 19px; line-height: 1.4;">رایگان برای بالای ۹۰۰ هزار</h3>
+                <p style="margin: 5px 0 0; font-size: 13px; line-height: 1.7; color: #4d5b70;">پیک همان‌روز در سراسر تهران.</p>
               </div>
             </div>
           </div>
@@ -239,15 +239,15 @@
           <div style="border-radius: 20px; background: #fff5ef; border: 1px solid #f7ddcd; padding: 14px 14px 16px;">
             <div style="display: flex; align-items: center; gap: 10px; padding: 0 2px 12px;">
               <span style="width: 8px; height: 8px; border-radius: 999px; background: #e4572e;"></span>
-              <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #b8451f;">Today only</span>
-              <span style="margin-left: auto; font-size: 12px; font-weight: 600; color: #b8451f;">{{ countdown }}</span>
+              <span style="font-size: 13px; font-weight: 700; color: #b8451f;">فقط امروز</span>
+              <span style="margin-right: auto; font-size: 12px; font-weight: 600; color: #b8451f;">{{ countdown }}</span>
             </div>
             <div class="noscroll" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 2px;">
               <sc-for list="{{ offers }}" as="p" hint-placeholder-count="4">
                 <div style="flex: none; width: 244px; display: flex; align-items: center; gap: 11px; padding: 8px; background: #fff; border: 1px solid #f2e0d4; border-radius: 14px;">
                   <div onClick="{{ p.onOpen }}" style="position: relative; width: 58px; height: 58px; flex: none; border-radius: 11px; overflow: hidden; background: {{ p.tint }}; cursor: pointer;">
                     <image-slot id="{{ p.slotId }}" src="{{ p.img }}" shape="rect" placeholder="{{ p.name }}"></image-slot>
-                    <span style="position: absolute; left: 0; bottom: 0; right: 0; padding: 2px 0; background: #e4572e; color: #fff; font-size: 10px; font-weight: 700; text-align: center; pointer-events: none;">{{ p.badge }}</span>
+                    <span style="position: absolute; right: 0; bottom: 0; left: 0; padding: 2px 0; background: #e4572e; color: #fff; font-size: 10px; font-weight: 700; text-align: center; pointer-events: none;">{{ p.badge }}</span>
                   </div>
                   <div onClick="{{ p.onOpen }}" style="flex: 1; min-width: 0; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; gap: 1px;">
                     <span style="font-size: 13px; font-weight: 600; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.name }}</span>
@@ -281,7 +281,7 @@
             <div style="display: flex; align-items: center; gap: 12px;">
               <span style="width: 10px; height: 10px; border-radius: 999px; background: {{ g.dot }};"></span>
               <h2 style="font-size: 24px;">{{ g.name }}</h2>
-              <span style="margin-left: auto; font-size: 12.5px; color: #7d857f;">{{ g.count }}</span>
+              <span style="margin-right: auto; font-size: 12.5px; color: #7d857f;">{{ g.count }}</span>
             </div>
             <div class="pgrid">
               <sc-for list="{{ g.items }}" as="p" hint-placeholder-count="4">
@@ -289,13 +289,13 @@
                   <div onClick="{{ p.onOpen }}" style="position: relative; aspect-ratio: 1; background: {{ p.tint }}; cursor: pointer; opacity: {{ p.dim }};">
                     <image-slot id="{{ p.slotId }}" src="{{ p.img }}" shape="rect" placeholder="{{ p.name }}"></image-slot>
                     <sc-if value="{{ p.discounted }}" hint-placeholder-val="{{ false }}">
-                      <span style="position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 999px; background: #e4572e; color: #fff; font-size: 11.5px; font-weight: 700; pointer-events: none;">{{ p.badge }}</span>
+                      <span style="position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 999px; background: #e4572e; color: #fff; font-size: 11.5px; font-weight: 700; pointer-events: none;">{{ p.badge }}</span>
                     </sc-if>
                     <sc-if value="{{ p.multi }}" hint-placeholder-val="{{ false }}">
-                      <span style="position: absolute; bottom: 10px; left: 10px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.92); color: #12211a; font-size: 11.5px; font-weight: 600; pointer-events: none;">{{ p.multiLabel }}</span>
+                      <span style="position: absolute; bottom: 10px; right: 10px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.92); color: #12211a; font-size: 11.5px; font-weight: 600; pointer-events: none;">{{ p.multiLabel }}</span>
                     </sc-if>
                     <sc-if value="{{ p.soldOut }}" hint-placeholder-val="{{ false }}">
-                      <span style="position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 999px; background: #12211a; color: #fff; font-size: 11.5px; font-weight: 600; pointer-events: none;">Back soon</span>
+                      <span style="position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 999px; background: #12211a; color: #fff; font-size: 11.5px; font-weight: 600; pointer-events: none;">به‌زودی</span>
                     </sc-if>
                   </div>
                   <div style="padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 3px; flex: 1;">
@@ -316,7 +316,7 @@
                         </span>
                       </sc-if>
                       <sc-if value="{{ p.soldOut }}" hint-placeholder-val="{{ false }}">
-                        <span style="font-size: 12.5px; color: #a2a89f;">Unavailable</span>
+                        <span style="font-size: 12.5px; color: #a2a89f;">ناموجود</span>
                       </sc-if>
                     </div>
                   </div>
@@ -330,10 +330,10 @@
       <div class="wrap" style="padding-top: 48px;">
         <div style="border-radius: 24px; background: #12211a; color: #fbfaf7; padding: 28px; display: flex; flex-wrap: wrap; gap: 22px; align-items: center; justify-content: space-between;">
           <div style="min-width: 240px;">
-            <h2 style="font-size: 24px; color: #fbfaf7;">No. 42, Herb Bazaar Row</h2>
-            <p style="margin: 8px 0 0; font-size: 14px; line-height: 1.6; opacity: 0.7;">Vali-e-Asr St, Tehran · Sat–Thu, 9:00–20:00 · 021 8842 1190</p>
+            <h2 style="font-size: 24px; color: #fbfaf7;">پلاک ۴۲، رویِ بازارِ سبزیجات</h2>
+            <p style="margin: 8px 0 0; font-size: 14px; line-height: 1.8; opacity: 0.7;">خیابان ولی‌عصر، تهران · شنبه تا پنجشنبه، ۹:۰۰ تا ۲۰:۰۰ · ۰۲۱ ۸۸۴۲ ۱۱۹۰</p>
           </div>
-          <button onClick="{{ goHelp }}" style="height: 46px; padding: 0 22px; border: 1px solid rgba(251,250,247,0.35); background: none; color: #fbfaf7; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer;">Delivery &amp; help</button>
+          <button onClick="{{ goHelp }}" style="height: 46px; padding: 0 22px; border: 1px solid rgba(251,250,247,0.35); background: none; color: #fbfaf7; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer;">ارسال و راهنما</button>
         </div>
       </div>
     </div>
@@ -342,7 +342,7 @@
   <sc-if value="{{ isProduct }}" hint-placeholder-val="{{ false }}">
     <div class="wrap pb" style="padding-top: 18px;">
       <button onClick="{{ goHome }}" style="display: flex; align-items: center; gap: 7px; border: 0; background: none; padding: 0 0 18px; cursor: pointer; font-size: 13.5px; color: #7d857f;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
         {{ pv.cat }}
       </button>
       <div class="pdp">
@@ -350,18 +350,18 @@
           <div style="position: relative; aspect-ratio: 1; border-radius: 24px; overflow: hidden; background: {{ pv.tint }};">
             <image-slot id="{{ pv.slotId }}" src="{{ pv.img }}" shape="rect" placeholder="{{ pv.name }}"></image-slot>
             <sc-if value="{{ pv.discounted }}" hint-placeholder-val="{{ false }}">
-              <span style="position: absolute; top: 14px; left: 14px; padding: 5px 12px; border-radius: 999px; background: #e4572e; color: #fff; font-size: 12.5px; font-weight: 700; pointer-events: none;">{{ pv.badge }}</span>
+              <span style="position: absolute; top: 14px; right: 14px; padding: 5px 12px; border-radius: 999px; background: #e4572e; color: #fff; font-size: 12.5px; font-weight: 700; pointer-events: none;">{{ pv.badge }}</span>
             </sc-if>
           </div>
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
             <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: {{ pv.tint }};">
-              <image-slot id="{{ pv.slotIdB }}" src="{{ pv.imgB }}" shape="rect" placeholder="detail"></image-slot>
+              <image-slot id="{{ pv.slotIdB }}" src="{{ pv.imgB }}" shape="rect" placeholder="جزئیات"></image-slot>
             </div>
             <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: {{ pv.tint }};">
-              <image-slot id="{{ pv.slotIdC }}" src="{{ pv.imgC }}" shape="rect" placeholder="pack"></image-slot>
+              <image-slot id="{{ pv.slotIdC }}" src="{{ pv.imgC }}" shape="rect" placeholder="بسته‌بندی"></image-slot>
             </div>
             <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: {{ pv.tint }};">
-              <image-slot id="{{ pv.slotIdD }}" src="{{ pv.imgD }}" shape="rect" placeholder="in the kitchen"></image-slot>
+              <image-slot id="{{ pv.slotIdD }}" src="{{ pv.imgD }}" shape="rect" placeholder="در آشپزخانه"></image-slot>
             </div>
           </div>
         </div>
@@ -385,7 +385,7 @@
           <p style="margin: 0; font-size: 15px; line-height: 1.7; color: #47544c; max-width: 520px; text-wrap: pretty;">{{ pv.desc }}</p>
 
           <div style="display: flex; flex-direction: column; gap: 10px;">
-            <span style="font-size: 12.5px; font-weight: 600; color: #7d857f;">Package size</span>
+            <span style="font-size: 12.5px; font-weight: 600; color: #7d857f;">اندازه بسته</span>
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
               <sc-for list="{{ pv.sizes }}" as="s" hint-placeholder-count="2">
                 <button onClick="{{ s.onClick }}" style="min-height: 52px; padding: 8px 18px; border-radius: 16px; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; border: 2px solid {{ s.bd }}; background: {{ s.bg }}; color: {{ s.fg }};">
@@ -436,7 +436,7 @@
       </div>
 
       <div style="padding-top: 14px;">
-        <h2 style="font-size: 22px; padding-bottom: 14px;">More from {{ pv.cat }}</h2>
+        <h2 style="font-size: 22px; padding-bottom: 14px;">بیشتر از {{ pv.cat }}</h2>
         <div class="pgrid">
           <sc-for list="{{ related }}" as="p" hint-placeholder-count="4">
             <div style="display: flex; flex-direction: column; background: #fff; border: 1px solid #eceae3; border-radius: 22px; overflow: hidden;">
@@ -464,9 +464,9 @@
     <div class="wrap pb" style="padding-top: 16px; display: flex; flex-direction: column; gap: 20px;">
       <div style="display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 18px; border-radius: 999px; background: #f1efe8;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7d857f" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path></svg>
-        <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Search products" style="flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 15px;" />
+        <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="جستجوی محصولات" style="flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 15px;" />
         <sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ false }}">
-          <button onClick="{{ clearQuery }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; color: #7d857f;">Clear</button>
+          <button onClick="{{ clearQuery }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; color: #7d857f;">پاک کردن</button>
         </sc-if>
       </div>
 
@@ -502,9 +502,9 @@
 
       <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ false }}">
         <div style="padding: 60px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
-          <h2 style="font-size: 22px;">Nothing for “{{ query }}”</h2>
-          <p style="margin: 0; font-size: 14px; color: #7d857f; max-width: 300px; line-height: 1.55; text-wrap: pretty;">Try a shorter word, or browse the shelves.</p>
-          <button onClick="{{ goHome }}" style="margin-top: 6px; height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: #0f7a4a; color: #fff; font-size: 14.5px; font-weight: 600; cursor: pointer;">Browse shelves</button>
+          <h2 style="font-size: 22px;">چیزی برای «{{ query }}» پیدا نشد</h2>
+          <p style="margin: 0; font-size: 14px; color: #7d857f; max-width: 300px; line-height: 1.55; text-wrap: pretty;">کلمه کوتاه‌تری امتحان کنید یا بین قفسه‌ها بگردید.</p>
+          <button onClick="{{ goHome }}" style="margin-top: 6px; height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: #0f7a4a; color: #fff; font-size: 14.5px; font-weight: 600; cursor: pointer;">رفتن به قفسه‌ها</button>
         </div>
       </sc-if>
     </div>
@@ -525,19 +525,19 @@
 
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; overflow: hidden;">
             <div style="padding: 16px 18px 12px;">
-              <h2 style="font-size: 20px;">Where should it go?</h2>
-              <p style="margin: 4px 0 0; font-size: 13px; color: #7d857f;">Drag the pin to your door — riders find it faster than a written address.</p>
+              <h2 style="font-size: 20px;">سفارش را کجا بفرستیم؟</h2>
+              <p style="margin: 4px 0 0; font-size: 13px; color: #7d857f;">سوزن را روی نقشه جابه‌جا کنید — پیک‌ها آدرسِ روی نقشه را سریع‌تر پیدا می‌کنند.</p>
             </div>
             <div onClick="{{ onMapClick }}" style="position: relative; height: 220px; cursor: crosshair; background-color: #eef2ea; background-image: linear-gradient(#dfe6da 2px, transparent 2px), linear-gradient(90deg, #dfe6da 2px, transparent 2px), linear-gradient(#e6ebe1 1px, transparent 1px), linear-gradient(90deg, #e6ebe1 1px, transparent 1px); background-size: 88px 88px, 88px 88px, 22px 22px, 22px 22px;">
               <span style="position: absolute; left: 0; right: 0; top: 38%; height: 16px; background: #dbe4d5;"></span>
               <span style="position: absolute; top: 0; bottom: 0; left: 62%; width: 20px; background: #dbe4d5;"></span>
               <span style="position: absolute; left: 8%; top: 58%; width: 96px; height: 62px; border-radius: 10px; background: #dde8d8;"></span>
               <span style="position: absolute; right: 10%; top: 12%; width: 74px; height: 54px; border-radius: 10px; background: #dde8d8;"></span>
-              <span style="position: absolute; left: {{ pinX }}; top: {{ pinY }}; transform: translate(-50%, -100%); pointer-events: none; display: flex; flex-direction: column; align-items: center;">
+              <span style="position: absolute; left: {{ pinXRtl }}; top: {{ pinY }}; transform: translate(-50%, -100%); pointer-events: none; display: flex; flex-direction: column; align-items: center;">
                 <span style="padding: 4px 10px; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 11px; font-weight: 700; white-space: nowrap; margin-bottom: 4px;">{{ pinLabel }}</span>
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="#e4572e" stroke="#fff" stroke-width="1.6"><path d="M12 22s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"></path><circle cx="12" cy="11" r="2.6" fill="#fff" stroke="none"></circle></svg>
               </span>
-              <span style="position: absolute; left: 12px; bottom: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.92); font-size: 11.5px; font-weight: 600;">{{ pinCoords }}</span>
+              <span style="position: absolute; right: 12px; bottom: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.92); font-size: 11.5px; font-weight: 600;">{{ pinCoords }}</span>
             </div>
 
             <div style="padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 12px;">
@@ -548,30 +548,30 @@
               </div>
               <sc-if value="{{ hasSaved }}" hint-placeholder-val="{{ false }}">
                 <div style="display: flex; flex-direction: column; gap: 8px;">
-                  <span style="font-size: 12px; font-weight: 700; color: #7d857f;">Saved addresses</span>
+                  <span style="font-size: 12px; font-weight: 700; color: #7d857f;">آدرس‌های ذخیره‌شده</span>
                   <sc-for list="{{ savedAddresses }}" as="a" hint-placeholder-count="2">
-                    <button onClick="{{ a.onUse }}" style="border: 1px solid {{ a.bd }}; background: {{ a.bg }}; border-radius: 16px; padding: 12px 14px; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 3px;">
+                    <button onClick="{{ a.onUse }}" style="border: 1px solid {{ a.bd }}; background: {{ a.bg }}; border-radius: 16px; padding: 12px 14px; cursor: pointer; text-align: right; display: flex; flex-direction: column; gap: 3px;">
                       <span style="font-size: 13.5px; font-weight: 700;">{{ a.label }} · {{ a.city }}</span>
                       <span style="font-size: 12.5px; color: #6f7a72; line-height: 1.45;">{{ a.line }}</span>
                     </button>
                   </sc-for>
                 </div>
               </sc-if>
-              <input value="{{ form.name }}" onChange="{{ onName }}" placeholder="Full name" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
-              <input value="{{ form.phone }}" onChange="{{ onPhone }}" placeholder="Mobile number" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
-              <textarea value="{{ form.addr }}" onChange="{{ onAddr }}" rows="2" placeholder="Street, alley, building" style="padding: 13px 16px; border: 0; border-radius: 18px; background: #f1efe8; outline: none; font-size: 14.5px; resize: none;"></textarea>
+              <input value="{{ form.name }}" onChange="{{ onName }}" placeholder="نام و نام خانوادگی" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
+              <input value="{{ form.phone }}" onChange="{{ onPhone }}" placeholder="شماره موبایل" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
+              <textarea value="{{ form.addr }}" onChange="{{ onAddr }}" rows="2" placeholder="خیابان، کوچه، پلاک" style="padding: 13px 16px; border: 0; border-radius: 18px; background: #f1efe8; outline: none; font-size: 14.5px; resize: none;"></textarea>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input value="{{ form.unit }}" onChange="{{ onUnit }}" placeholder="Unit / floor" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
-                <input value="{{ form.postal }}" onChange="{{ onPostal }}" placeholder="Postal code" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
+                <input value="{{ form.unit }}" onChange="{{ onUnit }}" placeholder="واحد / طبقه" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
+                <input value="{{ form.postal }}" onChange="{{ onPostal }}" placeholder="کد پستی" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
               </div>
-              <input value="{{ form.note }}" onChange="{{ onNote }}" placeholder="Note for the rider — bell is on the left, call before you come…" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
+              <input value="{{ form.note }}" onChange="{{ onNote }}" placeholder="یادداشت برای پیک — زنگ سمت چپ است، قبل از آمدن تماس بگیرید…" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
             </div>
           </div>
 
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
-            <h2 style="font-size: 20px;">When?</h2>
+            <h2 style="font-size: 20px;">چه زمانی؟</h2>
             <sc-for list="{{ slots }}" as="s" hint-placeholder-count="3">
-              <button onClick="{{ s.onClick }}" style="min-height: 58px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid {{ s.bd }}; background: {{ s.bg }}; border-radius: 18px; cursor: pointer; text-align: left;">
+              <button onClick="{{ s.onClick }}" style="min-height: 58px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid {{ s.bd }}; background: {{ s.bg }}; border-radius: 18px; cursor: pointer; text-align: right;">
                 <span style="display: flex; flex-direction: column; gap: 2px;">
                   <span style="font-size: 14px; font-weight: 700;">{{ s.label }}</span>
                   <span style="font-size: 12.5px; color: #7d857f;">{{ s.note }}</span>
@@ -582,7 +582,7 @@
           </div>
 
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
-            <h2 style="font-size: 20px;">How do you pay?</h2>
+            <h2 style="font-size: 20px;">چطور پرداخت می‌کنید؟</h2>
             <sc-for list="{{ payments }}" as="p" hint-placeholder-count="2">
               <button onClick="{{ p.onClick }}" style="min-height: 54px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border: 1px solid {{ p.bd }}; background: {{ p.bg }}; border-radius: 18px; cursor: pointer; text-align: left;">
                 <span style="width: 20px; height: 20px; flex: none; border-radius: 999px; border: 2px solid {{ p.dot }}; display: flex; align-items: center; justify-content: center;">
@@ -598,7 +598,7 @@
         </div>
 
         <div class="sticky-sum" style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px; padding: 18px; border: 1px solid #eceae3; border-radius: 22px; background: #fff;">
-          <h2 style="font-size: 20px;">Your order</h2>
+          <h2 style="font-size: 20px;">سفارش شما</h2>
           <sc-for list="{{ cartLines }}" as="l" hint-placeholder-count="3">
             <div style="display: flex; align-items: flex-start; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #f4f2ec;">
               <div style="width: 44px; height: 44px; flex: none; border-radius: 12px; overflow: hidden; background: {{ l.tint }};">
@@ -617,7 +617,7 @@
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
                     </button>
                   </span>
-                  <button onClick="{{ l.onRemove }}" title="Remove" style="width: 30px; height: 30px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Remove">
+                  <button onClick="{{ l.onRemove }}" title="حذف" style="width: 30px; height: 30px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="حذف">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V5h6v2"></path><path d="M7 7l1 13h8l1-13"></path></svg>
                   </button>
                 </span>
@@ -627,21 +627,21 @@
           </sc-for>
           <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}">
             <div style="padding: 20px 8px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center;">
-              <span style="font-size: 13.5px; color: #7d857f;">Your basket is empty.</span>
-              <button onClick="{{ goHome }}" style="height: 42px; padding: 0 18px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">Back to the shelves</button>
+              <span style="font-size: 13.5px; color: #7d857f;">سبد خرید خالی است.</span>
+              <button onClick="{{ goHome }}" style="height: 42px; padding: 0 18px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">بازگشت به قفسه‌ها</button>
             </div>
           </sc-if>
           <div style="height: 1px; background: #eceae3;"></div>
           <div style="display: flex; justify-content: space-between; font-size: 14px;">
-            <span style="color: #7d857f;">Subtotal</span>
+            <span style="color: #7d857f;">جمع کالاها</span>
             <span style="font-weight: 600; font-variant-numeric: tabular-nums;">{{ subtotal }}</span>
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 14px;">
-            <span style="color: #7d857f;">Delivery</span>
+            <span style="color: #7d857f;">هزینه ارسال</span>
             <span style="font-weight: 600; font-variant-numeric: tabular-nums;">{{ deliveryLabel }}</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
-            <span style="font-size: 14px; font-weight: 700;">Total</span>
+            <span style="font-size: 14px; font-weight: 700;">مبلغ نهایی</span>
             <span style="font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums;">{{ total }}</span>
           </div>
           <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
@@ -659,9 +659,9 @@
       <span style="width: 62px; height: 62px; border-radius: 999px; background: #eaf2fb; display: flex; align-items: center; justify-content: center;">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3c5c9c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"></rect><path d="M2 10h20"></path></svg>
       </span>
-      <h1 style="font-size: 26px;">Taking you to the bank…</h1>
-      <p style="margin: 0; font-size: 14px; color: #7d857f; line-height: 1.6; max-width: 320px;">This is the payment gateway step. In the real shop the bank page opens here and returns you to the receipt.</p>
-      <button onClick="{{ finishPayment }}" style="height: 50px; padding: 0 26px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 15px; font-weight: 700; cursor: pointer;">Return as paid</button>
+      <h1 style="font-size: 26px;">در حال انتقال به درگاه بانک…</h1>
+      <p style="margin: 0; font-size: 14px; color: #7d857f; line-height: 1.6; max-width: 320px;">این مرحله، درگاه پرداخت است. در فروشگاه واقعی صفحه بانک باز می‌شود و پس از پرداخت به رسید سفارش برمی‌گردید.</p>
+      <button onClick="{{ finishPayment }}" style="height: 50px; padding: 0 26px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 15px; font-weight: 700; cursor: pointer;">بازگشت به‌عنوان پرداخت‌شده</button>
     </div>
   </sc-if>
 
@@ -677,7 +677,7 @@
 
       <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
         <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
-          <h2 style="font-size: 20px;">Receipt</h2>
+          <h2 style="font-size: 20px;">رسید سفارش</h2>
           <span style="font-size: 13px; color: #7d857f; font-variant-numeric: tabular-nums;">{{ receipt.no }}</span>
         </div>
         <sc-for list="{{ receipt.lines }}" as="l" hint-placeholder-count="3">
@@ -698,8 +698,8 @@
           <span style="font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums;">{{ receipt.total }}</span>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button onClick="{{ trackOrder }}" style="flex: 1; min-width: 150px; height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14px; font-weight: 700; cursor: pointer;">Track this order</button>
-          <button onClick="{{ goHome }}" style="flex: 1; min-width: 150px; height: 48px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 14px; font-weight: 700; cursor: pointer;">Keep shopping</button>
+          <button onClick="{{ trackOrder }}" style="flex: 1; min-width: 150px; height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14px; font-weight: 700; cursor: pointer;">پیگیری سفارش</button>
+          <button onClick="{{ goHome }}" style="flex: 1; min-width: 150px; height: 48px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 14px; font-weight: 700; cursor: pointer;">ادامه خرید</button>
         </div>
       </div>
     </div>
@@ -753,7 +753,7 @@
                         </span>
                         <span style="flex: 1; height: 3px; border-radius: 999px; background: {{ o.k1.after }};"></span>
                       </div>
-                      <span style="font-size: 10.5px; font-weight: {{ o.k1.weight }}; color: {{ o.k1.text }};">Confirmed</span>
+                      <span style="font-size: 10.5px; font-weight: {{ o.k1.weight }}; color: {{ o.k1.text }};">تأیید شد</span>
                     </div>
                     <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px;">
                       <div style="display: flex; align-items: center; width: 100%;">
@@ -763,7 +763,7 @@
                         </span>
                         <span style="flex: 1; height: 3px; border-radius: 999px; background: {{ o.k2.after }};"></span>
                       </div>
-                      <span style="font-size: 10.5px; font-weight: {{ o.k2.weight }}; color: {{ o.k2.text }};">Packing</span>
+                      <span style="font-size: 10.5px; font-weight: {{ o.k2.weight }}; color: {{ o.k2.text }};">بسته‌بندی</span>
                     </div>
                     <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px;">
                       <div style="display: flex; align-items: center; width: 100%;">
@@ -795,14 +795,14 @@
               </sc-if>
 
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button onClick="{{ o.onReorder }}" style="flex: 1; min-width: 130px; height: 42px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13px; font-weight: 700; cursor: pointer;">Order again</button>
+                <button onClick="{{ o.onReorder }}" style="flex: 1; min-width: 130px; height: 42px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13px; font-weight: 700; cursor: pointer;">سفارش مجدد</button>
                 <sc-if value="{{ o.canCancel }}" hint-placeholder-val="{{ false }}">
-                  <button onClick="{{ o.onCancel }}" style="flex: 1; min-width: 120px; height: 42px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; font-size: 13px; font-weight: 700; cursor: pointer;">Cancel order</button>
+                  <button onClick="{{ o.onCancel }}" style="flex: 1; min-width: 120px; height: 42px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; font-size: 13px; font-weight: 700; cursor: pointer;">لغو سفارش</button>
                 </sc-if>
                 <sc-if value="{{ o.canReview }}" hint-placeholder-val="{{ false }}">
-                  <button onClick="{{ o.onReview }}" style="flex: 1; min-width: 130px; height: 42px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">Leave a review</button>
+                  <button onClick="{{ o.onReview }}" style="flex: 1; min-width: 130px; height: 42px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">ثبت نظر</button>
                 </sc-if>
-                <button onClick="{{ o.onHelp }}" style="flex: none; width: 42px; height: 42px; border: 0; border-radius: 999px; background: #f1efe8; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Help with this order">
+                <button onClick="{{ o.onHelp }}" style="flex: none; width: 42px; height: 42px; border: 0; border-radius: 999px; background: #f1efe8; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="راهنمایی برای این سفارش">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.2 9.3a3 3 0 0 1 5.6 1.2c0 2-2.8 2.8-2.8 2.8"></path><path d="M12 17h.01"></path></svg>
                 </button>
               </div>
@@ -819,12 +819,12 @@
               <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px;">
                 <div style="display: flex; align-items: baseline; gap: 10px;">
                   <span style="font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.product }}</span>
-                  <span style="margin-left: auto; font-size: 12px; color: #a2a89f; white-space: nowrap;">{{ r.date }}</span>
+                  <span style="margin-right: auto; font-size: 12px; color: #a2a89f; white-space: nowrap;">{{ r.date }}</span>
                 </div>
                 <span style="font-size: 13px; color: #e0a12a; letter-spacing: 0.08em;">{{ r.stars }}</span>
                 <span style="font-size: 13px; color: #55605a; line-height: 1.55;">{{ r.text }}</span>
                 <sc-if value="{{ r.hasReply }}" hint-placeholder-val="{{ false }}">
-                  <span style="margin-top: 4px; padding: 10px 12px; border-radius: 14px; background: #eaf6ee; font-size: 12.5px; color: #0b5c38; line-height: 1.5;">Doone Herb replied: {{ r.reply }}</span>
+                  <span style="margin-top: 4px; padding: 10px 12px; border-radius: 14px; background: #eaf6ee; font-size: 12.5px; color: #0b5c38; line-height: 1.5;">پاسخ دونه هرب: {{ r.reply }}</span>
                 </sc-if>
               </div>
             </div>
@@ -843,7 +843,7 @@
                 <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                   <span style="font-size: 15px; font-weight: 700;">{{ a.label }}</span>
                   <sc-if value="{{ a.isDefault }}" hint-placeholder-val="{{ false }}">
-                    <span style="padding: 3px 10px; border-radius: 999px; background: #eaf6ee; color: #0b5c38; font-size: 11px; font-weight: 700;">Default</span>
+                    <span style="padding: 3px 10px; border-radius: 999px; background: #eaf6ee; color: #0b5c38; font-size: 11px; font-weight: 700;">پیش‌فرض</span>
                   </sc-if>
                 </span>
                 <span style="font-size: 13px; color: #55605a; line-height: 1.5;">{{ a.line }}</span>
@@ -851,15 +851,15 @@
               </span>
               <span style="flex: none; display: flex; gap: 8px;">
                 <sc-if value="{{ a.canDefault }}" hint-placeholder-val="{{ true }}">
-                  <button onClick="{{ a.onDefault }}" style="height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 12.5px; font-weight: 700; cursor: pointer;">Make default</button>
+                  <button onClick="{{ a.onDefault }}" style="height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 12.5px; font-weight: 700; cursor: pointer;">پیش‌فرض کن</button>
                 </sc-if>
-                <button onClick="{{ a.onDelete }}" style="width: 36px; height: 36px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Delete address">
+                <button onClick="{{ a.onDelete }}" style="width: 36px; height: 36px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="حذف آدرس">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
                 </button>
               </span>
             </div>
           </sc-for>
-          <button onClick="{{ addAddress }}" style="height: 50px; border: 1px dashed #cfd4cc; border-radius: 22px; background: none; font-size: 14px; font-weight: 700; cursor: pointer; color: #0f7a4a;">+ Add an address on the map</button>
+          <button onClick="{{ addAddress }}" style="height: 50px; border: 1px dashed #cfd4cc; border-radius: 22px; background: none; font-size: 14px; font-weight: 700; cursor: pointer; color: #0f7a4a;">+ افزودن آدرس روی نقشه</button>
         </div>
       </sc-if>
     </div>
@@ -867,7 +867,7 @@
 
   <sc-if value="{{ isHelp }}" hint-placeholder-val="{{ false }}">
     <div class="wrap pb narrow" style="padding-top: 22px; display: flex; flex-direction: column; gap: 26px;">
-      <h1 style="font-size: 34px;">Delivery &amp; help</h1>
+      <h1 style="font-size: 34px;">ارسال و راهنما</h1>
       <sc-for list="{{ shipping }}" as="s" hint-placeholder-count="4">
         <div style="display: flex; flex-direction: column; gap: 7px; padding: 18px; border-radius: 20px; background: #fff; border: 1px solid #eceae3;">
           <span style="font-size: 16.5px; font-weight: 700;">{{ s.title }}</span>
@@ -878,7 +878,7 @@
       <div style="display: flex; flex-direction: column;">
         <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="4">
           <div style="border-bottom: 1px solid #eceae3;">
-            <button onClick="{{ f.onToggle }}" style="width: 100%; min-height: 54px; padding: 15px 0; display: flex; align-items: center; justify-content: space-between; gap: 14px; border: 0; background: none; cursor: pointer; text-align: left; font-size: 15px; font-weight: 600;">
+            <button onClick="{{ f.onToggle }}" style="width: 100%; min-height: 54px; padding: 15px 0; display: flex; align-items: center; justify-content: space-between; gap: 14px; border: 0; background: none; cursor: pointer; text-align: right; font-size: 15px; font-weight: 600;">
               {{ f.q }}
               <span style="flex: none; display: flex; transform: rotate({{ f.rot }});">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7d857f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
@@ -894,12 +894,12 @@
   </sc-if>
 
   <sc-if value="{{ cartOpen }}" hint-placeholder-val="{{ false }}">
-    <div style="position: fixed; inset: 0; z-index: 60; background: rgba(18,33,26,0.34); display: flex; justify-content: flex-end;">
+    <div style="position: fixed; inset: 0; z-index: 60; background: rgba(18,33,26,0.34); display: flex; justify-content: flex-start;">
       <div onClick="{{ closeCart }}" style="flex: 1;"></div>
       <div class="drawer" style="height: 100%; background: #fbfaf7; display: flex; flex-direction: column; animation: slideIn 0.22s ease-out;">
         <div style="padding: 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #eceae3;">
-          <h2 style="flex: 1; font-size: 22px;">Your basket</h2>
-          <button onClick="{{ closeCart }}" style="width: 38px; height: 38px; border: 1px solid #e2e0d8; background: #fff; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="Close">
+          <h2 style="flex: 1; font-size: 22px;">سبد خرید</h2>
+          <button onClick="{{ closeCart }}" style="width: 38px; height: 38px; border: 1px solid #e2e0d8; background: #fff; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="بستن">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
           </button>
         </div>
@@ -910,9 +910,9 @@
               <span style="width: 64px; height: 64px; border-radius: 999px; background: #f1efe8; display: flex; align-items: center; justify-content: center;">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9aa39c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 4 6v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6l-2-4z"></path><path d="M4 6h16"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
               </span>
-              <span style="font-size: 17px; font-weight: 700;">Nothing in the basket</span>
-              <span style="font-size: 13.5px; color: #7d857f; max-width: 220px; line-height: 1.5; text-wrap: pretty;">Add a few things and they'll show up here.</span>
-              <button onClick="{{ closeCart }}" style="margin-top: 6px; height: 44px; padding: 0 20px; border: 0; border-radius: 999px; background: #0f7a4a; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;">Keep shopping</button>
+              <span style="font-size: 17px; font-weight: 700;">سبد خرید خالی است</span>
+              <span style="font-size: 13.5px; color: #7d857f; max-width: 220px; line-height: 1.5; text-wrap: pretty;">چند قلم به سبد اضافه کنید تا اینجا نمایش داده شوند.</span>
+              <button onClick="{{ closeCart }}" style="margin-top: 6px; height: 44px; padding: 0 20px; border: 0; border-radius: 999px; background: #0f7a4a; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;">ادامه خرید</button>
             </div>
           </sc-if>
           <sc-for list="{{ cartLines }}" as="l" hint-placeholder-count="2">
@@ -923,7 +923,7 @@
               <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
                 <span style="font-size: 14px; font-weight: 600;">{{ l.name }}</span>
                 <span style="font-size: 12.5px; color: #7d857f;">{{ l.size }} · {{ l.each }}</span>
-                <button onClick="{{ l.onRemove }}" style="align-self: flex-start; border: 0; background: none; padding: 2px 0 0; cursor: pointer; font-size: 12.5px; color: #e4572e;">Remove</button>
+                <button onClick="{{ l.onRemove }}" style="align-self: flex-start; border: 0; background: none; padding: 2px 0 0; cursor: pointer; font-size: 12.5px; color: #e4572e;">حذف</button>
               </div>
               <div style="flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 7px;">
                 <span style="font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums;">{{ l.total }}</span>
@@ -940,18 +940,18 @@
         <sc-if value="{{ cartFilled }}" hint-placeholder-val="{{ false }}">
           <div style="padding: 18px 20px 22px; border-top: 1px solid #eceae3; display: flex; flex-direction: column; gap: 11px;">
             <div style="display: flex; justify-content: space-between; font-size: 14px;">
-              <span style="color: #7d857f;">Subtotal</span>
+              <span style="color: #7d857f;">جمع کالاها</span>
               <span style="font-weight: 600; font-variant-numeric: tabular-nums;">{{ subtotal }}</span>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 14px;">
-              <span style="color: #7d857f;">Delivery</span>
+              <span style="color: #7d857f;">هزینه ارسال</span>
               <span style="font-weight: 600; font-variant-numeric: tabular-nums;">{{ deliveryLabel }}</span>
             </div>
             <div style="height: 6px; border-radius: 999px; background: #eceae3; overflow: hidden;">
               <div style="height: 100%; border-radius: 999px; background: #0f7a4a; width: {{ freePct }};"></div>
             </div>
             <span style="font-size: 12.5px; color: #7d857f;">{{ freeHint }}</span>
-            <button onClick="{{ checkout }}" style="height: 52px; border: 0; border-radius: 16px; background: #12211a; color: #d8f24b; font-size: 15px; font-weight: 700; cursor: pointer;">Checkout · {{ total }}</button>
+            <button onClick="{{ checkout }}" style="height: 52px; border: 0; border-radius: 16px; background: #12211a; color: #d8f24b; font-size: 15px; font-weight: 700; cursor: pointer;">تسویه حساب · {{ total }}</button>
           </div>
         </sc-if>
       </div>
@@ -963,28 +963,28 @@
       <span style="display: flex; align-items: center; justify-content: center; width: 48px; height: 28px; border-radius: 999px; background: {{ tab.home.pill }};">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="2.2"></rect><rect x="13.5" y="3" width="7.5" height="7.5" rx="2.2"></rect><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2.2"></rect><rect x="3" y="13.5" width="7.5" height="7.5" rx="2.2"></rect></svg>
       </span>
-      <span style="font-size: 10.5px; font-weight: {{ tab.home.weight }};">Shop</span>
+      <span style="font-size: 10.5px; font-weight: {{ tab.home.weight }};">فروشگاه</span>
     </button>
     <button onClick="{{ tab.search.onClick }}" style="border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: {{ tab.search.fg }};">
       <span style="display: flex; align-items: center; justify-content: center; width: 48px; height: 28px; border-radius: 999px; background: {{ tab.search.pill }};">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path></svg>
       </span>
-      <span style="font-size: 10.5px; font-weight: {{ tab.search.weight }};">Search</span>
+      <span style="font-size: 10.5px; font-weight: {{ tab.search.weight }};">جستجو</span>
     </button>
     <button onClick="{{ openCart }}" style="border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #7d857f;">
       <span style="position: relative; display: flex; align-items: center; justify-content: center; width: 48px; height: 28px; border-radius: 999px;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 4 6v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6l-2-4z"></path><path d="M4 6h16"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
         <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ false }}">
-          <span style="position: absolute; top: -2px; right: 6px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: #e4572e; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;">{{ cartCount }}</span>
+          <span style="position: absolute; top: -2px; left: 6px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: #e4572e; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;">{{ cartCount }}</span>
         </sc-if>
       </span>
-      <span style="font-size: 10.5px; font-weight: 500;">Basket</span>
+      <span style="font-size: 10.5px; font-weight: 500;">سبد</span>
     </button>
     <button onClick="{{ tab.help.onClick }}" style="border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: {{ tab.help.fg }};">
       <span style="display: flex; align-items: center; justify-content: center; width: 48px; height: 28px; border-radius: 999px; background: {{ tab.help.pill }};">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.2 9.3a3 3 0 0 1 5.6 1.2c0 2-2.8 2.8-2.8 2.8"></path><path d="M12 17h.01"></path></svg>
       </span>
-      <span style="font-size: 10.5px; font-weight: {{ tab.help.weight }};">Help</span>
+      <span style="font-size: 10.5px; font-weight: {{ tab.help.weight }};">راهنما</span>
     </button>
   </div>
 
@@ -1007,9 +1007,9 @@ const FETCH_CREDENTIALS = "include";
 // Fallback delivery slots (until GET /orders/delivery-slots responds).
 // Indexes match the checkout screen's slot picker (st.slot).
 const SLOTS = [
-  { label: "Today, 17:00–21:00", note: "Same-day courier", fee: 45000, pickup: false },
-  { label: "Tomorrow, 9:00–13:00", note: "Next-morning window", fee: 35000, pickup: false },
-  { label: "Pickup from the shop", note: "Vali-e-Asr St counter", fee: 0, pickup: true }
+  { label: "امروز، ۱۷:۰۰ تا ۲۱:۰۰", note: "پیک همان‌روز", fee: 45000, pickup: false },
+  { label: "فردا، ۹:۰۰ تا ۱۳:۰۰", note: "بازه صبح فردا", fee: 35000, pickup: false },
+  { label: "تحویل حضوری از فروشگاه", note: "پیشخوان خیابان ولی‌عصر", fee: 0, pickup: true }
 ];
 const MY_REVIEWS = [];
 
@@ -1022,8 +1022,8 @@ async function apiLogin(username, password) {
     body: body.toString()
   });
   if (!res.ok) {
-    let msg = "Sign-in failed. Please try again.";
-    if (res.status === 401 || res.status === 403) msg = "Wrong username or password.";
+    let msg = "ورود ناموفق بود. دوباره تلاش کنید.";
+    if (res.status === 401 || res.status === 403) msg = "ایمیل یا رمز عبور اشتباه است.";
     try {
       const data = await res.json();
       if (res.status !== 401 && res.status !== 403 && data && data.detail) {
@@ -1042,7 +1042,7 @@ async function apiMe(token) {
     credentials: FETCH_CREDENTIALS,
     headers: { Authorization: "Bearer " + token }
   });
-  if (!res.ok) throw new Error("Session expired — please sign in again.");
+  if (!res.ok) throw new Error("نشست شما منقضی شده — دوباره وارد شوید.");
   return res.json();
 }
 
@@ -1060,7 +1060,7 @@ async function apiSignup({ email, phone, name, password, passwordRepeat }) {
     })
   });
   if (!res.ok) {
-    let msg = "Could not create the account. Please try again.";
+    let msg = "ساخت حساب کاربری ممکن نشد. دوباره تلاش کنید.";
     try {
       const data = await res.json();
       if (data && data.detail) {
@@ -1082,7 +1082,7 @@ async function apiRequestReset(email) {
     body: JSON.stringify({ email })
   });
   if (!res.ok) {
-    let msg = "Could not send the reset link.";
+    let msg = "ارسال لینک بازیابی ممکن نشد.";
     try {
       const data = await res.json();
       if (data && data.detail) msg = typeof data.detail === "string" ? data.detail : msg;
@@ -1137,7 +1137,7 @@ function authHeaders(extra) {
 //        variant_label?, price?, stock_qty?, subtotal?}
 async function apiGetCart() {
   const res = await fetch(`${API_BASE}/api/cart`, { credentials: FETCH_CREDENTIALS, headers: authHeaders() });
-  if (!res.ok) throw new Error("Could not load the basket.");
+  if (!res.ok) throw new Error("بارگذاری سبد خرید ممکن نشد.");
   return res.json();
 }
 
@@ -1150,7 +1150,7 @@ async function apiAddCartItem(productVariantId, qty) {
     body: JSON.stringify({ product_variant_id: productVariantId, qty })
   });
   if (!res.ok) {
-    let msg = "Could not add to the basket.";
+    let msg = "افزودن به سبد ممکن نشد.";
     try { const d = await res.json(); if (d && d.detail) msg = typeof d.detail === "string" ? d.detail : msg; } catch (e) {}
     throw new Error(msg);
   }
@@ -1165,28 +1165,28 @@ async function apiUpdateCartItem(cartItemId, qty) {
     headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
     body: JSON.stringify({ qty })
   });
-  if (!res.ok) throw new Error("Could not update the basket.");
+  if (!res.ok) throw new Error("به‌روزرسانی سبد ممکن نشد.");
   return res.json();
 }
 
 // DELETE /api/cart/{cart_item_id} → {message, cart_id}
 async function apiDeleteCartItem(cartItemId) {
   const res = await fetch(`${API_BASE}/api/cart/${cartItemId}`, { method: "DELETE", credentials: FETCH_CREDENTIALS, headers: authHeaders() });
-  if (!res.ok) throw new Error("Could not remove the item.");
+  if (!res.ok) throw new Error("حذف کالا ممکن نشد.");
   return res.json();
 }
 
 // GET /orders/delivery-slots (public)
 async function apiGetSlots() {
   const res = await fetch(`${API_BASE}/orders/delivery-slots`, { credentials: FETCH_CREDENTIALS });
-  if (!res.ok) throw new Error("Could not load delivery options.");
+  if (!res.ok) throw new Error("بارگذاری گزینه‌های ارسال ممکن نشد.");
   return res.json();
 }
 
 // GET /api/address (auth)
 async function apiListAddresses() {
   const res = await fetch(`${API_BASE}/api/address`, { headers: authHeaders() });
-  if (!res.ok) throw new Error("Could not load addresses.");
+  if (!res.ok) throw new Error("بارگذاری آدرس‌ها ممکن نشد.");
   return res.json();
 }
 
@@ -1198,7 +1198,7 @@ async function apiCreateAddress(payload) {
     body: JSON.stringify(payload)
   });
   if (!res.ok) {
-    let msg = "Could not save the address.";
+    let msg = "ذخیره آدرس ممکن نشد.";
     try {
       const d = await res.json();
       if (d && d.detail) {
@@ -1213,28 +1213,28 @@ async function apiCreateAddress(payload) {
 // POST /api/address/{id}/set-default
 async function apiSetDefaultAddress(id) {
   const res = await fetch(`${API_BASE}/api/address/${id}/set-default`, { method: "POST", headers: authHeaders() });
-  if (!res.ok) throw new Error("Could not set the default address.");
+  if (!res.ok) throw new Error("تنظیم آدرس پیش‌فرض ممکن نشد.");
   return res.json();
 }
 
 // DELETE /api/address/{id}
 async function apiDeleteAddress(id) {
   const res = await fetch(`${API_BASE}/api/address/${id}`, { method: "DELETE", headers: authHeaders() });
-  if (!res.ok) throw new Error("Could not remove the address.");
+  if (!res.ok) throw new Error("حذف آدرس ممکن نشد.");
   return res.json();
 }
 
 // GET /orders (auth, paginated) — {items: OrderSummary[], total, page, page_size}
 async function apiListMyOrders() {
   const res = await fetch(`${API_BASE}/orders?page=1&page_size=50`, { headers: authHeaders() });
-  if (!res.ok) throw new Error("Could not load your orders.");
+  if (!res.ok) throw new Error("بارگذاری سفارش‌های شما ممکن نشد.");
   return res.json();
 }
 
 // GET /orders/code/{order_no} (auth) — full OrderRead with items/events/payments
 async function apiGetOrder(orderNo) {
   const res = await fetch(`${API_BASE}/orders/code/${encodeURIComponent(orderNo)}`, { headers: authHeaders() });
-  if (!res.ok) throw new Error("Could not load the order.");
+  if (!res.ok) throw new Error("بارگذاری سفارش ممکن نشد.");
   return res.json();
 }
 
@@ -1242,7 +1242,7 @@ async function apiGetOrder(orderNo) {
 async function apiCancelOrder(id) {
   const res = await fetch(`${API_BASE}/orders/${id}/cancel`, { method: "POST", headers: authHeaders() });
   if (!res.ok) {
-    let msg = "Could not cancel the order.";
+    let msg = "لغو سفارش ممکن نشد.";
     try { const d = await res.json(); if (d && d.detail) msg = typeof d.detail === "string" ? d.detail : msg; } catch (e) {}
     throw new Error(msg);
   }
@@ -1257,7 +1257,7 @@ async function apiCheckout(payload) {
     body: JSON.stringify(payload)
   });
   if (!res.ok) {
-    let msg = "Checkout failed. Please try again.";
+    let msg = "پرداخت ناموفق بود. دوباره تلاش کنید.";
     try {
       const d = await res.json();
       if (d && d.detail) msg = typeof d.detail === "string" ? d.detail : (Array.isArray(d.detail) && d.detail[0] && d.detail[0].msg ? d.detail[0].msg : msg);
@@ -1269,7 +1269,7 @@ async function apiCheckout(payload) {
 
 // Backend OrderStatus → numeric step (0..4) used by the progress tracker UI.
 const ORDER_STATUS_STEP = { new: 0, packing: 1, shipped: 2, out_for_delivery: 3, delivered: 4, returned: 4, cancelled: 4 };
-const ORDER_STATUS_LABEL = { new: "Confirmed", packing: "Packing", shipped: "On the way", out_for_delivery: "Out for delivery", delivered: "Delivered", returned: "Returned", cancelled: "Cancelled" };
+const ORDER_STATUS_LABEL = { new: "تأیید شد", packing: "در حال بسته‌بندی", shipped: "در راه", out_for_delivery: "تحویل امروز", delivered: "تحویل شد", returned: "مرجوع شد", cancelled: "لغو شد" };
 const ORDER_STATUS_BADGE = {
   new: { bg: "#fdf4e0", fg: "#a3730a" },
   packing: { bg: "#fdf4e0", fg: "#a3730a" },
@@ -1307,7 +1307,7 @@ const mapOrder = (o) => ({
   paymentStatus: o.payment_status,
   items: [], // lazily hydrated via GET /orders/code/{no}
   loaded: false,
-  rider: "Courier", eta: ORDER_STATUS_LABEL[o.status] || "",
+  rider: "پیک", eta: ORDER_STATUS_LABEL[o.status] || "",
   pickup: false,
   cancelled: o.status === "cancelled" || o.status === "returned",
   canCancel: o.status === "new" || o.status === "packing"
@@ -1316,36 +1316,36 @@ const mapOrder = (o) => ({
 function fmtDate(iso) {
   try {
     const d = new Date(iso);
-    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) + ", " +
-      d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleDateString("fa-IR", { day: "numeric", month: "long" }) + "، " +
+      d.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
   } catch (e) { return ""; }
 }
 
 const NOTES = {
   spices: [
-    { kicker: "How to use", title: "Bloom it before it hits the pot", body: "Warm the spice for thirty seconds in oil or butter before anything else goes in. It doubles the aroma and stops the raw, dusty edge you get from adding it late." },
-    { kicker: "Keep it", title: "Dark cupboard, sealed jar", body: "Away from the hob and out of the light. Whole spices hold their oils for about a year, ground ones for six months — the pack is dated on the back so you always know." },
-    { kicker: "In the pack", title: "Weighed the morning it ships", body: "Nothing is pre-bagged. We weigh your amount, seal it in a food-grade pouch with the date and the batch, and it goes straight into the courier bag." }
+    { kicker: "روش استفاده", title: "قبل از قابلمه حتماً گرم کنید", body: "ادویه را سی ثانیه در روغن یا کره تفت دهید؛ قبل از هر چیز دیگری. هم عطرش دو برابر می‌شود و هم طعم خام و خاکی‌ای که از افزودن دیرهنگام می‌آید از بین می‌رود." },
+    { kicker: "نگهداری", title: "کابینت تاریک، شیشه دربسته", body: "دور از شعله و نور نگه دارید. ادویه کامل حدوداً یک سال و آسیاب‌شده حدوداً شش ماه اسانس‌هایش را حفظ می‌کند — تاریخ روی پشت بسته درج شده است." },
+    { kicker: "داخل بسته", title: "صبحِ روز ارسال توزین می‌شود", body: "هیچ‌چیز از قبل بسته‌بندی نشده. مقدار درخواستی شما توزین و در پاکت بهداشتی با درج تاریخ و شماره بچ، مستقیم به کیف پیک سپرده می‌شود." }
   ],
   nuts: [
-    { kicker: "How to use", title: "Best straight from the pouch", body: "Roasted with a little salt and nothing else. If you are baking with them, skip the extra salt in the recipe." },
-    { kicker: "Keep it", title: "Cool, or in the freezer", body: "Kernels are oily and turn in a warm kitchen. Sealed in the fridge they hold three months, in the freezer a year, with no change in texture." },
-    { kicker: "In the pack", title: "Roasted the day it leaves", body: "We roast in the morning and pack while it is still warm, so what arrives is the batch from that day — not last month's tray." }
+    { kicker: "روش استفاده", title: "مستقیم از پاکت بهترین است", body: "با کمی نمک و هیچ‌چیز دیگر بو داده شده. اگر برای شیرینی‌پزی استفاده می‌کنید، نمک اضافه دستور را حذف کنید." },
+    { kicker: "نگهداری", title: "خنک، یا داخل فریزر", body: "مغزها چرب‌اند و در آشپزخانه گرم تلخ می‌شوند. در یخچال دربسته سه ماه و در فریزر یک سال سالم می‌مانند؛ بدون تغییر بافت." },
+    { kicker: "داخل بسته", title: "روز ارسال بو داده می‌شود", body: "صبح بو داده و در حالی که هنوز گرم است بسته‌بندی می‌کنیم؛ آنچه می‌رسد بچ همان روز است، نه سینی ماه پیش." }
   ],
   tea: [
-    { kicker: "How to brew", title: "Four minutes, water off the boil", body: "One heaped spoon per cup. Longer than four minutes and the delicate top notes give way to bitterness." },
-    { kicker: "Keep it", title: "Sealed, away from the coffee", body: "Tea takes on whatever it sits next to. An airtight tin in a dark cupboard keeps it honest for a year." },
-    { kicker: "In the pack", title: "Whole leaf, never dust", body: "Sorted by hand so you get whole buds and leaves, which is why the cup stays clear and the second steep still tastes of something." }
+    { kicker: "روش دم‌کردن", title: "چهار دقیقه، آبِ جوشِ کف‌زده", body: "یک قاشق سرصاف برای هر فنجان. بیشتر از چهار دقیقه، طعم‌های لطیف جای خود را به تلخی می‌دهند." },
+    { kicker: "نگهداری", title: "دربسته و دور از قهوه", body: "چای بوی هر چه کنارش باشد را می‌گیرد. قوطی دربسته در کابینت تاریک یک سال تازه می‌ماند." },
+    { kicker: "داخل بسته", title: "برگ کامل، نه پودر", body: "دستی مرتب شده تا جوانه و برگ کامل به دستتان برسد؛ به همین دلیل فنجان زلال می‌ماند و دم‌آوری دوم هم هنوز طعم دارد." }
   ],
   oils: [
-    { kicker: "How to use", title: "Finish with it, don't fry with it", body: "Unfiltered oil carries its flavour at low heat. Pour it over the plate at the end rather than burning it off in the pan." },
-    { kicker: "Keep it", title: "Dark glass, cool shelf", body: "Light is the enemy. Sealed and away from the window it keeps eighteen months; once opened, use it within three." },
-    { kicker: "In the pack", title: "Bottled in small runs", body: "Pressed and bottled in batches so nothing sits in a tank. The press date is on the neck label." }
+    { kicker: "روش استفاده", title: "برای آخرِ غذا، نه سرخ‌کردن", body: "روغن تصفیه‌نشده عطرش را در حرارت کم حفظ می‌کند. آخر کار روی غذا بریزید تا در تابه نسوزد و بویش از بین نرود." },
+    { kicker: "نگهداری", title: "شیشه تیره، قفسه خنک", body: "نور دشمن روغن است. دربسته و دور از پنجره هجده ماه می‌ماند؛ بعد از باز کردن، تا سه ماه مصرف کنید." },
+    { kicker: "داخل بسته", title: "در تیراژ محدود بطری می‌شود", body: "در بچ‌های کوچک پرس و بطری می‌شود تا هیچ روغنی در مخزن نماند. تاریخ پرس روی برچسبِ درِ بطری درج شده." }
   ],
   default: [
-    { kicker: "How to use", title: "Simple, and not much of it", body: "This is a strong ingredient and a little goes a long way. Start with less than you think, taste, and add at the end." },
-    { kicker: "Keep it", title: "Sealed and out of the light", body: "An airtight jar in a dark cupboard, away from the hob. Every pouch carries its pack date on the back." },
-    { kicker: "In the pack", title: "Weighed to order", body: "Nothing is pre-bagged. We weigh your amount the morning it ships and seal it with the date and batch number." }
+    { kicker: "روش استفاده", title: "ساده، و به مقدار کم", body: "این ماده طعم قوی‌ای دارد و همین مقدار کم کافی است. کمتر از تصور شروع کنید، بچشید و آخر کار اضافه کنید." },
+    { kicker: "نگهداری", title: "دربسته و دور از نور", body: "شیشه دربسته در کابینت تاریک، دور از شعله. تاریخ تولید روی پشت هر پاکت درج شده است." },
+    { kicker: "داخل بسته", title: "همان لحظه سفارش توزین می‌شود", body: "هیچ‌چیز از قبل بسته‌بندی نشده. مقدار شما صبح روز ارسال توزین و همراه تاریخ و شماره بچ مهر و موم می‌شود." }
   ]
 };
 
@@ -1356,20 +1356,20 @@ const NOTE_STYLE = [
 ];
 
 const SHIPPING = [
-  { title: "Tehran, same day", body: "Order before 14:00 and a courier brings it to your door between 17:00 and 21:00 the same day.", meta: "45,000 T · free over 900,000 T" },
-  { title: "Tehran, next morning", body: "Placed after 14:00, or if you prefer a quiet slot: delivered 9:00–13:00 the following day.", meta: "35,000 T" },
-  { title: "Other cities", body: "Sent by courier the next working day. Two to four days depending on the province.", meta: "from 65,000 T" },
-  { title: "If something is wrong", body: "Tell us within 48 hours with a photo and we replace the item on the next delivery or refund it.", meta: "48 hour window" }
+  { title: "تهران، همان روز", body: "قبل از ساعت ۱۴ سفارش دهید؛ پیک بین ۱۷:۰۰ تا ۲۱:۰۰ همان روز به در خانه می‌آورد.", meta: "۴۵٫۰۰۰ تومان · رایگان بالای ۹۰۰٫۰۰۰ تومان" },
+  { title: "تهران، صبح فردا", body: "سفارش‌های بعد از ۱۴ یا اگر بازه‌ای آرام‌تر می‌خواهید: تحویل ۹:۰۰ تا ۱۳:۰۰ روز بعد.", meta: "۳۵٫۰۰۰ تومان" },
+  { title: "سایر شهرها", body: "روز کاری بعد با سرویس پستی ارسال می‌شود. بسته به استان دو تا چهار روز زمان می‌برد.", meta: "از ۶۵٫۰۰۰ تومان" },
+  { title: "اگر مشکلی پیش آمد", body: "تا ۴۸ ساعت همراه با عکس اطلاع دهید؛ کالا را در ارسال بعدی جایگزین می‌کنیم یا هزینه را برمی‌گردانیم.", meta: "پنجره ۴۸ ساعته" }
 ];
 
 const FAQS = [
-  { q: "Can I choose the exact weight?", a: "Yes. Ask in the order note — we can weigh any amount from 50 g upward and adjust the price before we charge you." },
-  { q: "How long do the spices keep?", a: "Whole spices hold a year in a dark cupboard, ground ones about six months. Every pouch is dated on the back." },
-  { q: "Is the saffron certified?", a: "Every batch comes with a lab sheet for crocin, picrocrocin and safranal. Ask us and we'll send the PDF." },
-  { q: "Can I pay on delivery?", a: "Cash on delivery is available inside Tehran. For other cities we ask for online payment first." }
+  { q: "می‌توانم وزن دقیق را انتخاب کنم؟", a: "بله. در یادداشت سفارش بنویسید — از ۵۰ گرم به بالا هر مقداری را توزین می‌کنیم و قبل از دریافت وجه، مبلغ را اصلاح می‌کنیم." },
+  { q: "ادویه‌ها چقدر می‌مانند؟", a: "ادویه کامل در کابینت تاریک حدوداً یک سال و آسیاب‌شده حدوداً شش ماه. تاریخ روی پشت هر پاکت درج شده است." },
+  { q: "زعفران گواهی دارد؟", a: "هر بچ همراه با برگه آزمایشگاهی کروسین، پیکروکروسین و سافرانال ارسال می‌شود. درخواست کنید تا PDF آن را بفرستیم." },
+  { q: "می‌شود در محل پرداخت کرد؟", a: "پرداخت در محل برای تهران فعال است. برای سایر شهرها ابتدا پرداخت آنلاین لازم است." }
 ];
 
-const fmt = (n) => n.toLocaleString("en-US") + " T";
+const fmt = (n) => n.toLocaleString("en-US") + " تومان";
 const INK = "#12211a";
 const GREEN = "#0f7a4a";
 
@@ -1440,8 +1440,8 @@ class Component extends DCLogic {
           fetch(`${API_BASE}/api/categories`),
           fetch(`${API_BASE}/api/products`)
         ]);
-        if (!catRes.ok) throw new Error("Failed to load categories");
-        if (!prodRes.ok) throw new Error("Failed to load products");
+        if (!catRes.ok) throw new Error("بارگذاری دسته‌ها ممکن نشد");
+        if (!prodRes.ok) throw new Error("بارگذاری محصولات ممکن نشد");
         const catData = await catRes.json();
         const prodData = await prodRes.json();
 
@@ -1456,7 +1456,7 @@ class Component extends DCLogic {
         });
       } catch (err) {
         console.error(err);
-        this.flash("Could not load catalogue");
+        this.flash("بارگذاری فروشگاه ممکن نشد");
       }
     })();
     return this._dataP;
@@ -1550,8 +1550,8 @@ class Component extends DCLogic {
 
   cancelOrder = (id) => {
     apiCancelOrder(id)
-      .then(() => { this.flash("Order cancelled"); this.loadOrders(); })
-      .catch((e) => this.flash((e && e.message) || "Could not cancel the order"));
+      .then(() => { this.flash("سفارش لغو شد"); this.loadOrders(); })
+      .catch((e) => this.flash((e && e.message) || "لغو سفارش ممکن نشد"));
   };
 
   findVariant(productVariantId) {
@@ -1571,8 +1571,8 @@ class Component extends DCLogic {
     const sz = p && p.sizes && p.sizes[i];
     if (!sz) return;
     apiAddCartItem(sz.id, Math.max(1, n || 1))
-      .then(() => { this.refreshCart(); this.flash((p ? p.name : "Item") + " added"); })
-      .catch((e) => this.flash(e && e.message ? e.message : "Could not add to the basket"));
+      .then(() => { this.refreshCart(); this.flash((p ? p.name : "کالا") + " به سبد اضافه شد"); })
+      .catch((e) => this.flash(e && e.message ? e.message : "افزودن به سبد ممکن نشد"));
   };
   bump = (k, d) => {
     const entry = this.state.cart[k];
@@ -1583,14 +1583,14 @@ class Component extends DCLogic {
     const capped = v && v.sz.stock > 0 ? Math.min(nq, v.sz.stock) : nq;
     apiUpdateCartItem(entry.itemId, capped)
       .then(() => this.refreshCart())
-      .catch((e) => this.flash(e && e.message ? e.message : "Could not update the basket"));
+      .catch((e) => this.flash(e && e.message ? e.message : "به‌روزرسانی سبد ممکن نشد"));
   };
   drop = (k) => {
     const entry = this.state.cart[k];
     if (!entry) return;
     apiDeleteCartItem(entry.itemId)
       .then(() => this.refreshCart())
-      .catch((e) => this.flash(e && e.message ? e.message : "Could not remove the item"));
+      .catch((e) => this.flash(e && e.message ? e.message : "حذف کالا ممکن نشد"));
   };
 
   // Builds the success-screen receipt from the real OrderRead returned by
@@ -1602,17 +1602,17 @@ class Component extends DCLogic {
     return {
       no: order.order_no,
       paidOnline: paid,
-      title: paid ? "Paid, and we're packing" : pickup ? "Confirmed — we're packing it" : "Order confirmed",
-      totalLabel: paid ? "Paid" : pickup ? "To pay on collection" : "To pay on delivery",
-      eta: slotLabel + (paid ? " — paid online" : pickup ? " — pay at the counter" : " — pay the rider"),
+      title: paid ? "پرداخت شد، در حال بسته‌بندی" : pickup ? "تأیید شد — در حال بسته‌بندی" : "سفارش تأیید شد",
+      totalLabel: paid ? "پرداخت شد" : pickup ? "پرداخت هنگام تحویل حضوری" : "پرداخت هنگام تحویل",
+      eta: slotLabel + (paid ? " — پرداخت آنلاین" : pickup ? " — پرداخت در پیشخوان" : " — پرداخت به پیک"),
       total: fmt(order.total),
       lines: (order.items || []).map((it) => ({ name: it.name_snapshot + " · " + it.size_label_snapshot, qty: it.qty, total: fmt(it.line_total) })),
       rows: [
-        { k: pickup ? "Collected by" : "Deliver to", v: f.name },
-        { k: "Address", v: f.addr + (f.unit ? ", unit " + f.unit : "") },
-        { k: "Phone", v: f.phone },
-        { k: "Window", v: slotLabel },
-        { k: "Payment", v: paid ? "Card, paid online" : pickup ? "Cash at the counter" : "Cash on delivery" }
+        { k: pickup ? "تحویل‌گیرنده" : "تحویل به", v: f.name },
+        { k: "آدرس", v: f.addr + (f.unit ? "، واحد " + f.unit : "") },
+        { k: "تلفن", v: f.phone },
+        { k: "بازه ارسال", v: slotLabel },
+        { k: "پرداخت", v: paid ? "کارت، پرداخت آنلاین" : pickup ? "نقدی در پیشخوان" : "نقدی هنگام تحویل" }
       ]
     };
   }
@@ -1648,7 +1648,7 @@ class Component extends DCLogic {
 
     const now = new Date();
     const mins = Math.max(0, 24 * 60 - (now.getHours() * 60 + now.getMinutes()));
-    const countdown = "Offers end in " + Math.floor(mins / 60) + "h " + (mins % 60) + "m";
+    const countdown = "پایان تخفیف‌ها تا " + Math.floor(mins / 60) + " ساعت و " + (mins % 60) + " دقیقه";
 
     const card = (p) => {
       if (!p || !p.sizes || !p.sizes.length) return null;
@@ -1659,13 +1659,13 @@ class Component extends DCLogic {
       const c = catOf(p.cat);
       return {
         name: p.name, cat: c.name, tint: c.tint,
-        sizeLine: p.sizes.length > 1 ? s0.label + " · " + p.sizes.length + " sizes" : s0.label,
+        sizeLine: p.sizes.length > 1 ? s0.label + " · " + p.sizes.length + " سایز" : s0.label,
         multi: p.sizes.length > 1,
-        multiLabel: p.sizes.length + " sizes",
+        multiLabel: p.sizes.length + " سایز",
         price: fmt(s0.price),
         old: disc ? fmt(s0.old) : "",
         discounted: disc,
-        badge: disc ? "−" + Math.round((1 - s0.price / s0.old) * 100) + "%" : "",
+        badge: disc ? "−" + Math.round((1 - s0.price / s0.old) * 100) + "٪" : "",
         soldOut: s0.out,
         dim: s0.out ? 0.5 : 1,
         qty,
@@ -1684,11 +1684,11 @@ class Component extends DCLogic {
     const shown = CATS.filter((c) => st.cat === "all" || c.id === st.cat);
     const groups = shown.map((c) => {
       const items = PRODUCTS.filter((p) => p.cat === c.id).map(card).filter(Boolean);
-      return { name: c.name, dot: c.dot, count: items.length + " products", items };
+      return { name: c.name, dot: c.dot, count: items.length + " کالا", items };
     }).filter((g) => g.items.length);
 
     const q = st.q.trim().toLowerCase();
-    const results = q ? PRODUCTS.filter((p) => p.name.toLowerCase().includes(q) || catOf(p.cat).name.toLowerCase().includes(q)).map(card).filter(Boolean) : [];
+    const results = q ? PRODUCTS.filter((p) => p.name.includes(q) || catOf(p.cat).name.includes(q)).map(card).filter(Boolean) : [];
 
     const p = PRODUCTS.find((x) => x.id === st.pid) || PRODUCTS[0] || { id: 0, name: "", cat: "", sizes: [{ label: "", price: 0, old: 0, out: true }], desc: "", kw: "food" };
     const si = Math.min(st.sizeIdx, Math.max(0, (p.sizes || []).length - 1));
@@ -1710,7 +1710,7 @@ class Component extends DCLogic {
 
       cartCount: count,
       hasItems: count > 0,
-      cartTotal: sub > 0 ? fmt(sub) : "Basket",
+      cartTotal: sub > 0 ? fmt(sub) : "سبد خرید",
       openCart: () => this.setState({ cartOpen: true }),
       closeCart: () => this.setState({ cartOpen: false }),
       cartOpen: st.cartOpen,
@@ -1725,7 +1725,7 @@ class Component extends DCLogic {
         ring: st.cat === c.id ? INK : "transparent",
         onClick: () => { this.setState({ cat: c.id }); this.top(); }
       })),
-      chips: [{ id: "all", name: "All products" }].concat(CATS).map((c) => ({
+      chips: [{ id: "all", name: "همه محصولات" }].concat(CATS).map((c) => ({
         name: c.name,
         bg: st.cat === c.id ? INK : "#f1efe8",
         fg: st.cat === c.id ? "#d8f24b" : "#12211a",
@@ -1738,7 +1738,7 @@ class Component extends DCLogic {
       onQuery: (e) => { const v = e.target.value; this.setState({ q: v, screen: "search" }); },
       clearQuery: () => this.setState({ q: "" }),
       showSuggest: st.q.length === 0,
-      suggestions: ["Saffron", "Pistachio", "Rosewater", "Dried lime", "Olive oil", "Barberry"].map((l) => ({ label: l, onClick: () => this.setState({ q: l }) })),
+      suggestions: ["زعفران", "پسته", "گلاب", "لیمو عمانی", "روغن زیتون", "زرشک"].map((l) => ({ label: l, onClick: () => this.setState({ q: l }) })),
       showResults: st.q.length > 0 && results.length > 0,
       showEmpty: st.q.length > 0 && results.length === 0,
       results,
@@ -1748,50 +1748,50 @@ class Component extends DCLogic {
         notes: (NOTES[p.cat] || NOTES.default).map((n, i) => ({
           kicker: n.kicker, title: n.title, body: n.body, bg: NOTE_STYLE[i].bg, fg: NOTE_STYLE[i].fg
         })),
-        promises: [{ label: "Weighed to order" }, { label: "Dated batch on the pack" }, { label: "Swap or refund in 48h" }],
+        promises: [{ label: "توزین به سفارش" }, { label: "تاریخ بچ روی بسته" }, { label: "جایگزینی یا بازگشت وجه در ۴۸ ساعت" }],
         price: fmt(sz.price), old: fmt(sz.old), discounted: pDisc,
-        badge: pDisc ? "−" + Math.round((1 - sz.price / sz.old) * 100) + "% today" : "",
+        badge: pDisc ? "−" + Math.round((1 - sz.price / sz.old) * 100) + "٪ امروز" : "",
         desc: p.desc, qty: st.qty,
         slotId: "dh-" + p.id, slotIdB: "dh-" + p.id + "-b", slotIdC: "dh-" + p.id + "-c", slotIdD: "dh-" + p.id + "-d",
         imgB: photo(p.kw, p.id + 400, 300), imgC: photo(p.kw + ",pack", p.id + 500, 300), imgD: photo(p.kw + ",kitchen", p.id + 600, 300),
-        stockLabel: sz.out ? "Out of stock — back next week" : "In stock — packed today",
+        stockLabel: sz.out ? "ناموجود — هفته بعد موجود می‌شود" : "موجود — امروز بسته‌بندی می‌شود",
         stockFg: sz.out ? "#e4572e" : GREEN,
         sizes: (p.sizes || []).map((s, i) => ({
           label: s.label,
-          price: s.out ? "unavailable" : fmt(s.price),
+          price: s.out ? "ناموجود" : fmt(s.price),
           bd: i === si ? INK : "#e2e0d8",
           bg: i === si ? INK : "#fff",
           fg: i === si ? "#fbfaf7" : INK,
           onClick: () => this.setState({ sizeIdx: i, qty: 1 })
         })),
         specs: [
-          { k: "Category", v: pc.name },
-          { k: "Package", v: sz.label },
-          { k: "Sourcing", v: "Direct from the grower" },
-          { k: "Packed", v: "To order, day of dispatch" },
-          { k: "Code", v: "DH-" + p.id }
+          { k: "دسته", v: pc.name },
+          { k: "بسته‌بندی", v: sz.label },
+          { k: "منشأ", v: "مستقیم از کشاورز" },
+          { k: "توزین", v: "به سفارش، روز ارسال" },
+          { k: "کد", v: "DH-" + p.id }
         ],
-        ctaLabel: sz.out ? "Notify me" : "Add · " + fmt(sz.price * st.qty),
+        ctaLabel: sz.out ? "خبرم کن" : "افزودن · " + fmt(sz.price * st.qty),
         ctaBg: sz.out ? "#f1efe8" : INK,
         ctaFg: sz.out ? "#55605a" : "#d8f24b",
         onQtyInc: () => this.setState((s) => ({ qty: s.qty + 1 })),
         onQtyDec: () => this.setState((s) => ({ qty: Math.max(1, s.qty - 1) })),
-        onAdd: () => (sz.out ? this.flash("We'll text you when it's back") : this.add(p.id, si, st.qty))
+        onAdd: () => (sz.out ? this.flash("وقتی موجود شد پیامک می‌دهیم") : this.add(p.id, si, st.qty))
       },
       related: PRODUCTS.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4).map(card).filter(Boolean),
 
       cartLines: lines.map((l) => ({
-        name: l.p.name, size: l.sz.label, each: fmt(l.sz.price) + " each",
+        name: l.p.name, size: l.sz.label, each: fmt(l.sz.price) + " هر کدام",
         qty: l.qty, size: l.sz.label, total: fmt(l.line), slotId: "dh-" + l.p.id, img: photo(l.p.kw, l.p.id), tint: catOf(l.p.cat).tint,
         onInc: () => this.bump(l.k, 1), onDec: () => this.bump(l.k, -1), onRemove: () => this.drop(l.k)
       })),
       cartEmpty: count === 0,
       cartFilled: count > 0,
       subtotal: fmt(sub),
-      deliveryLabel: sub === 0 ? "—" : slotDef.pickup ? "Pickup, free" : free ? "Free" : fmt(delivery),
+      deliveryLabel: sub === 0 ? "—" : slotDef.pickup ? "تحویل حضوری، رایگان" : free ? "رایگان" : fmt(delivery),
       total: fmt(total),
       freePct: Math.min(100, Math.round((sub / freeOver) * 100)) + "%",
-      freeHint: free ? "Free delivery unlocked" : "Add " + fmt(Math.max(0, freeOver - sub)) + " more for free delivery",
+      freeHint: free ? "ارسال رایگان فعال شد" : "برای ارسال رایگان " + fmt(Math.max(0, freeOver - sub)) + " دیگر اضافه کنید",
 
       shipping: SHIPPING,
       faqs: FAQS.map((f, i) => ({
@@ -1809,49 +1809,49 @@ class Component extends DCLogic {
       toggleAccount: () => this.setState((s) => ({ acctOpen: !s.acctOpen })),
       loggedIn: !!st.user,
       loggedOut: !st.user,
-      acctLabel: st.user ? st.user.name.split(" ")[0] : "Sign in",
+      acctLabel: st.user ? st.user.name.split(" ")[0] : "ورود",
       acctBg: st.acctOpen ? "#f1efe8" : "transparent",
       acctFg: INK,
       avatarText: st.user ? st.user.name.split(" ").map((x) => x[0]).join("").slice(0, 2) : (st.form.name ? st.form.name.split(" ").map((x) => x[0]).join("").slice(0, 2) : "?"),
       avatarBg: st.user ? "#eaf6ee" : "#f1efe8",
       avatarFg: st.user ? "#0b5c38" : "#7d857f",
-      userName: st.user ? st.user.name : st.form.name || "Guest",
-      userPhone: st.user ? (st.user.phone || (st.user.username ? "@" + st.user.username : "member")) : st.form.phone || "not signed in",
-      memberLine: st.user ? "member since 2024" : "guest checkout — sign in to keep this history",
+      userName: st.user ? st.user.name : st.form.name || "مهمان",
+      userPhone: st.user ? (st.user.phone || (st.user.username ? "@" + st.user.username : "عضو")) : st.form.phone || "وارد نشده",
+      memberLine: st.user ? "عضو از ۲۰۲۴" : "خرید مهمان — برای حفظ این تاریخچه وارد شوید",
       loginPhone: st.loginPhone,
       loginCode: st.loginCode,
       codeSent: st.codeSent,
-      loginCta: st.codeSent ? "Verify and sign in" : "Send me a code",
+      loginCta: st.codeSent ? "تأیید و ورود" : "کد را برایم بفرست",
       loginError: !!st.loginErr,
       loginErrorText: st.loginErr,
       onLoginPhone: (e) => { const v = e.target.value; this.setState({ loginPhone: v, loginErr: "" }); },
       onLoginCode: (e) => { const v = e.target.value; this.setState({ loginCode: v, loginErr: "" }); },
       doLogin: () => {
         if (!st.codeSent) {
-          if (st.loginPhone.replace(/\D/g, "").length < 10) { this.setState({ loginErr: "Enter a full mobile number." }); return; }
+          if (st.loginPhone.replace(/\D/g, "").length < 10) { this.setState({ loginErr: "شماره موبایل را کامل وارد کنید." }); return; }
           this.setState({ codeSent: true, loginErr: "" });
-          this.flash("Code sent — use 1234");
+          this.flash("کد ارسال شد — از ۱۲۳۴ استفاده کنید");
           return;
         }
-        if (st.loginCode.replace(/\D/g, "").length < 4) { this.setState({ loginErr: "The code is four digits." }); return; }
+        if (st.loginCode.replace(/\D/g, "").length < 4) { this.setState({ loginErr: "کد چهار رقمی است." }); return; }
         this.setState({
-          user: { name: "Sara Ahmadi", phone: st.loginPhone },
+          user: { name: "سارا احمدی", phone: st.loginPhone },
           acctOpen: false, codeSent: false, loginCode: "", loginErr: "",
-          form: Object.assign({}, st.form, { name: "Sara Ahmadi", phone: st.loginPhone })
+          form: Object.assign({}, st.form, { name: "سارا احمدی", phone: st.loginPhone })
         });
-        this.flash("Signed in");
+        this.flash("وارد شدید");
       },
 
       authTab: st.authTab,
       signupMode: st.signupMode,
       forgotOpen: st.forgotOpen,
       forgotSent: st.forgotSent,
-      authTitle: st.forgotOpen ? "Reset password" : st.signupMode ? "Create account" : "Sign in",
+      authTitle: st.forgotOpen ? "بازنشانی رمز عبور" : st.signupMode ? "ساخت حساب" : "ورود",
       authSub: st.forgotOpen
-        ? "Enter your email and we'll send a reset link."
+        ? "ایمیل خود را وارد کنید تا لینک بازیابی بفرستیم."
         : st.signupMode
-          ? "Email, phone and a strong password — takes a minute."
-          : "Welcome back. Sign in with your email and password.",
+          ? "ایمیل، موبایل و یک رمز قوی — یک دقیقه بیشتر نمی‌برد."
+          : "خوش آمدید. با ایمیل و رمز عبور وارد شوید.",
       forgotClosed: !st.forgotOpen,
       showPwForm: !st.forgotOpen && st.authTab === "pw",
       showOtpForm: !st.forgotOpen && st.authTab === "otp",
@@ -1865,9 +1865,9 @@ class Component extends DCLogic {
         fg: st.authTab === "otp" ? INK : "#7d857f",
         onClick: () => this.setState({ authTab: "otp", signupMode: false, forgotOpen: false, forgotSent: false, loginErr: "" })
       },
-      pwPlaceholder: st.signupMode ? "Password (min 8 chars, Aa1!)" : "Password",
-      pwCta: st.authBusy ? "Please wait…" : st.signupMode ? "Create account" : "Sign in",
-      signupToggleLabel: st.signupMode ? "Already have an account? Sign in" : "New here? Create an account",
+      pwPlaceholder: st.signupMode ? "رمز عبور (حداقل ۸ کاراکتر، Aa1!)" : "رمز عبور",
+      pwCta: st.authBusy ? "چند لحظه…" : st.signupMode ? "ساخت حساب" : "ورود",
+      signupToggleLabel: st.signupMode ? "حساب دارید؟ وارد شوید" : "تازه اینجایید؟ حساب بسازید",
       signinMode: !st.signupMode,
       loginUser: st.loginUser,
       loginPass: st.loginPass,
@@ -1888,16 +1888,16 @@ class Component extends DCLogic {
           const name = st.signupName.trim();
           const email = u;
           const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-          if (!emailOk) { this.setState({ loginErr: "Enter a valid email address." }); return; }
-          if (name.length < 2) { this.setState({ loginErr: "Enter your full name." }); return; }
+          if (!emailOk) { this.setState({ loginErr: "یک ایمیل معتبر وارد کنید." }); return; }
+          if (name.length < 2) { this.setState({ loginErr: "نام کامل خود را وارد کنید." }); return; }
           const phoneDigits = (st.signupPhone || "").replace(/\D/g, "");
-          if (!/^09\d{9}$/.test(phoneDigits)) { this.setState({ loginErr: "Enter a valid mobile number — 09xxxxxxxxx." }); return; }
-          if (p.length < 8) { this.setState({ loginErr: "Password needs at least 8 characters." }); return; }
+          if (!/^09\d{9}$/.test(phoneDigits)) { this.setState({ loginErr: "شماره موبایل معتبر وارد کنید — ۰۹xxxxxxxxx." }); return; }
+          if (p.length < 8) { this.setState({ loginErr: "رمز عبور باید حداقل ۸ کاراکتر باشد." }); return; }
           if (!/[a-z]/.test(p) || !/[A-Z]/.test(p) || !/[0-9]/.test(p) || !/[^A-Za-z0-9]/.test(p)) {
-            this.setState({ loginErr: "Password needs upper and lower case, a number and a symbol." });
+            this.setState({ loginErr: "رمز عبور باید حرف بزرگ و کوچک، عدد و نماد داشته باشد." });
             return;
           }
-          if (p !== st.loginPass2) { this.setState({ loginErr: "Passwords don't match." }); return; }
+          if (p !== st.loginPass2) { this.setState({ loginErr: "رمزهای عبور یکسان نیستند." }); return; }
           this.setState({ authBusy: true, loginErr: "" });
           try {
             await apiSignup({ email, phone: phoneDigits, name, password: p, passwordRepeat: p });
@@ -1908,15 +1908,15 @@ class Component extends DCLogic {
               loginUser: email,
               form: Object.assign({}, st.form, { name, phone: phoneDigits })
             });
-            this.flash("Account created — sign in to continue");
+            this.flash("حساب ساخته شد — برای ادامه وارد شوید");
           } catch (e) {
-            this.setState({ authBusy: false, loginErr: e.message || "Sign-up failed. Please try again." });
+            this.setState({ authBusy: false, loginErr: e.message || "ساخت حساب ناموفق بود. دوباره تلاش کنید." });
           }
           return;
         }
         // --- Sign in ---
-        if (u.length < 3) { this.setState({ loginErr: "Enter your email address." }); return; }
-        if (p.length < 8) { this.setState({ loginErr: "Password needs at least 8 characters." }); return; }
+        if (u.length < 3) { this.setState({ loginErr: "ایمیل خود را وارد کنید." }); return; }
+        if (p.length < 8) { this.setState({ loginErr: "رمز عبور باید حداقل ۸ کاراکتر باشد." }); return; }
         this.setState({ authBusy: true, loginErr: "" });
         try {
           const tok = await apiLogin(u, p);
@@ -1936,36 +1936,36 @@ class Component extends DCLogic {
           this.syncCart(); // reload the basket under the signed-in identity
           this.loadAddresses();
           this.loadOrders();
-          this.flash("Signed in");
+          this.flash("وارد شدید");
         } catch (e) {
-          this.setState({ authBusy: false, loginErr: e.message || "Sign-in failed. Please try again." });
+          this.setState({ authBusy: false, loginErr: e.message || "ورود ناموفق بود. دوباره تلاش کنید." });
         }
       },
       openForgot: () => this.setState({ forgotOpen: true, forgotSent: false, forgotUser: st.loginUser, loginErr: "" }),
       closeForgot: () => this.setState({ forgotOpen: false, forgotSent: false, loginErr: "" }),
       forgotUser: st.forgotUser,
 
-      forgotCta: st.authBusy ? "Please wait…" : "Send reset link",
+      forgotCta: st.authBusy ? "چند لحظه…" : "ارسال لینک بازیابی",
       onForgotUser: (e) => { const v = e.target.value; this.setState({ forgotUser: v, loginErr: "" }); },
       doForgot: async () => {
         const email = st.forgotUser.trim();
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { this.setState({ loginErr: "Enter a valid email address." }); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { this.setState({ loginErr: "یک ایمیل معتبر وارد کنید." }); return; }
         this.setState({ authBusy: true, loginErr: "" });
         try {
           await apiRequestReset(email);
           this.setState({ forgotSent: true, authBusy: false, loginErr: "" });
-          this.flash("Reset link sent — check your email");
+          this.flash("لینک بازیابی ارسال شد — ایمیل خود را ببینید");
         } catch (e) {
-          this.setState({ authBusy: false, loginErr: e.message || "Could not send the reset link." });
+          this.setState({ authBusy: false, loginErr: e.message || "ارسال لینک بازیابی ممکن نشد." });
         }
       },
-      doLogout: () => { localStorage.removeItem(AUTH_TOKEN_KEY); this.setState({ user: null, acctOpen: false, screen: "home", orders: [], addresses: [], addrId: null }); this.syncCart(); this.flash("Signed out"); },
+      doLogout: () => { localStorage.removeItem(AUTH_TOKEN_KEY); this.setState({ user: null, acctOpen: false, screen: "home", orders: [], addresses: [], addrId: null }); this.syncCart(); this.flash("از حساب خارج شدید"); },
       myOrderCount: st.orders.length,
       myActiveCount: st.orders.filter((o) => o.status < 4).length,
       acctLinks: [
-        { id: "orders", label: "My orders", badge: st.orders.length },
-        { id: "reviews", label: "My reviews", badge: MY_REVIEWS.length },
-        { id: "addresses", label: "My addresses", badge: st.addresses.length }
+        { id: "orders", label: "سفارش‌های من", badge: st.orders.length },
+        { id: "reviews", label: "نظرهای من", badge: MY_REVIEWS.length },
+        { id: "addresses", label: "آدرس‌های من", badge: st.addresses.length }
       ].map((l) => ({
         label: l.label, badge: l.badge,
         bg: st.acctTab === l.id && st.screen === "account" ? "#eaf6ee" : "#fbfaf7",
@@ -1973,9 +1973,9 @@ class Component extends DCLogic {
         onClick: () => { this.setState({ screen: "account", acctTab: l.id, acctOpen: false }); this.top(); }
       })),
       acctTabs: [
-        { id: "orders", label: "Orders", count: st.orders.length },
-        { id: "reviews", label: "Reviews", count: MY_REVIEWS.length },
-        { id: "addresses", label: "Addresses", count: st.addresses.length }
+        { id: "orders", label: "سفارش‌ها", count: st.orders.length },
+        { id: "reviews", label: "نظرها", count: MY_REVIEWS.length },
+        { id: "addresses", label: "آدرس‌ها", count: st.addresses.length }
       ].map((t) => ({
         label: t.label, count: t.count,
         bg: st.acctTab === t.id ? INK : "#f1efe8",
@@ -2008,19 +2008,19 @@ class Component extends DCLogic {
           no: o.no, placed: o.placed, total: fmt(o.total),
           summary: items.map((i) => i.p.name).join(", "),
           thumbs: items.map((i) => ({ img: photo(i.p.kw, i.p.id), tint: catOf(i.p.cat).tint })),
-          step3: o.pickup ? "Ready" : "On the way",
-          step4: o.pickup ? "Collected" : "At your door",
+          step3: o.pickup ? "آماده" : "در راه",
+          step4: o.pickup ? "تحویل شد" : "درِ خانه",
           status: (o.pickup
-            ? ["Confirmed", "Packing", "Ready to collect", "Waiting for you", "Collected"]
-            : ["Confirmed", "Packing", "On the way", "Almost there", "Delivered"])[o.status],
+            ? ["تأیید شد", "بسته‌بندی", "آماده تحویل حضوری", "منتظر شما", "تحویل شد"]
+            : ["تأیید شد", "بسته‌بندی", "در راه", "تقریباً رسیده", "تحویل شد"])[o.status],
           bg: o.status === 4 ? "#f1efe8" : o.status >= 2 ? "#eaf6ee" : "#fdf4e0",
           fg: o.status === 4 ? "#6f7a72" : o.status >= 2 ? "#0b5c38" : "#a3730a",
           live: o.status < 4,
           k1: k(0), k2: k(1), k3: k(2), k4: k(3),
           riderInitials: o.pickup ? "PU" : o.rider.slice(0, 2).toUpperCase(),
           riderLine: o.pickup
-            ? (o.paid === false ? "Collect at the counter · pay when you pick it up" : "Waiting for you at the counter, Vali-e-Asr St")
-            : o.rider + " is bringing it" + (o.paid === false ? " · have the cash ready at the door" : " · already paid"),
+            ? (o.paid === false ? "تحویل از پیشخوان · پرداخت هنگام دریافت" : "منتظر شما در پیشخوان، خیابان ولی‌عصر")
+            : o.rider + " در راه است" + (o.paid === false ? " · پول نقد آماده داشته باشید" : " · پرداخت شده"),
           eta: o.eta,
           canReview: o.status === 4,
           canCancel: o.canCancel,
@@ -2032,9 +2032,9 @@ class Component extends DCLogic {
               return sz ? apiAddCartItem(sz.id, it[2]).catch(() => null) : Promise.resolve(null);
             })).then(() => this.refreshCart());
             this.setState({ cartOpen: true });
-            this.flash("Added back to the basket");
+            this.flash("به سبد خرید اضافه شد");
           },
-          onReview: () => { this.setState({ acctTab: "reviews" }); this.flash("Pick a product to review"); },
+          onReview: () => { this.setState({ acctTab: "reviews" }); this.flash("محصولی برای ثبت نظر انتخاب کنید"); },
           onHelp: () => { this.setState({ screen: "help" }); this.top(); }
         };
       }),
@@ -2054,13 +2054,13 @@ class Component extends DCLogic {
         bd: a.def ? GREEN : "#eceae3",
         tint: a.def ? "#eaf6ee" : "#f1efe8",
         iconFg: a.def ? "#0b5c38" : "#7d857f",
-        onDefault: () => { apiSetDefaultAddress(a.id).then(() => this.loadAddresses()).catch((e) => this.flash((e && e.message) || "Could not set the default address")); },
-        onDelete: () => { apiDeleteAddress(a.id).then(() => { this.loadAddresses(); this.flash("Address removed"); }).catch((e) => this.flash((e && e.message) || "Could not remove the address")); }
+        onDefault: () => { apiSetDefaultAddress(a.id).then(() => this.loadAddresses()).catch((e) => this.flash((e && e.message) || "تنظیم آدرس پیش‌فرض ممکن نشد")); },
+        onDelete: () => { apiDeleteAddress(a.id).then(() => { this.loadAddresses(); this.flash("آدرس حذف شد"); }).catch((e) => this.flash((e && e.message) || "حذف آدرس ممکن نشد")); }
       })),
-      addAddress: () => { this.setState({ screen: "checkout" }); this.top(); this.flash("Drop a pin and save it with your next order"); },
+      addAddress: () => { this.setState({ screen: "checkout" }); this.top(); this.flash("سنجاق را روی نقشه بگذارید و با سفارش بعدی ذخیره کنید"); },
 
       steps: [
-        { label: "Address", i: 0 }, { label: "Time & payment", i: 1 }, { label: "Done", i: 2 }
+        { label: "آدرس", i: 0 }, { label: "زمان و پرداخت", i: 1 }, { label: "پایان", i: 2 }
       ].map((s) => ({
         label: s.label,
         bar: s.i === 0 ? GREEN : s.i === 1 ? (st.form.addr ? GREEN : "#e8e6de") : "#e8e6de",
@@ -2068,14 +2068,15 @@ class Component extends DCLogic {
         fg: s.i === 0 ? INK : "#a2a89f"
       })),
       pinX: st.pinX + "%",
+      pinXRtl: (100 - st.pinX) + "%",
       pinY: st.pinY + "%",
-      pinLabel: ["Home", "Work", "Other"][st.addrLabel],
+      pinLabel: ["خانه", "محل کار", "سایر"][st.addrLabel],
       pinCoords: "35." + (700 + Math.round(st.pinY * 3)) + "° N, 51." + (380 + Math.round(st.pinX * 2)) + "° E",
       onMapClick: (e) => {
         const r = e.currentTarget.getBoundingClientRect();
         this.setState({ pinX: Math.round(((e.clientX - r.left) / r.width) * 100), pinY: Math.round(((e.clientY - r.top) / r.height) * 100) });
       },
-      addrLabels: ["Home", "Work", "Other"].map((l, i) => ({
+      addrLabels: ["خانه", "محل کار", "سایر"].map((l, i) => ({
         label: l,
         bg: st.addrLabel === i ? INK : "#f1efe8",
         fg: st.addrLabel === i ? "#d8f24b" : INK,
@@ -2083,7 +2084,7 @@ class Component extends DCLogic {
       })),
       hasSaved: st.addresses.length > 0,
       savedAddresses: st.addresses.map((a) => ({
-        label: a.label, city: "Tehran", line: a.line,
+        label: a.label, city: "تهران", line: a.line,
         bd: st.form.addr === a.line ? GREEN : "#eceae3",
         bg: st.form.addr === a.line ? "#eaf6ee" : "#fff",
         onUse: () => this.setState((s) => ({
@@ -2107,8 +2108,8 @@ class Component extends DCLogic {
         onClick: () => this.setState({ slot: i })
       })),
       payments: [
-        { label: "Pay online now", note: "Card via the bank gateway" },
-        { label: "Cash on delivery", note: "Pay the rider at the door" }
+        { label: "پرداخت آنلاین", note: "کارت بانکی از درگاه بانک" },
+        { label: "پرداخت در محل", note: "به پیک درِ خانه بپردازید" }
       ].map((p2, i) => ({
         label: p2.label, note: p2.note,
         bd: st.pay === i ? GREEN : "#eceae3",
@@ -2119,25 +2120,25 @@ class Component extends DCLogic {
       })),
       formError: !!st.err,
       errorText: st.err,
-      payCta: st.placing ? "Placing the order…" : st.pay === 0 ? "Pay " + fmt(total) : "Place order · " + fmt(total),
-      payFootnote: st.pay === 0 ? "You'll return here with your receipt." : slotDef.pickup ? "Pay at the counter when you collect." : "You can pay the rider at the door.",
+      payCta: st.placing ? "در حال ثبت سفارش…" : st.pay === 0 ? "پرداخت " + fmt(total) : "ثبت سفارش · " + fmt(total),
+      payFootnote: st.pay === 0 ? "همین‌جا برمی‌گردید و رسید می‌بینید." : slotDef.pickup ? "هنگام تحویل حضوری در پیشخوان بپردازید." : "می‌توانید به پیک درِ خانه بپردازید.",
       placeOrder: () => {
         const f = st.form;
         // The backend checks out the signed-in user's cart only — guests must
         // sign in first (their guest basket is merged into the account on login).
-        if (!st.user) { this.setState({ err: "Sign in to place the order — your basket will be waiting.", acctOpen: true }); return; }
+        if (!st.user) { this.setState({ err: "برای ثبت سفارش وارد شوید — سبد خریدتان منتظر می‌ماند.", acctOpen: true }); return; }
         if (!f.name.trim() || f.phone.replace(/\D/g, "").length < 10 || !f.addr.trim()) {
-          this.setState({ err: "We need a name, a mobile number and the street address before the rider can leave." });
+          this.setState({ err: "قبل از حرکت پیک، به نام، شماره موبایل و آدرس نیاز داریم." });
           return;
         }
         if (!st.addrId && !f.postal.trim()) {
-          this.setState({ err: "Add a postal code so the courier can find the door." });
+          this.setState({ err: "برای پیدا کردن در خانه، کد پستی اضافه کنید." });
           return;
         }
-        if (count === 0) { this.setState({ err: "Your basket is empty." }); return; }
+        if (count === 0) { this.setState({ err: "سبد خرید شما خالی است." }); return; }
         const SD = st.slots.length ? st.slots : SLOTS;
         const sd = SD[st.slot] || SD[0];
-        if (!sd || sd.id == null) { this.setState({ err: "Delivery options are still loading — try again in a moment." }); return; }
+        if (!sd || sd.id == null) { this.setState({ err: "گزینه‌های ارسال هنوز بارگذاری نشده — چند لحظه دیگر تلاش کنید." }); return; }
         this.setState({ placing: true, err: "" });
         const finish = (order) => {
           this.setState({
@@ -2150,7 +2151,7 @@ class Component extends DCLogic {
           this.top();
         };
         const makeAddress = () => apiCreateAddress({
-          label: ["Home", "Work", "Other"][st.addrLabel] || "Home",
+          label: ["خانه", "محل کار", "سایر"][st.addrLabel] || "خانه",
           line: f.addr.trim(),
           unit: f.unit.trim() || null,
           postal_code: f.postal.trim(),
@@ -2168,10 +2169,10 @@ class Component extends DCLogic {
             note: f.note.trim() || null
           }))
           .then(finish)
-          .catch((e) => this.setState({ placing: false, err: (e && e.message) || "Checkout failed. Please try again." }));
+          .catch((e) => this.setState({ placing: false, err: (e && e.message) || "ثبت سفارش ناموفق بود. دوباره تلاش کنید." }));
       },
       finishPayment: () => { this.setState({ screen: "success" }); this.top(); },
-      receipt: st.receipt || { no: "", eta: "", total: "", title: "Order confirmed", totalLabel: "Paid", lines: [], rows: [] },
+      receipt: st.receipt || { no: "", eta: "", total: "", title: "سفارش تأیید شد", totalLabel: "پرداخت شد", lines: [], rows: [] },
       trackOrder: () => { this.setState({ screen: "account", acctTab: "orders" }); this.top(); },
 
       hasToast: !!st.toast,

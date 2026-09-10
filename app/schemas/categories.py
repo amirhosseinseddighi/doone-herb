@@ -23,6 +23,8 @@ class CategoryResponse(BaseModel):
 class CategoryDetails(CategoryResponse):
     products: list[BaseProductResponse] = Field(default_factory=list)
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class NewCategoryRequest(BaseModel):
     name: str = Field(min_length=1, max_length=100)

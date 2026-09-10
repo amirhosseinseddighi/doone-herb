@@ -98,7 +98,7 @@ async def _load_order_by_order_no_or_404(order_no: str, db: AsyncSession) -> Ord
 
 def _ensure_owner_or_staff(order: Order, user) -> None:
     if order.user_id != user.id and user.role not in (Roles.OWNER, Roles.MANAGER, Roles.PACKER):
-        # 404 rather than 403: don't reveal that an order id exists to non-owners.
+        # 404 rather than 403 --> this will prevent enumeration
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
 
@@ -144,8 +144,7 @@ async def checkout(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Fulfillment method doesn't match the selected delivery slot",
         )
-    # NOTE: cutoff_time enforcement (e.g. rejecting same-day slots booked too
-    # late) isn't implemented here — add it if the business rule requires it.
+
 
     # --- cart must have items ---
     cart = await _get_user_cart_with_items(current_user.id, db)
@@ -304,7 +303,8 @@ async def cancel_order(
         )
 
     for item in order.items:
-        variant = await db.get(ProductVariant, item.product_variant_id)
+        variant_res = await db.execute(select(ProductVariant).where(ProductVariant.id == item.product_variant_id).with_for_update())
+        variant = variant_res.scalar_one_or_none()
         if variant:
             variant.stock_qty += item.qty
 
