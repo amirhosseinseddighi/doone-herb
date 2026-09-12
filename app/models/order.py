@@ -112,7 +112,7 @@ class Order(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     order_no: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    address_id: Mapped[int] = mapped_column(Integer, ForeignKey("addresses.id"), nullable=False, index=True)
+    address_id: Mapped[int] = mapped_column(Integer, ForeignKey("addresses.id"), nullable=True, index=True)
     delivery_slot_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("delivery_slots.id"), nullable=False, index=True
     )

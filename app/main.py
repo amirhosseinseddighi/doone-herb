@@ -27,7 +27,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(category.router, prefix="/api/categories", tags=["category"])
 app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(cart.router, prefix="/api/cart", tags=["cart"])
-app.include_router(addresses.router,prefix="/api/address", tags=["addresses"])
+app.include_router(addresses.router,prefix="/api/addresses", tags=["addresses"])
 app.include_router(orders.router,prefix="/orders", tags=["orders"])
 
 @app.get("/healthz")
