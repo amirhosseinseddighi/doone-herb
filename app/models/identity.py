@@ -71,6 +71,7 @@ class User(Base):
     reviews: Mapped[list["Review"]] = relationship("Review", back_populates="user")
     cart: Mapped[Optional["Cart"]] = relationship("Cart", back_populates="user")
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="user")
+    reset_password_tokens :Mapped[list["ResetPasswordToken"]] = relationship("ResetPasswordToken", back_populates="user")
 
 
 class Address(Base):
@@ -89,3 +90,16 @@ class Address(Base):
 
     user: Mapped["User"] = relationship("User", back_populates="addresses")
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="address")
+
+
+
+
+class ResetPasswordToken(Base):
+    __tablename__ = "reset_password_tokens"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    expire_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),nullable=False)
+    user: Mapped["User"] = relationship("User", back_populates="reset_password_tokens")

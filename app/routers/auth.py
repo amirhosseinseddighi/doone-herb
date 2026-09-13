@@ -1,18 +1,16 @@
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from redis import RedisError
-from sqlalchemy import func, select
+from sqlalchemy import func, select, delete as sql_delete
 from sqlalchemy.exc import IntegrityError
-from app.models.identity import Roles, User
+from app.models.identity import ResetPasswordToken, Roles, User
 from app.core.deps import CurrentUser, CurrentAdmin, OptionalUser, get_db
 from app.db.database import AsyncSession
 from app.core import security
 from app.core.config import settings
-from app.db.redis_cli import redis_client
 from app.routers.cart import merge_guest_cart_to_user
 from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token
 from app.utils.email_utils import send_password_reset_email
@@ -151,7 +149,7 @@ async def create_new_user(
 
 
 
-@router.post("/forget-password", status_code=status.HTTP_200_OK)
+@router.post("/forget-password", status_code=status.HTTP_202_ACCEPTED)
 async def forget_password(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: OptionalUser,
@@ -176,21 +174,37 @@ async def forget_password(
 
     user = user_result.scalar_one_or_none()
     if user:
+
+
+        # remove old tokens
+        await db.execute(sql_delete(ResetPasswordToken).where(ResetPasswordToken.user_id == user.id))
+
         # generate token
         reset_token = security.generate_reset_token()
         hash_reset_token = security.hash_reset_token(reset_token)
 
-        # store token in redis
-        redis_key = f"{settings.RESET_TOKEN_PREFIX}{hash_reset_token}"
-        redis_client.set(redis_key, str(user.id), ex=settings.RESET_TOKEN_TTL_SECONDS)
+        # store token in db
+        reset_token_entry = ResetPasswordToken(
+            user_id=user.id,
+            token_hash=hash_reset_token,
+        )
+
+
+        reset_token_entry.expire_at = datetime.now(UTC) + timedelta(
+            seconds=settings.RESET_TOKEN_TTL_SECONDS
+        )
+
+        db.add(reset_token_entry)
+        await db.commit()
+        await db.refresh(reset_token_entry)
 
 
         # send email
         background_task.add_task(
             send_password_reset_email,
-            user.name,
-            user.email,
-            reset_token
+            name=user.name,
+            to_email=user.email,
+            token=reset_token
         )
 
 
@@ -220,21 +234,21 @@ async def reset_password(
     # check if token exists
     reset_token = reset_password_request.token
     hash_reset_token = security.hash_reset_token(reset_token)
-    redis_key = f"{settings.RESET_TOKEN_PREFIX}{hash_reset_token}"
-    try:
-        user_id = redis_client.get(redis_key)
-        if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid or expired reset token.",
-            )
-        user_id = int(user_id)
-        redis_client.delete(redis_key)
-    except RedisError as e:
+    reset_token_res = await db.execute(
+        select(ResetPasswordToken)
+        .where(ResetPasswordToken.token_hash == hash_reset_token)
+    )
+
+    reset_password_token = reset_token_res.scalar_one_or_none()
+
+    if not reset_password_token or (reset_password_token.expire_at < datetime.now(UTC)):
         raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Service unavailable. Please try again later.",
-                )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token.",
+        )
+
+    # remove all reset tokens
+    await db.execute(sql_delete(ResetPasswordToken).where(ResetPasswordToken.user_id == reset_password_token.user_id))
 
     
 
@@ -242,7 +256,7 @@ async def reset_password(
     user_result = await db.execute(
             select(User)
             .where(
-                (User.id == user_id)
+                (User.id == reset_password_token.user_id)
             )
         )
     

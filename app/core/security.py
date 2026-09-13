@@ -1,7 +1,6 @@
 from __future__ import annotations
 from datetime import datetime, UTC, timedelta
 from pwdlib import PasswordHash
-from redis import RedisError
 from app.core.config import settings
 from fastapi.security import OAuth2PasswordBearer
 import jwt

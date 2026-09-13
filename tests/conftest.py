@@ -6,7 +6,7 @@ from fastapi import status
 
 # ============== ENVIRONMENT ==================
 os.environ["REDIS_URL"] = "redis://redis:6379/0"
-os.environ["JWT_SECRET"] = "test_secret"
+os.environ["JWT_SECRET"] = "test_secrettest_secrettest_secrettest_secrettest_secret"
 os.environ["JWT_ALGORITHM"] = "HS256"
 os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
 
