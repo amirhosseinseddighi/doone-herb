@@ -33,6 +33,7 @@ class UserBasicResponse(BaseModel):
 
 
 class CurrentUserInfoResponse(BaseModel):
+    email: str
     phone: str
     name: str
     tier: str
