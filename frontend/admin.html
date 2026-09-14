@@ -606,6 +606,11 @@
               </div>
             </sc-if>
           </div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+            <button onClick="{{ previousProducts }}" disabled="{{ previousProductsDisabled }}" style="height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; color: #12211a; cursor: pointer; opacity: {{ previousProductsOpacity }};">صفحه قبل</button>
+            <span style="font-size: 12.5px; color: #7d857f;">صفحه {{ productPage }}</span>
+            <button onClick="{{ nextProducts }}" disabled="{{ nextProductsDisabled }}" style="height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; cursor: pointer; opacity: {{ nextProductsOpacity }};">صفحه بعد</button>
+          </div>
         </div>
       </sc-if>
 
@@ -1029,7 +1034,7 @@
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
               <sc-for list="{{ draftPhotos }}" as="ph" hint-placeholder-count="3">
                 <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
-                  <div style="position: relative; aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #f1efe8;">
+                  <div onClick="{{ ph.onPick }}" style="position: relative; aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #f1efe8; cursor: {{ ph.actionCursor }};">
                   <sc-if value="{{ canManageImages }}" hint-placeholder-val="{{ false }}">
                     <image-slot id="{{ ph.slotId }}" src="{{ ph.img }}" shape="rect" placeholder="{{ ph.label }}"></image-slot>
                   </sc-if>
@@ -1040,7 +1045,7 @@
                   <sc-if value="{{ canManageImages }}" hint-placeholder-val="{{ false }}">
                     <label style="height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: {{ ph.actionBg }}; color: {{ ph.actionFg }}; cursor: {{ ph.actionCursor }}; font-size: 11px; font-weight: 700; opacity: {{ ph.actionOpacity }};">
                       {{ ph.actionLabel }}
-                      <input type="file" accept="image/*" onChange="{{ ph.onFile }}" style="display: none;" />
+                      <input id="{{ ph.fileId }}" type="file" accept="image/*" onChange="{{ ph.onFile }}" onInput="{{ ph.onFile }}" style="position: absolute; width: 1px; height: 1px; opacity: 0;" />
                     </label>
                     <div style="display: flex; gap: 5px;">
                       <button onClick="{{ ph.onUp }}" disabled="{{ ph.first }}" title="انتقال به قبل" style="flex: 1; height: 28px; border: 0; border-radius: 999px; background: #f1efe8; color: #5c665f; cursor: pointer; font-size: 12px;">↑</button>
@@ -1135,12 +1140,19 @@ const API_BASE = "http://127.0.0.1:8000";
 const AUTH_TOKEN_KEY = "dh_token";
 const productImageUrl = (image) => {
   const url = typeof image === "string" ? image : image && image.url;
-  return url || "";
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : new URL(url.replace(/^\/+/, ""), document.baseURI).href;
 };
+const productPageData = (data) => ({
+  products: Array.isArray(data) ? data : data && (data.products || data.items || data.results) || [],
+  offset: Array.isArray(data) ? 0 : Number(data && data.offset) || 0,
+  limit: Array.isArray(data) ? data.length : Number(data && data.limit) || 25,
+  hasMore: !Array.isArray(data) && !!(data && data.has_more)
+});
 const imageRequest = async (method, path, file, sortOrder) => {
   const hasFile = !!file;
   const body = hasFile ? new FormData() : sortOrder !== undefined && sortOrder !== null ? JSON.stringify({ sort_order: sortOrder }) : undefined;
-  if (hasFile) body.append("file", file);
+  if (hasFile) body.append("file", file, file.name || "product-image");
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: Object.assign(
@@ -1538,6 +1550,7 @@ class Component extends DCLogic {
     me: null,
     cats: CATS.map((c) => Object.assign({}, c)),
     products: SEED.map((p) => Object.assign({}, p, { sizes: p.sizes.map((s) => Object.assign({}, s)) })),
+    productOffset: 0, productLimit: 25, productHasMore: false, productLoading: false,
     orders: [], orderBusy: null,
     q: "", filterCat: "all", stock: "all", hidden: {}, offersOn: true,
     orderFilter: "all", orderQuery: "", advOpen: false,
@@ -1602,11 +1615,12 @@ class Component extends DCLogic {
           ? categoryDetails[index].total_products
           : category.productCount
       }));
-      const products = (Array.isArray(prodData) ? prodData : prodData.items || prodData.results || []).map(mapProduct);
+      const productData = productPageData(prodData);
+      const products = productData.products.map(mapProduct);
       const loadedCatIds = new Set(cats.map((c) => c._id));
       products.forEach((p) => {
         if (p.categoryId && !loadedCatIds.has(p.categoryId)) {
-          const source = (Array.isArray(prodData) ? prodData : prodData.items || prodData.results || [])
+          const source = productData.products
             .find((item) => item.id === p._id);
           if (source && source.category) {
             cats = cats.concat([mapCategory(source.category)]);
@@ -1614,11 +1628,29 @@ class Component extends DCLogic {
           }
         }
       });
-      this.setState({ cats, products });
+      this.setState({ cats, products, productOffset: productData.offset, productLimit: productData.limit, productHasMore: productData.hasMore });
       this.flash("فهرست محصولات از سرور دریافت شد");
     } catch (err) {
       console.error(err);
       this.flash("دریافت فهرست محصولات ناموفق بود؛ داده‌های نمونه نمایش داده می‌شوند");
+    }
+  }
+
+  async loadProductPage(offset) {
+    if (this.state.productLoading) return;
+    this.setState({ productLoading: true });
+    try {
+      const data = productPageData(await apiGet("/api/products?offset=" + offset + "&limit=" + this.state.productLimit));
+      this.setState({
+        products: data.products.map(mapProduct),
+        productOffset: data.offset,
+        productLimit: data.limit,
+        productHasMore: data.hasMore,
+        productLoading: false
+      });
+    } catch (e) {
+      this.setState({ productLoading: false });
+      this.flash(e.message || "دریافت محصولات ناموفق بود");
     }
   }
 
@@ -1717,7 +1749,7 @@ class Component extends DCLogic {
     editing: p ? p.id : "new",
     draft: p
       ? { _id: p._id, id: p.id, name: p.name, cat: p.cat, categoryId: p.categoryId, desc: p.desc, featured: p.featured, kw: p.kw, images: p.images || [], sizes: p.sizes.map((s) => ({ _id: s._id, label: s.label, price: String(s.price), old: s.old ? String(s.old) : "", out: s.out, qty: s.qty || 0 })) }
-      : { id: "new", name: "", cat: this.state.cats.length ? this.state.cats[0].id : "", categoryId: this.state.cats.length ? this.state.cats[0]._id : null, desc: "", featured: false, kw: "food", images: [], sizes: [{ label: "", price: "", old: "", out: false, qty: 10 }] }
+      : { id: "new", name: "", cat: this.state.cats.length ? this.state.cats[0].id : "", categoryId: this.state.cats.length ? this.state.cats[0]._id : null, desc: "", featured: false, kw: "food", images: [], pendingImage: null, pendingImageUrl: "", sizes: [{ label: "", price: "", old: "", out: false, qty: 10 }] }
   });
 
   setDraft = (patch) => this.setState((s) => ({ draft: Object.assign({}, s.draft, patch) }));
@@ -1731,7 +1763,8 @@ class Component extends DCLogic {
   };
 
   addProductImage = async (productId, file) => {
-    if (!file) return;
+    if (!productId) { this.flash("ابتدا محصول را ذخیره کنید"); return; }
+    if (!file) { this.flash("تصویری انتخاب نشده است"); return; }
     try {
       await imageRequest("POST", `/api/products/${productId}/images`, file);
       await this.refreshProductImages(productId);
@@ -1768,10 +1801,10 @@ class Component extends DCLogic {
     const otherIndex = index + direction;
     if (otherIndex < 0 || otherIndex >= images.length) return;
     try {
-      await Promise.all([
-        this.updateProductImage(productId, images[index].id, null, images[otherIndex].sort_order),
-        this.updateProductImage(productId, images[otherIndex].id, null, images[index].sort_order)
-      ]);
+      await imageRequest("PATCH", `/api/products/${productId}/images/${images[index].id}`, null, otherIndex);
+      await imageRequest("PATCH", `/api/products/${productId}/images/${images[otherIndex].id}`, null, index);
+      await this.refreshProductImages(productId);
+      this.flash("ترتیب تصویر تغییر کرد");
     } catch (e) { this.flash(e.message || "ترتیب تصاویر تغییر نکرد"); }
   };
 
@@ -1787,6 +1820,7 @@ class Component extends DCLogic {
     try {
       if (wasNew) {
         // POST /api/products — NewProductRequest
+        const pendingImage = d.pendingImage;
         const body = {
           name: d.name.trim(),
           category_id: cat._id,
@@ -1802,8 +1836,18 @@ class Component extends DCLogic {
         };
         const created = await apiSend("POST", "/api/products", body);
         const rec = mapProduct(created);
-        this.setState((s) => ({ products: [rec].concat(s.products), editing: null, draft: null, saving: false }));
-        this.flash("محصول اضافه شد و در فروشگاه فعال است");
+        this.setState((s) => ({
+          products: [rec].concat(s.products),
+          editing: rec.id,
+          draft: {
+            _id: rec._id, id: rec.id, name: rec.name, cat: rec.cat, categoryId: rec.categoryId,
+            desc: rec.desc, featured: rec.featured, kw: rec.kw, images: rec.images || [], pendingImage: null, pendingImageUrl: "",
+            sizes: rec.sizes.map((size) => ({ _id: size._id, label: size.label, price: String(size.price), old: size.old ? String(size.old) : "", out: size.out, qty: size.qty || 0 }))
+          },
+          saving: false
+        }));
+        this.flash("محصول اضافه شد؛ اکنون تصویر اضافه کنید");
+        if (pendingImage) await this.addProductImage(rec._id, pendingImage);
       } else {
         // PATCH /api/products/{id} — UpdateProductRequest
         const body = {
@@ -2236,6 +2280,7 @@ class Component extends DCLogic {
     const draftPhotos = draftImages.map((image, index) => ({
       id: image.id,
       slotId: "dh-" + d0.id + "-" + image.id,
+      fileId: "dh-file-" + d0.id + "-" + image.id,
       label: index === 0 ? "تصویر اصلی" : "تصویر " + (index + 1),
       img: image.url,
       actionLabel: "جایگزین",
@@ -2244,6 +2289,7 @@ class Component extends DCLogic {
       actionCursor: d0._id ? "pointer" : "not-allowed",
       actionOpacity: d0._id ? 1 : 0.5,
       disabled: !d0._id,
+      onPick: () => { const input = document.getElementById("dh-file-" + d0.id + "-" + image.id); if (input) input.click(); },
       first: index === 0,
       last: index === draftImages.length - 1,
       onFile: (e) => { if (e.target.files && e.target.files[0]) this.updateProductImage(d0._id, image.id, e.target.files[0], image.sort_order); e.target.value = ""; },
@@ -2253,17 +2299,26 @@ class Component extends DCLogic {
     })).concat([{
       id: null,
       slotId: "dh-" + d0.id + "-new",
+      fileId: "dh-file-" + d0.id + "-new",
       label: "تصویر جدید",
-      img: "",
+      img: d0.pendingImageUrl || "",
       actionLabel: "افزودن",
       actionBg: "#eaf6ee",
       actionFg: GREEN,
       actionCursor: d0._id ? "pointer" : "not-allowed",
       actionOpacity: d0._id ? 1 : 0.5,
       disabled: !d0._id,
+      onPick: () => { const input = document.getElementById("dh-file-" + d0.id + "-new"); if (input) input.click(); },
       first: false,
       last: true,
-      onFile: (e) => { if (e.target.files && e.target.files[0]) this.addProductImage(d0._id, e.target.files[0]); e.target.value = ""; },
+      onFile: (e) => {
+        const file = e && e.target && e.target.files && e.target.files[0];
+        if (file) {
+          if (d0._id) this.addProductImage(d0._id, file);
+          else { this.setDraft({ pendingImage: file, pendingImageUrl: URL.createObjectURL(file) }); }
+        }
+        if (e && e.target) e.target.value = "";
+      },
       onUp: () => {},
       onDown: () => {},
       onDelete: () => {}
@@ -2382,6 +2437,13 @@ class Component extends DCLogic {
         onClick: () => this.setState({ stock: f.id })
       })),
       rowCount: filtered.length + " of " + st.products.length,
+      productPage: Math.floor(st.productOffset / st.productLimit) + 1,
+      previousProductsDisabled: st.productLoading || st.productOffset === 0,
+      previousProductsOpacity: st.productLoading || st.productOffset === 0 ? 0.45 : 1,
+      nextProductsDisabled: st.productLoading || !st.productHasMore,
+      nextProductsOpacity: st.productLoading || !st.productHasMore ? 0.45 : 1,
+      previousProducts: () => this.loadProductPage(Math.max(0, st.productOffset - st.productLimit)),
+      nextProducts: () => this.loadProductPage(st.productOffset + st.productLimit),
       noRows: filtered.length === 0,
       resetFilters: () => this.setState({ q: "", filterCat: "all", stock: "all" }),
       rows: filtered.map((p) => {

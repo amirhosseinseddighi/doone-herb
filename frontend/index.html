@@ -325,6 +325,11 @@
             </div>
           </div>
         </sc-for>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 4px;">
+          <button onClick="{{ previousProducts }}" disabled="{{ previousProductsDisabled }}" style="height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; color: #12211a; cursor: pointer; opacity: {{ previousProductsOpacity }};">محصولات قبلی</button>
+          <span style="font-size: 12.5px; color: #7d857f;">صفحه {{ productPage }}</span>
+          <button onClick="{{ nextProducts }}" disabled="{{ nextProductsDisabled }}" style="height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; cursor: pointer; opacity: {{ nextProductsOpacity }};">محصولات بعدی</button>
+        </div>
       </div>
 
       <div class="wrap" style="padding-top: 48px;">
@@ -1005,8 +1010,15 @@ const API_BASE = "http://127.0.0.1:8000";
 const AUTH_TOKEN_KEY = "dh_token";
 const productImageUrl = (image) => {
   const url = typeof image === "string" ? image : image && image.url;
-  return url || "";
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : new URL(url.replace(/^\/+/, ""), document.baseURI).href;
 };
+const productPageData = (data) => ({
+  products: Array.isArray(data) ? data : data && (data.products || data.items || data.results) || [],
+  offset: Array.isArray(data) ? 0 : Number(data && data.offset) || 0,
+  limit: Array.isArray(data) ? data.length : Number(data && data.limit) || 25,
+  hasMore: !Array.isArray(data) && !!(data && data.has_more)
+});
 // Cart calls must send cookies: guests are tracked with the backend's HttpOnly
 // `guest_cart_token` cookie and the API uses CORS with allow_credentials.
 const FETCH_CREDENTIALS = "include";
@@ -1395,6 +1407,7 @@ class Component extends DCLogic {
     pinX: 48, pinY: 52, addrLabel: 0,
     cats: [],
     products: [],
+    productOffset: 0, productLimit: 25, productHasMore: false, productLoading: false,
     slots: [],
     dataReady: false,
   };
@@ -1452,12 +1465,16 @@ class Component extends DCLogic {
         const catData = await catRes.json();
         const prodData = await prodRes.json();
 
-        const products = (Array.isArray(prodData) ? prodData : prodData.items || prodData.results || []).map(mapProduct);
+        const productData = productPageData(prodData);
+        const products = productData.products.map(mapProduct);
         const cats = (Array.isArray(catData) ? catData : catData.items || catData.results || []).map(mapCategory);
 
         this.setState({
           cats,
           products,
+          productOffset: productData.offset,
+          productLimit: productData.limit,
+          productHasMore: productData.hasMore,
           dataReady: true,
           pid: products.length ? products[0].id : null
         });
@@ -1467,6 +1484,30 @@ class Component extends DCLogic {
       }
     })();
     return this._dataP;
+  }
+
+  async loadProductPage(offset) {
+    if (this.state.productLoading) return;
+    this.setState({ productLoading: true });
+    try {
+      const res = await fetch(`${API_BASE}/api/products?offset=${offset}&limit=${this.state.productLimit}`);
+      if (!res.ok) throw new Error("بارگذاری محصولات ممکن نشد");
+      const data = productPageData(await res.json());
+      const products = data.products.map(mapProduct);
+      this.setState((s) => ({
+        products,
+        productOffset: data.offset,
+        productLimit: data.limit,
+        productHasMore: data.hasMore,
+        productLoading: false,
+        pid: products.length ? products[0].id : s.pid
+      }));
+      this.top();
+    } catch (err) {
+      console.error(err);
+      this.setState({ productLoading: false });
+      this.flash("بارگذاری محصولات ممکن نشد");
+    }
   }
 
   componentWillUnmount() { clearTimeout(this.toastT); }
@@ -1718,6 +1759,13 @@ class Component extends DCLogic {
       },
 
       cartCount: count,
+      productPage: Math.floor(st.productOffset / st.productLimit) + 1,
+      previousProductsDisabled: st.productLoading || st.productOffset === 0,
+      previousProductsOpacity: st.productLoading || st.productOffset === 0 ? 0.45 : 1,
+      nextProductsDisabled: st.productLoading || !st.productHasMore,
+      nextProductsOpacity: st.productLoading || !st.productHasMore ? 0.45 : 1,
+      previousProducts: () => this.loadProductPage(Math.max(0, st.productOffset - st.productLimit)),
+      nextProducts: () => this.loadProductPage(st.productOffset + st.productLimit),
       hasItems: count > 0,
       cartTotal: sub > 0 ? fmt(sub) : "سبد خرید",
       openCart: () => this.setState({ cartOpen: true }),
