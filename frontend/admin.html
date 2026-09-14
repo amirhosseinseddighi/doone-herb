@@ -1025,11 +1025,29 @@
           </label>
 
           <div style="display: flex; flex-direction: column; gap: 7px;">
-            <span style="font-size: 12.5px; color: #7d857f;">تصاویر، یک عکس را روی جایگاه بکشید</span>
+            <span style="font-size: 12.5px; color: #7d857f;">تصاویر محصول</span>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
               <sc-for list="{{ draftPhotos }}" as="ph" hint-placeholder-count="3">
-                <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #f1efe8;">
-                  <image-slot id="{{ ph.slotId }}" src="{{ ph.img }}" shape="rect" placeholder="{{ ph.label }}"></image-slot>
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+                  <div style="position: relative; aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #f1efe8;">
+                  <sc-if value="{{ canManageImages }}" hint-placeholder-val="{{ false }}">
+                    <image-slot id="{{ ph.slotId }}" src="{{ ph.img }}" shape="rect" placeholder="{{ ph.label }}"></image-slot>
+                  </sc-if>
+                  <sc-if value="{{ !canManageImages }}" hint-placeholder-val="{{ false }}">
+                    <img src="{{ ph.img }}" alt="{{ ph.label }}" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+                  </sc-if>
+                  </div>
+                  <sc-if value="{{ canManageImages }}" hint-placeholder-val="{{ false }}">
+                    <label style="height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: {{ ph.actionBg }}; color: {{ ph.actionFg }}; cursor: {{ ph.actionCursor }}; font-size: 11px; font-weight: 700; opacity: {{ ph.actionOpacity }};">
+                      {{ ph.actionLabel }}
+                      <input type="file" accept="image/*" onChange="{{ ph.onFile }}" style="display: none;" />
+                    </label>
+                    <div style="display: flex; gap: 5px;">
+                      <button onClick="{{ ph.onUp }}" disabled="{{ ph.first }}" title="انتقال به قبل" style="flex: 1; height: 28px; border: 0; border-radius: 999px; background: #f1efe8; color: #5c665f; cursor: pointer; font-size: 12px;">↑</button>
+                      <button onClick="{{ ph.onDown }}" disabled="{{ ph.last }}" title="انتقال به بعد" style="flex: 1; height: 28px; border: 0; border-radius: 999px; background: #f1efe8; color: #5c665f; cursor: pointer; font-size: 12px;">↓</button>
+                      <button onClick="{{ ph.onDelete }}" disabled="{{ !ph.id }}" title="حذف تصویر" style="flex: 1; height: 28px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; cursor: pointer; font-size: 12px;">×</button>
+                    </div>
+                  </sc-if>
                 </div>
               </sc-for>
             </div>
@@ -1115,6 +1133,30 @@ const photo = (kw, lock, size) => "https://loremflickr.com/" + (size || 400) + "
 // ---- Backend API (FastAPI at 127.0.0.1:8000) ----
 const API_BASE = "http://127.0.0.1:8000";
 const AUTH_TOKEN_KEY = "dh_token";
+const productImageUrl = (image) => {
+  const url = typeof image === "string" ? image : image && image.url;
+  return url || "";
+};
+const imageRequest = async (method, path, file, sortOrder) => {
+  const hasFile = !!file;
+  const body = hasFile ? new FormData() : sortOrder !== undefined && sortOrder !== null ? JSON.stringify({ sort_order: sortOrder }) : undefined;
+  if (hasFile) body.append("file", file);
+  const res = await fetch(`${API_BASE}${path}`, {
+    method,
+    headers: Object.assign(
+      { Authorization: "Bearer " + localStorage.getItem(AUTH_TOKEN_KEY) },
+      !hasFile && body ? { "Content-Type": "application/json" } : {}
+    ),
+    body
+  });
+  if (res.status === 401) { window.location.href = "./index.html"; throw new Error("Not signed in"); }
+  if (!res.ok) {
+    let msg = "Image request failed (" + res.status + ")";
+    try { const data = await res.json(); if (data && data.detail) msg = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail); } catch (e) {}
+    throw new Error(msg);
+  }
+  return res.status === 204 ? null : res.json();
+};
 
 async function apiMe(token) {
   const res = await fetch(`${API_BASE}/api/auth/me`, {
@@ -1171,6 +1213,7 @@ const mapProduct = (p) => ({
   _id: p.id,
   id: p.slug,
   name: p.name,
+  images: (p.images || []).slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map((image) => ({ id: image.id, sort_order: image.sort_order || 0, url: productImageUrl(image) })).filter((image) => image.url),
   cat: p.category ? p.category.slug : "",
   categoryId: p.category ? p.category.id : null,
   desc: p.description || "",
@@ -1489,7 +1532,9 @@ const salesFor = (y, m, d) => {
 class Component extends DCLogic {
   state = {
     page: "dash",
-    userName: "", userRole: "", userPhone: "",
+    userName: "Admin", userRole: "Admin", userInitials: "A", userPhone: "",
+    pageTitle: "داشبورد", pageSub: "نمای کلی فروشگاه",
+    canManageImages: false,
     me: null,
     cats: CATS.map((c) => Object.assign({}, c)),
     products: SEED.map((p) => Object.assign({}, p, { sizes: p.sizes.map((s) => Object.assign({}, s)) })),
@@ -1527,7 +1572,8 @@ class Component extends DCLogic {
         me,
         userName: me.name || "Admin",
         userRole: me.role,
-        userPhone: me.phone || ""
+        userPhone: me.phone || "",
+        canManageImages: me.role === "owner" || me.role === "manager"
       });
       await Promise.all([this.loadCatalogue(), this.loadOrders()]);
     } catch (e) {
@@ -1670,11 +1716,64 @@ class Component extends DCLogic {
   openEditor = (p) => this.setState({
     editing: p ? p.id : "new",
     draft: p
-      ? { _id: p._id, id: p.id, name: p.name, cat: p.cat, categoryId: p.categoryId, desc: p.desc, featured: p.featured, kw: p.kw, sizes: p.sizes.map((s) => ({ _id: s._id, label: s.label, price: String(s.price), old: s.old ? String(s.old) : "", out: s.out, qty: s.qty || 0 })) }
-      : { id: "new", name: "", cat: this.state.cats.length ? this.state.cats[0].id : "", categoryId: this.state.cats.length ? this.state.cats[0]._id : null, desc: "", featured: false, kw: "food", sizes: [{ label: "", price: "", old: "", out: false, qty: 10 }] }
+      ? { _id: p._id, id: p.id, name: p.name, cat: p.cat, categoryId: p.categoryId, desc: p.desc, featured: p.featured, kw: p.kw, images: p.images || [], sizes: p.sizes.map((s) => ({ _id: s._id, label: s.label, price: String(s.price), old: s.old ? String(s.old) : "", out: s.out, qty: s.qty || 0 })) }
+      : { id: "new", name: "", cat: this.state.cats.length ? this.state.cats[0].id : "", categoryId: this.state.cats.length ? this.state.cats[0]._id : null, desc: "", featured: false, kw: "food", images: [], sizes: [{ label: "", price: "", old: "", out: false, qty: 10 }] }
   });
 
   setDraft = (patch) => this.setState((s) => ({ draft: Object.assign({}, s.draft, patch) }));
+
+  refreshProductImages = async (productId) => {
+    const images = (await apiGet(`/api/products/${productId}/images`)).slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map((image) => ({ id: image.id, sort_order: image.sort_order || 0, url: productImageUrl(image) }));
+    this.setState((s) => ({
+      products: s.products.map((p) => p._id === productId ? Object.assign({}, p, { images }) : p),
+      draft: s.draft && s.draft._id === productId ? Object.assign({}, s.draft, { images }) : s.draft
+    }));
+  };
+
+  addProductImage = async (productId, file) => {
+    if (!file) return;
+    try {
+      await imageRequest("POST", `/api/products/${productId}/images`, file);
+      await this.refreshProductImages(productId);
+      this.flash("تصویر اضافه شد");
+    } catch (e) { this.flash(e.message || "افزودن تصویر ممکن نشد"); }
+  };
+
+  updateProductImage = async (productId, imageId, file, sortOrder) => {
+    try {
+      if (file) {
+        await imageRequest("DELETE", `/api/products/${productId}/images/${imageId}`);
+        const added = await imageRequest("POST", `/api/products/${productId}/images`, file);
+        if (added && added.id != null && sortOrder != null) {
+          await imageRequest("PATCH", `/api/products/${productId}/images/${added.id}`, null, sortOrder);
+        }
+      } else {
+        await imageRequest("PATCH", `/api/products/${productId}/images/${imageId}`, null, sortOrder);
+      }
+      await this.refreshProductImages(productId);
+      this.flash(file ? "تصویر به‌روزرسانی شد" : "ترتیب تصویر به‌روزرسانی شد");
+    } catch (e) { this.flash(e.message || "به‌روزرسانی تصویر ممکن نشد"); }
+  };
+
+  deleteProductImage = async (productId, imageId) => {
+    if (!window.confirm("این تصویر حذف شود؟")) return;
+    try {
+      await imageRequest("DELETE", `/api/products/${productId}/images/${imageId}`);
+      await this.refreshProductImages(productId);
+      this.flash("تصویر حذف شد");
+    } catch (e) { this.flash(e.message || "حذف تصویر ممکن نشد"); }
+  };
+
+  moveProductImage = async (productId, images, index, direction) => {
+    const otherIndex = index + direction;
+    if (otherIndex < 0 || otherIndex >= images.length) return;
+    try {
+      await Promise.all([
+        this.updateProductImage(productId, images[index].id, null, images[otherIndex].sort_order),
+        this.updateProductImage(productId, images[otherIndex].id, null, images[index].sort_order)
+      ]);
+    } catch (e) { this.flash(e.message || "ترتیب تصاویر تغییر نکرد"); }
+  };
 
   save = async () => {
     const d = this.state.draft;
@@ -2133,6 +2232,42 @@ class Component extends DCLogic {
 
     const d0 = st.draft || { id: "new", name: "", cat: "spices", desc: "", featured: false, kw: "food", sizes: [] };
     const draftOut = !!(d0.sizes[0] && d0.sizes[0].out);
+    const draftImages = d0.images || [];
+    const draftPhotos = draftImages.map((image, index) => ({
+      id: image.id,
+      slotId: "dh-" + d0.id + "-" + image.id,
+      label: index === 0 ? "تصویر اصلی" : "تصویر " + (index + 1),
+      img: image.url,
+      actionLabel: "جایگزین",
+      actionBg: "#f1efe8",
+      actionFg: INK,
+      actionCursor: d0._id ? "pointer" : "not-allowed",
+      actionOpacity: d0._id ? 1 : 0.5,
+      disabled: !d0._id,
+      first: index === 0,
+      last: index === draftImages.length - 1,
+      onFile: (e) => { if (e.target.files && e.target.files[0]) this.updateProductImage(d0._id, image.id, e.target.files[0], image.sort_order); e.target.value = ""; },
+      onUp: () => this.moveProductImage(d0._id, draftImages, index, -1),
+      onDown: () => this.moveProductImage(d0._id, draftImages, index, 1),
+      onDelete: () => this.deleteProductImage(d0._id, image.id)
+    })).concat([{
+      id: null,
+      slotId: "dh-" + d0.id + "-new",
+      label: "تصویر جدید",
+      img: "",
+      actionLabel: "افزودن",
+      actionBg: "#eaf6ee",
+      actionFg: GREEN,
+      actionCursor: d0._id ? "pointer" : "not-allowed",
+      actionOpacity: d0._id ? 1 : 0.5,
+      disabled: !d0._id,
+      first: false,
+      last: true,
+      onFile: (e) => { if (e.target.files && e.target.files[0]) this.addProductImage(d0._id, e.target.files[0]); e.target.value = ""; },
+      onUp: () => {},
+      onDown: () => {},
+      onDelete: () => {}
+    }]);
 
     return {
       nav: navDefs.map((n) => ({
@@ -2159,6 +2294,7 @@ class Component extends DCLogic {
       isDash: st.page === "dash", isCalendar: st.page === "calendar", isProducts: st.page === "products",
       isCats: st.page === "cats", isOffers: st.page === "offers", isOrders: st.page === "orders", isSettings: st.page === "settings",
       isProfile: st.page === "profile",
+      canManageImages: st.canManageImages,
 
       userName: st.userName,
       userRole: st.userRole,
@@ -2252,7 +2388,7 @@ class Component extends DCLogic {
         const s0 = p.sizes[0];
         const c = catOf(p.cat);
         return {
-          name: p.name, cat: c.name, tint: c.tint, img: photo(p.kw, p.id),
+          name: p.name, cat: c.name, tint: c.tint, img: (p.images || [])[0] ? (p.images || [])[0].url : photo(p.kw, p.id),
           size: p.sizes.length > 1 ? p.sizes.length + " sizes · " + s0.label : s0.label,
           price: fmt(s0.price),
           discounted: s0.old > 0,
@@ -2305,7 +2441,7 @@ class Component extends DCLogic {
       offerRows: offerProducts.map((p) => {
         const s0 = p.sizes[0];
         return {
-          name: p.name, size: s0.label, tint: catOf(p.cat).tint, img: photo(p.kw, p.id),
+          name: p.name, size: s0.label, tint: catOf(p.cat).tint, img: (p.images || [])[0] ? (p.images || [])[0].url : photo(p.kw, p.id),
           old: fmt(s0.old), now: fmt(s0.price),
           pct: "−" + Math.round((1 - s0.price / s0.old) * 100) + "%",
           onEnd: () => { this.endOffer(p); }
@@ -2416,11 +2552,7 @@ class Component extends DCLogic {
       closeEditor: () => this.setState({ editing: null, draft: null }),
       draft: d0,
       catList: st.cats,
-      draftPhotos: [
-        { slotId: "dh-" + d0.id, label: "تصویر اصلی", img: photo(d0.kw, d0.id === "new" ? 999 : d0.id) },
-        { slotId: "dh-" + d0.id + "-b", label: "جزئیات", img: "" },
-        { slotId: "dh-" + d0.id + "-c", label: "بسته‌بندی", img: "" }
-      ],
+      draftPhotos,
       onDraftName: (e) => { const v = e.target.value; this.setDraft({ name: v }); },
       onDraftCat: (e) => { const v = e.target.value; this.setDraft({ cat: v }); },
       onDraftDesc: (e) => { const v = e.target.value; this.setDraft({ desc: v }); },

@@ -349,21 +349,23 @@
         <div style="display: flex; flex-direction: column; gap: 12px;">
           <div style="position: relative; aspect-ratio: 1; border-radius: 24px; overflow: hidden; background: {{ pv.tint }};">
             <image-slot id="{{ pv.slotId }}" src="{{ pv.img }}" shape="rect" placeholder="{{ pv.name }}"></image-slot>
+            <sc-if value="{{ pv.hasGallery }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ pv.onPrevious }}" disabled="{{ pv.previousDisabled }}" aria-label="تصویر قبلی" style="position: absolute; top: 50%; right: 14px; transform: translateY(-50%); width: 38px; height: 38px; border: 0; border-radius: 999px; background: rgba(255,255,255,0.88); color: #12211a; cursor: pointer; opacity: {{ pv.previousOpacity }};">‹</button>
+              <button onClick="{{ pv.onNext }}" disabled="{{ pv.nextDisabled }}" aria-label="تصویر بعدی" style="position: absolute; top: 50%; left: 14px; transform: translateY(-50%); width: 38px; height: 38px; border: 0; border-radius: 999px; background: rgba(255,255,255,0.88); color: #12211a; cursor: pointer; opacity: {{ pv.nextOpacity }};">›</button>
+            </sc-if>
             <sc-if value="{{ pv.discounted }}" hint-placeholder-val="{{ false }}">
               <span style="position: absolute; top: 14px; right: 14px; padding: 5px 12px; border-radius: 999px; background: #e4572e; color: #fff; font-size: 12.5px; font-weight: 700; pointer-events: none;">{{ pv.badge }}</span>
             </sc-if>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-            <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: {{ pv.tint }};">
-              <image-slot id="{{ pv.slotIdB }}" src="{{ pv.imgB }}" shape="rect" placeholder="جزئیات"></image-slot>
+          <sc-if value="{{ pv.hasGallery }}" hint-placeholder-val="{{ false }}">
+            <div class="noscroll" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 2px;">
+              <sc-for list="{{ pv.gallery }}" as="g" hint-placeholder-count="3">
+                <button onClick="{{ g.onClick }}" aria-label="{{ g.label }}" style="position: relative; width: 100%; aspect-ratio: 1; padding: 0; border: 2px solid {{ g.border }}; border-radius: 16px; overflow: hidden; background: {{ pv.tint }}; cursor: pointer;">
+                  <img src="{{ g.img }}" alt="{{ g.label }}" style="width: 100%; height: 100%; display: block; object-fit: cover;" />
+                </button>
+              </sc-for>
             </div>
-            <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: {{ pv.tint }};">
-              <image-slot id="{{ pv.slotIdC }}" src="{{ pv.imgC }}" shape="rect" placeholder="بسته‌بندی"></image-slot>
-            </div>
-            <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: {{ pv.tint }};">
-              <image-slot id="{{ pv.slotIdD }}" src="{{ pv.imgD }}" shape="rect" placeholder="در آشپزخانه"></image-slot>
-            </div>
-          </div>
+          </sc-if>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 22px; padding-top: 6px;">
@@ -1001,6 +1003,10 @@ const photo = (kw, lock, size) => "https://loremflickr.com/" + (size || 600) + "
 
 const API_BASE = "http://127.0.0.1:8000";
 const AUTH_TOKEN_KEY = "dh_token";
+const productImageUrl = (image) => {
+  const url = typeof image === "string" ? image : image && image.url;
+  return url || "";
+};
 // Cart calls must send cookies: guests are tracked with the backend's HttpOnly
 // `guest_cart_token` cookie and the API uses CORS with allow_credentials.
 const FETCH_CREDENTIALS = "include";
@@ -1109,6 +1115,7 @@ const mapProduct = (p) => ({
   id: p.id,
   name: p.name,
   cat: p.category?.slug || "",
+  images: (p.images || []).slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map(productImageUrl).filter(Boolean),
   sizes: (p.variants || []).map((v) => ({
     id: v.id,
     label: v.label,
@@ -1376,7 +1383,7 @@ const GREEN = "#0f7a4a";
 class Component extends DCLogic {
   state = {
     // cart mirrors the server cart: product_variant_id → { itemId: cart_item_id, qty }
-    screen: "home", cat: "all", q: "", pid: null, sizeIdx: 0, qty: 1, cart: {}, cartOpen: false, toast: "", faq: null,
+    screen: "home", cat: "all", q: "", pid: null, imageIdx: 0, sizeIdx: 0, qty: 1, cart: {}, cartOpen: false, toast: "", faq: null,
     user: null, acctOpen: false,
     authTab: "pw", signupMode: false, forgotOpen: false, forgotSent: false, authBusy: false,
     loginUser: "", loginPass: "", loginPass2: "", signupName: "", signupPhone: "",
@@ -1671,10 +1678,10 @@ class Component extends DCLogic {
         qty,
         size: s0.label,
         slotId: "dh-" + p.id,
-        img: photo(p.kw, p.id),
+        img: p.images[0] || photo(p.kw, p.id),
         showAdd: !s0.out && qty === 0,
         showStepper: !s0.out && qty > 0,
-        onOpen: () => { this.setState({ screen: "product", pid: p.id, sizeIdx: 0, qty: 1 }); this.top(); },
+        onOpen: () => { this.setState({ screen: "product", pid: p.id, imageIdx: 0, sizeIdx: 0, qty: 1 }); this.top(); },
         onAdd: () => this.add(p.id, 0),
         onInc: () => this.bump(k, 1),
         onDec: () => this.bump(k, -1)
@@ -1690,7 +1697,9 @@ class Component extends DCLogic {
     const q = st.q.trim().toLowerCase();
     const results = q ? PRODUCTS.filter((p) => p.name.includes(q) || catOf(p.cat).name.includes(q)).map(card).filter(Boolean) : [];
 
-    const p = PRODUCTS.find((x) => x.id === st.pid) || PRODUCTS[0] || { id: 0, name: "", cat: "", sizes: [{ label: "", price: 0, old: 0, out: true }], desc: "", kw: "food" };
+    const p = PRODUCTS.find((x) => x.id === st.pid) || PRODUCTS[0] || { id: 0, name: "", cat: "", images: [], sizes: [{ label: "", price: 0, old: 0, out: true }], desc: "", kw: "food" };
+    const imageList = p.images && p.images.length ? p.images : [photo(p.kw, p.id)];
+    const imageIdx = Math.min(Math.max(0, st.imageIdx || 0), imageList.length - 1);
     const si = Math.min(st.sizeIdx, Math.max(0, (p.sizes || []).length - 1));
     const sz = (p.sizes && p.sizes[si]) || { label: "", price: 0, old: 0, out: true };
     const pc = catOf(p.cat);
@@ -1744,7 +1753,7 @@ class Component extends DCLogic {
       results,
 
       pv: {
-        name: p.name, cat: pc.name, tint: pc.tint, img: photo(p.kw, p.id),
+        name: p.name, cat: pc.name, tint: pc.tint, img: imageList[imageIdx],
         notes: (NOTES[p.cat] || NOTES.default).map((n, i) => ({
           kicker: n.kicker, title: n.title, body: n.body, bg: NOTE_STYLE[i].bg, fg: NOTE_STYLE[i].fg
         })),
@@ -1752,8 +1761,20 @@ class Component extends DCLogic {
         price: fmt(sz.price), old: fmt(sz.old), discounted: pDisc,
         badge: pDisc ? "−" + Math.round((1 - sz.price / sz.old) * 100) + "٪ امروز" : "",
         desc: p.desc, qty: st.qty,
-        slotId: "dh-" + p.id, slotIdB: "dh-" + p.id + "-b", slotIdC: "dh-" + p.id + "-c", slotIdD: "dh-" + p.id + "-d",
-        imgB: photo(p.kw, p.id + 400, 300), imgC: photo(p.kw + ",pack", p.id + 500, 300), imgD: photo(p.kw + ",kitchen", p.id + 600, 300),
+        slotId: "dh-" + p.id + "-main-" + imageIdx,
+        hasGallery: imageList.length > 1,
+        gallery: imageList.map((img, i) => ({
+          img,
+          label: "تصویر " + (i + 1),
+          border: i === imageIdx ? INK : "transparent",
+          onClick: () => this.setState({ imageIdx: i })
+        })),
+        previousDisabled: imageIdx === 0,
+        nextDisabled: imageIdx === imageList.length - 1,
+        previousOpacity: imageIdx === 0 ? 0.45 : 1,
+        nextOpacity: imageIdx === imageList.length - 1 ? 0.45 : 1,
+        onPrevious: () => this.setState({ imageIdx: Math.max(0, imageIdx - 1) }),
+        onNext: () => this.setState({ imageIdx: Math.min(imageList.length - 1, imageIdx + 1) }),
         stockLabel: sz.out ? "ناموجود — هفته بعد موجود می‌شود" : "موجود — امروز بسته‌بندی می‌شود",
         stockFg: sz.out ? "#e4572e" : GREEN,
         sizes: (p.sizes || []).map((s, i) => ({
