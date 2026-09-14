@@ -207,7 +207,8 @@ async def merge_guest_cart_to_user(
             existing_item.qty = min(existing_item.qty + guest_item.qty, variant.stock_qty)
         else:
             guest_item.qty = min(guest_item.qty, variant.stock_qty)
-            guest_item.cart_id = user_cart.id
+            guest_cart.items.remove(guest_item)
+            user_cart.items.append(guest_item)
 
     await db.delete(guest_cart)
     await db.commit()
