@@ -12,6 +12,7 @@ from fastapi import (
     UploadFile
 )
 from fastapi.concurrency import run_in_threadpool
+from pydantic import Field
 from slugify import slugify
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.exc import IntegrityError
@@ -20,7 +21,7 @@ from sqlalchemy.orm import selectinload, with_loader_criteria
 from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
 from app.models.category import Category, Offer, Product, ProductImage, ProductVariant
-from app.schemas.products import ImageUploadResponse, NewProductRequest, NewProductVariantRequest, ProductResponse, ProductVariantResponse, UpdateProductImageRequest, UpdateProductRequest, UpdateProductVariantRequest
+from app.schemas.products import ImageUploadResponse, NewProductRequest, NewProductVariantRequest, PaginatedProductResponse, ProductResponse, ProductVariantResponse, UpdateProductImageRequest, UpdateProductRequest, UpdateProductVariantRequest
 from app.utils.image_utils import process_product_image
 from app.utils.product_utils import generate_sku
 from app.core.config import settings
@@ -173,7 +174,7 @@ async def delete_product_image(
 
 # ============ PRODUCTS =====================
 
-@router.get("", response_model=list[ProductResponse])
+@router.get("", response_model=PaginatedProductResponse)
 async def get_all_products(
     db: Annotated[AsyncSession, Depends(get_db)],
     search: Annotated[
@@ -184,6 +185,8 @@ async def get_all_products(
             description="Search products by name or description",
         ),
     ] = None,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1)] = 25
 ):
     now = datetime.now(UTC)
 
@@ -215,9 +218,28 @@ async def get_all_products(
             )
         )
         .where(and_(*conditions))
+        .offset(offset)
+        .limit(limit)
         .order_by(Product.updated_at.desc())
     )
-    return result.scalars().all()
+
+    total_products_req = await db.execute(select(func.count()).select_from(Product).where(and_(*conditions)))
+
+
+    total_products = total_products_req.scalar() or 0
+
+    has_more = offset + limit < total_products
+
+    products = result.scalars().all()
+
+    print(products)
+
+    return PaginatedProductResponse(
+        products=[ProductResponse.model_validate(product) for product in products],
+        has_more=has_more,
+        offset=offset,
+        limit=limit
+    )
 
 
 @router.get("/{product_slug}", response_model=ProductResponse, status_code=status.HTTP_200_OK)

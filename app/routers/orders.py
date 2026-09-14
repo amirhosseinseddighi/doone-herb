@@ -319,8 +319,7 @@ async def cancel_order(
         )
     )
     await db.commit()
-    await db.refresh(order)
-    return order
+    return await _load_order_or_404(order.id, db)
 
 
 # ====================== ADMIN OPERATIONS ========================

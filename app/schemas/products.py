@@ -37,6 +37,12 @@ class ProductResponse(BaseProductResponse):
     images: list[ImageUploadResponse]
 
 
+class PaginatedProductResponse(BaseModel):
+    products: list[ProductResponse]
+    offset: int
+    limit: int
+    has_more: bool
+
 
 class UpdateProductImageRequest(BaseModel):
     sort_order: Optional[int] = Field(default=None, ge=0)
