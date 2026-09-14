@@ -256,8 +256,6 @@ async def test_forget_password_normal_flow(client: AsyncClient):
 
         kwargs = mock_send.call_args.kwargs
 
-        print(mock_send.call_args)
-
         assert kwargs['to_email'] == email
         assert kwargs['name'] == "The Test User"
         assert "token" in kwargs
@@ -269,7 +267,7 @@ async def test_forget_password_normal_flow(client: AsyncClient):
 
 # reset password flow
 @pytest.mark.anyio
-async def test_forget_password_normal_flow(client: AsyncClient):
+async def test_reset_password_normal_flow(client: AsyncClient):
     email = "forget@example.com"
     await create_test_user(client, email=email)
 
@@ -287,8 +285,6 @@ async def test_forget_password_normal_flow(client: AsyncClient):
         mock_send.assert_awaited_once()
 
         kwargs = mock_send.call_args.kwargs
-
-        print(mock_send.call_args)
 
         assert kwargs['to_email'] == email
         assert kwargs['name'] == "The Test User"

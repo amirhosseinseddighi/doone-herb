@@ -253,7 +253,7 @@ async def test_create_address_with_null_required_fields(client: AsyncClient):
         "lng": None,
     }
     response = await client.post("/api/addresses", json=payload, headers=headers)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 # create address with empty JSON (don't put any keys in the json)
@@ -264,7 +264,7 @@ async def test_create_address_with_empty_json(client: AsyncClient):
     headers = auth_header(token=token)
 
     response = await client.post("/api/addresses", json={}, headers=headers)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 # delete address that doesn't exists
@@ -351,7 +351,7 @@ async def test_set_default_address_invalid_id_type(client: AsyncClient):
     headers = auth_header(token=token)
 
     response = await client.post("/api/addresses/invalid_id/set-default", headers=headers)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 # ========== NORMAL BEHAVIOR TESTS ============

@@ -90,7 +90,7 @@ class ProductImage(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     product_id: Mapped[int] = mapped_column(Integer, ForeignKey("products.id"), nullable=False, index=True)
     url: Mapped[str] = mapped_column(String(500), nullable=False)
-    sort_order: Mapped[int] = mapped_column(Integer, nullable=False)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
 
     product: Mapped["Product"] = relationship("Product", back_populates="images")

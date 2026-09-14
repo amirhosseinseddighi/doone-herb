@@ -27,6 +27,12 @@ class Settings(BaseSettings):
     # CART
     GUEST_CART_MAX_AGE: int = 30 * 24 * 3600
 
+    # IMAGE VARIABLES
+    MAX_IMAGE_SIZE_MEGA_BYTE: int = 5
+
+    # PRODUCT IMAGE
+    PRODUCT_IMAGE_UPLOAD_DIRECTORY: str = "media/products"
+
 
     # Email-related variables
     MAIL_SERVER: str = "sandbox.smtp.mailtrap.io"

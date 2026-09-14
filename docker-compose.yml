@@ -14,6 +14,9 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+    volumes:
+      - media:/app/media
+
     develop:
       watch:
         - action: sync+restart
@@ -78,6 +81,7 @@ services:
     working_dir: /frontend
     volumes:
       - ./frontend:/frontend
+      - media:/frontend/media
     ports:
       - "7000:7000"
     depends_on:
@@ -87,3 +91,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  media:

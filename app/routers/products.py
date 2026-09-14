@@ -1,7 +1,17 @@
 from datetime import UTC, datetime
+import os
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from PIL import UnidentifiedImageError
+from fastapi import (
+    APIRouter, 
+    Depends, 
+    HTTPException, 
+    Query, 
+    status, 
+    UploadFile
+)
+from fastapi.concurrency import run_in_threadpool
 from slugify import slugify
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.exc import IntegrityError
@@ -9,12 +19,159 @@ from sqlalchemy.orm import selectinload, with_loader_criteria
 
 from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
-from app.models.category import Category, Offer, Product, ProductVariant
-from app.schemas.products import NewProductRequest, NewProductVariantRequest, ProductResponse, ProductVariantResponse, UpdateProductRequest, UpdateProductVariantRequest
+from app.models.category import Category, Offer, Product, ProductImage, ProductVariant
+from app.schemas.products import ImageUploadResponse, NewProductRequest, NewProductVariantRequest, ProductResponse, ProductVariantResponse, UpdateProductImageRequest, UpdateProductRequest, UpdateProductVariantRequest
+from app.utils.image_utils import process_product_image
 from app.utils.product_utils import generate_sku
+from app.core.config import settings
 
 router = APIRouter()
 
+
+# ============= PRODUCT IMAGE UPLOAD ===================
+@router.get("/{product_id}/images", response_model=list[ImageUploadResponse])
+async def get_product_images(
+    product_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    
+    product_req = await db.execute(
+        select(Product).where(Product.id == product_id)
+        .options(selectinload(Product.images))
+    )
+
+    product = product_req.scalar_one_or_none()
+    
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    images = product.images
+    return images
+
+
+@router.post("/{product_id}/images", response_model=ImageUploadResponse)
+async def upload_product_image(
+    product_id: int,
+    file: UploadFile,
+    admin: CurrentManagerOrOwner,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    # check if product exists
+    product = await db.get(Product,product_id)
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    image = await file.read()
+
+    # check image size
+    max_image_size = settings.MAX_IMAGE_SIZE_MEGA_BYTE * 1024 * 1024
+    if len(image) > max_image_size:
+        raise HTTPException(
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+            detail=f"Image size is larger than limit: {settings.MAX_IMAGE_SIZE_MEGA_BYTE}MB"
+        )
+
+    if not image:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File is empty"
+        )
+
+    # check image format
+    try:
+        new_filename = await run_in_threadpool(process_product_image, image)
+
+    except UnidentifiedImageError as err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image file. Please upload a valid image (JPEG, PNG, GIF, WebP).",
+        ) from err
+
+    new_product_image = ProductImage(
+        product_id = product_id,
+        url = new_filename
+    )
+
+    db.add(new_product_image)
+    await db.commit()
+    await db.refresh(new_product_image)
+
+    return new_product_image
+
+
+@router.patch("/{product_id}/images/{image_id}", response_model=ImageUploadResponse)
+async def update_product_image(
+    product_id: int,
+    image_id: int,
+    data: UpdateProductImageRequest,
+    admin: CurrentManagerOrOwner,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    # Retrieve the image ensuring it belongs to the specified product
+    image_req = await db.execute(
+        select(ProductImage).where(
+            ProductImage.id == image_id,
+            ProductImage.product_id == product_id
+        )
+    )
+    image = image_req.scalar_one_or_none()
+
+    if not image:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product image not found"
+        )
+
+    # Update attributes if provided
+    update_data = data.sort_order
+    setattr(image, 'sort_order', update_data)        
+
+    await db.commit()
+    await db.refresh(image)
+
+    return image
+
+
+@router.delete("/{product_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product_image(
+    product_id: int,
+    image_id: int,
+    admin: CurrentManagerOrOwner,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    # Retrieve the image ensuring it belongs to the specified product
+    image_req = await db.execute(
+        select(ProductImage).where(
+            ProductImage.id == image_id,
+            ProductImage.product_id == product_id
+        )
+    )
+    image = image_req.scalar_one_or_none()
+
+    if not image:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product image not found"
+        )
+
+
+    await db.delete(image)
+    await db.commit()
+    
+    if os.path.exists(image.url):
+        os.remove(image.url)
+
+    
+    return None
+
+
+# ============ PRODUCTS =====================
 
 @router.get("", response_model=list[ProductResponse])
 async def get_all_products(
@@ -49,6 +206,7 @@ async def get_all_products(
         select(Product)
         .options(
             selectinload(Product.category),
+            selectinload(Product.images),
             selectinload(Product.variants).selectinload(ProductVariant.offers),
             with_loader_criteria(
                 Offer,
@@ -69,6 +227,7 @@ async def show_product_details(product_slug: str, db: Annotated[AsyncSession, De
         select(Product)
         .options(
             selectinload(Product.category),
+            selectinload(Product.images),
             selectinload(Product.variants).selectinload(ProductVariant.offers),
             with_loader_criteria(
                 Offer,
@@ -144,6 +303,7 @@ async def add_product(
         .where(Product.id == product.id)
         .options(
             selectinload(Product.category),
+            selectinload(Product.images),
             selectinload(Product.variants).selectinload(ProductVariant.offers)
         )
     )
@@ -247,6 +407,7 @@ async def update_product(
         .where(Product.id == product_id)
         .options(
             selectinload(Product.category),
+            selectinload(Product.images),
             selectinload(Product.variants).selectinload(ProductVariant.offers)
         )
     )
@@ -374,9 +535,6 @@ async def delete_product_variant(
     return None
 
 
-
-
-
 @router.patch(
     "/{product_id}/variants/{variant_id}",
     response_model=ProductVariantResponse,
@@ -431,3 +589,7 @@ async def update_product_variant(
     await db.refresh(variant)
 
     return variant
+
+
+
+

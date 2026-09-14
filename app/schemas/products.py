@@ -34,9 +34,22 @@ class BaseProductResponse(BaseModel):
 class ProductResponse(BaseProductResponse):
     category: CategoryResponse
     variants: list[ProductVariantResponse]
+    images: list[ImageUploadResponse]
 
 
 
+class UpdateProductImageRequest(BaseModel):
+    sort_order: Optional[int] = Field(default=None, ge=0)
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ImageUploadResponse(BaseModel):
+    id: int
+    url: str
+    sort_order: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 
