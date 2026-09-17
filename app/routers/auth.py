@@ -85,6 +85,32 @@ async def read_users_me(current_user: CurrentUser):
     return current_user
 
 
+@router.get("/admin/users")
+async def read_admin_users(
+    _admin: CurrentAdmin,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    result = await db.execute(select(User).order_by(User.created_at.desc()))
+    users = result.scalars().all()
+    return [
+        {
+            "id": user.id,
+            "name": user.name,
+            "phone": user.phone,
+            "city": "",
+            "orders": 0,
+            "spend": 0,
+            "last": "-",
+            "tg": user.telegram_opt_in,
+            "sms": user.sms_opt_in,
+            "tier": user.tier.value,
+            "note": user.note or "",
+        }
+        for user in users
+        if user.role == Roles.CUSTOMER
+    ]
+
+
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def create_new_user(

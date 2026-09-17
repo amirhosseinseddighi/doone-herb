@@ -11,6 +11,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    Numeric,
     String,
     Text,
     Time,
@@ -124,10 +125,10 @@ class Order(Base):
     )
     tracking_code: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)
 
-    subtotal: Mapped[int] = mapped_column(Integer, nullable=False)
-    delivery_fee: Mapped[int] = mapped_column(Integer, nullable=False)
-    discount: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    total: Mapped[int] = mapped_column(Integer, nullable=False)
+    subtotal: Mapped[int] = mapped_column(Numeric(precision=12, scale=2), nullable=False)
+    delivery_fee: Mapped[int] = mapped_column(Numeric(precision=12, scale=2), nullable=False)
+    discount: Mapped[int] = mapped_column(Numeric(precision=12, scale=2), default=0, nullable=False)
+    total: Mapped[int] = mapped_column(Numeric(precision=12, scale=2), nullable=False)
 
     payment_method: Mapped[PaymentMethod] = mapped_column(
         _pg_enum(PaymentMethod, "payment_method_enum"), nullable=False

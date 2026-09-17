@@ -155,7 +155,11 @@ async def checkout(
     subtotal = 0
 
     for cart_item in cart.items:
-        if cart_item.product_variant is None:
+        if (
+            cart_item.product_variant is None
+            or cart_item.product_variant.product is None
+            or cart_item.product_variant.product.is_deleted
+        ):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="An item in your cart is no longer available",

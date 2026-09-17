@@ -1464,7 +1464,7 @@ const NOTIFS = [
 const U = (id, name, phone, city, orders, spend, last, tg, sms, tier, note) =>
   ({ id, name, phone, city, orders, spend, last, tg, sms, tier, note });
 
-const USERS = [
+let USERS = [
   U(1, "Sara Ahmadi", "0912 331 4408", "Tehran, Yousefabad", 34, 18400000, "امروز", true, true, "gold", "هر ماه زعفران می‌خرد و برگه آزمایش می‌خواهد"),
   U(2, "Reza Karimi", "0935 118 7742", "Tehran, Saadatabad", 21, 9600000, "امروز", true, false, "gold", "رستوران؛ روغن زیتون عمده"),
   U(3, "Nadia Sultani", "0901 553 2210", "Tehran, Niavaran", 12, 5200000, "امروز", false, true, "silver", ""),
@@ -1588,7 +1588,7 @@ class Component extends DCLogic {
         userPhone: me.phone || "",
         canManageImages: me.role === "owner" || me.role === "manager"
       });
-      await Promise.all([this.loadCatalogue(), this.loadOrders()]);
+      await Promise.all([this.loadCatalogue(), this.loadOrders(), this.loadUsers()]);
     } catch (e) {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       window.location.href = "./index.html";
@@ -1702,6 +1702,29 @@ class Component extends DCLogic {
       console.error(err);
       this.flash("دریافت سفارش‌ها ناموفق بود؛ " + err.message);
       return [];
+    }
+  }
+
+  async loadUsers() {
+    try {
+      const data = await apiGet("/api/auth/admin/users");
+      USERS = (Array.isArray(data) ? data : data.items || data.results || []).map((user) => U(
+        user.id,
+        user.name,
+        user.phone,
+        user.city || "",
+        Number(user.orders) || 0,
+        Number(user.spend) || 0,
+        user.last || "-",
+        !!user.tg,
+        !!user.sms,
+        user.tier || "new",
+        user.note || ""
+      ));
+      this.setState({ usersLoaded: true });
+    } catch (err) {
+      console.error(err);
+      this.flash("دریافت فهرست مشتریان ناموفق بود؛ " + err.message);
     }
   }
 

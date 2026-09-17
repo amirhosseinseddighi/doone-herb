@@ -3,6 +3,9 @@ import pytest
 from httpx import AsyncClient
 from unittest.mock import patch, AsyncMock
 from tests.conftest import create_test_user, login_user, auth_header
+from app.models.identity import Roles, User
+from app.core import security
+from sqlalchemy import select
 
 
 # ========= LOGIN =============
@@ -105,6 +108,49 @@ async def test_get_current_user_info(client: AsyncClient):
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['email'] == email
+
+
+@pytest.mark.anyio
+async def test_admin_can_list_customers(client: AsyncClient, db_session):
+    await create_test_user(client, email="customer@example.com")
+    customer_result = await db_session.execute(
+        select(User).where(User.email == "customer@example.com")
+    )
+    customer = customer_result.scalar_one()
+    customer.name = "API Customer"
+
+    admin = User(
+        email="admin@example.com",
+        phone="09121231299",
+        name="Admin",
+        role=Roles.OWNER,
+        password_hash=security.hash_password("Admin@123"),
+    )
+    db_session.add(admin)
+    await db_session.commit()
+
+    token = await login_user(client, email="admin@example.com", password="Admin@123")
+    response = await client.get(
+        "/api/auth/admin/users",
+        headers=auth_header(token),
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [
+        {
+            "id": customer.id,
+            "name": "API Customer",
+            "phone": "09121231234",
+            "city": "",
+            "orders": 0,
+            "spend": 0,
+            "last": "-",
+            "tg": False,
+            "sms": False,
+            "tier": "new",
+            "note": "",
+        }
+    ]
 
 # test login endpoint when user is logged in
 @pytest.mark.anyio

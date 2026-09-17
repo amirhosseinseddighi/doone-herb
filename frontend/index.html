@@ -572,6 +572,7 @@
                 <input value="{{ form.postal }}" onChange="{{ onPostal }}" placeholder="کد پستی" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
               </div>
               <input value="{{ form.note }}" onChange="{{ onNote }}" placeholder="یادداشت برای پیک — زنگ سمت چپ است، قبل از آمدن تماس بگیرید…" style="height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14.5px;" />
+              <button onClick="{{ saveAddress }}" disabled="{{ savingAddress }}" style="height: 48px; border: 1px solid #0f7a4a; border-radius: 999px; background: #eaf6ee; color: #0b5c38; font-size: 14px; font-weight: 700; cursor: pointer; opacity: {{ savingAddress ? 0.6 : 1 }};">{{ saveAddressLabel }}</button>
             </div>
           </div>
 
@@ -1202,16 +1203,16 @@ async function apiGetSlots() {
   return res.json();
 }
 
-// GET /api/address (auth)
+// GET /api/addresses (auth)
 async function apiListAddresses() {
-  const res = await fetch(`${API_BASE}/api/address`, { headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/addresses`, { headers: authHeaders() });
   if (!res.ok) throw new Error("بارگذاری آدرس‌ها ممکن نشد.");
   return res.json();
 }
 
-// POST /api/address
+// POST /api/addresses
 async function apiCreateAddress(payload) {
-  const res = await fetch(`${API_BASE}/api/address`, {
+  const res = await fetch(`${API_BASE}/api/addresses`, {
     method: "POST",
     headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
     body: JSON.stringify(payload)
@@ -1229,16 +1230,16 @@ async function apiCreateAddress(payload) {
   return res.json();
 }
 
-// POST /api/address/{id}/set-default
+// POST /api/addresses/{id}/set-default
 async function apiSetDefaultAddress(id) {
-  const res = await fetch(`${API_BASE}/api/address/${id}/set-default`, { method: "POST", headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/addresses/${id}/set-default`, { method: "POST", headers: authHeaders() });
   if (!res.ok) throw new Error("تنظیم آدرس پیش‌فرض ممکن نشد.");
   return res.json();
 }
 
-// DELETE /api/address/{id}
+// DELETE /api/addresses/{id}
 async function apiDeleteAddress(id) {
-  const res = await fetch(`${API_BASE}/api/address/${id}`, { method: "DELETE", headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/addresses/${id}`, { method: "DELETE", headers: authHeaders() });
   if (!res.ok) throw new Error("حذف آدرس ممکن نشد.");
   return res.json();
 }
@@ -1402,7 +1403,7 @@ class Component extends DCLogic {
     forgotUser: "",
     loginPhone: "", loginCode: "", codeSent: false, loginErr: "",
     acctTab: "orders", orders: [], addresses: [],
-    slot: 0, pay: 0, err: "", receipt: null, placing: false, addrId: null,
+    slot: 0, pay: 0, err: "", receipt: null, placing: false, savingAddress: false, addrId: null,
     form: { name: "", phone: "", addr: "", unit: "", postal: "", note: "" },
     pinX: 48, pinY: 52, addrLabel: 0,
     cats: [],
@@ -1553,7 +1554,7 @@ class Component extends DCLogic {
     } catch (e) { /* the SLOTS fallback stays in place */ }
   }
 
-  // --- Addresses ↔ backend (/api/address, auth) ----------------------------
+  // --- Addresses ↔ backend (/api/addresses, auth) --------------------------
   async loadAddresses() {
     if (!localStorage.getItem(AUTH_TOKEN_KEY)) return;
     try {
@@ -2169,6 +2170,36 @@ class Component extends DCLogic {
       onUnit: (e) => { const v = e.target.value; this.setState((s) => ({ addrId: null, form: Object.assign({}, s.form, { unit: v }) })); },
       onPostal: (e) => { const v = e.target.value; this.setState((s) => ({ addrId: null, form: Object.assign({}, s.form, { postal: v }) })); },
       onNote: (e) => { const v = e.target.value; this.setState((s) => ({ form: Object.assign({}, s.form, { note: v }) })); },
+      savingAddress: st.savingAddress,
+      saveAddressLabel: st.savingAddress ? "در حال ذخیره آدرس…" : "ذخیره این آدرس",
+      saveAddress: () => {
+        const f = st.form;
+        if (!st.user) { this.setState({ err: "برای ذخیره آدرس ابتدا وارد شوید.", acctOpen: true }); return; }
+        if (!f.name.trim() || f.phone.replace(/\D/g, "").length < 10 || !f.addr.trim()) {
+          this.setState({ err: "نام، شماره موبایل و آدرس را کامل کنید." });
+          return;
+        }
+        if (!f.postal.trim()) {
+          this.setState({ err: "برای ذخیره آدرس، کد پستی را وارد کنید." });
+          return;
+        }
+        if (st.addrId) { this.flash("این آدرس قبلاً ذخیره شده است"); return; }
+        this.setState({ savingAddress: true, err: "" });
+        apiCreateAddress({
+          label: ["خانه", "محل کار", "سایر"][st.addrLabel] || "خانه",
+          line: f.addr.trim(),
+          unit: f.unit.trim() || null,
+          postal_code: f.postal.trim(),
+          phone: f.phone.trim(),
+          lat: 35.7 + (st.pinY / 100) * 0.1,
+          lng: 51.38 + (st.pinX / 100) * 0.1,
+          is_default: false
+        }).then((a) => {
+          this.setState({ savingAddress: false, addrId: a.id });
+          this.loadAddresses();
+          this.flash("آدرس ذخیره شد");
+        }).catch((e) => this.setState({ savingAddress: false, err: (e && e.message) || "ذخیره آدرس ممکن نشد." }));
+      },
       slots: SLOT_DEFS.map((s, i) => ({
         label: s.label, note: s.note,
         fee: s.fee === 0 || (sub >= freeOver && sub > 0) ? "free" : fmt(s.fee),
@@ -2205,6 +2236,10 @@ class Component extends DCLogic {
           return;
         }
         if (count === 0) { this.setState({ err: "سبد خرید شما خالی است." }); return; }
+        if (st.addresses.length === 0 && !st.addrId) {
+          this.setState({ err: "برای ادامه ابتدا آدرس خود را ذخیره کنید." });
+          return;
+        }
         const SD = st.slots.length ? st.slots : SLOTS;
         const sd = SD[st.slot] || SD[0];
         if (!sd || sd.id == null) { this.setState({ err: "گزینه‌های ارسال هنوز بارگذاری نشده — چند لحظه دیگر تلاش کنید." }); return; }

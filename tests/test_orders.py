@@ -1,12 +1,15 @@
 from datetime import time
+from typing import Any
 from uuid import uuid4
 
 import pytest
 from fastapi import status
 from httpx import AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.category import Category, Product, ProductVariant
+from app.models.identity import Roles, User
 from app.models.order import DeliverySlot, DeliverySlotKind
 from tests.conftest import auth_header, create_test_user, login_user
 
@@ -64,6 +67,101 @@ def checkout_payload(address_id: int, delivery_slot_id: int) -> dict[str, object
         "payment_method": "cash_on_delivery",
         "note": "Leave at the door",
     }
+
+
+async def create_admin_product(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    *,
+    stock_qty: int,
+) -> tuple[str, dict[str, Any]]:
+    suffix = uuid4().hex[:8]
+    await create_test_user(
+        client,
+        email="admin@example.com",
+        name="Test Admin",
+        phone="09121231235",
+    )
+    admin = await db_session.scalar(
+        select(User).where(User.email == "admin@example.com")
+    )
+    assert admin is not None
+    admin.role = Roles.MANAGER
+    await db_session.flush()
+    admin_token = await login_user(client, email="admin@example.com")
+
+    category_response = await client.post(
+        "/api/categories",
+        headers=auth_header(admin_token),
+        json={
+            "name": f"Admin Herbs {suffix}",
+            "tint_color": "#E8F5E9",
+            "dot_color": "#43A047",
+            "sort_order": 0,
+            "is_active": True,
+        },
+    )
+    assert category_response.status_code == status.HTTP_201_CREATED
+
+    product_response = await client.post(
+        "/api/products",
+        headers=auth_header(admin_token),
+        json={
+            "name": f"Admin Mint {suffix}",
+            "category_id": category_response.json()["id"],
+            "variants": [
+                {
+                    "label": "100g",
+                    "price": 1500,
+                    "compare_at_price": None,
+                    "stock_qty": stock_qty,
+                }
+            ],
+            "description": "Test product",
+            "is_in_stock": stock_qty > 0,
+            "is_featured": False,
+        },
+    )
+    assert product_response.status_code == status.HTTP_201_CREATED
+    return admin_token, product_response.json()
+
+
+async def create_user_address_and_cart(
+    client: AsyncClient,
+    *,
+    variant_id: int,
+    qty: int = 1,
+) -> tuple[str, int]:
+    await create_test_user(
+        client,
+        email="customer@example.com",
+        name="Test Customer",
+        phone="09121231236",
+    )
+    user_token = await login_user(client, email="customer@example.com")
+    headers = auth_header(user_token)
+
+    address_response = await client.post(
+        "/api/addresses",
+        headers=headers,
+        json={
+            "label": "Home",
+            "line": "Test street",
+            "postal_code": "10000",
+            "phone": "09121231236",
+            "lat": 0.0,
+            "lng": 0.0,
+        },
+    )
+    assert address_response.status_code == status.HTTP_201_CREATED
+
+    cart_response = await client.post(
+        "/api/cart",
+        headers=headers,
+        json={"product_variant_id": variant_id, "qty": qty},
+    )
+    assert cart_response.status_code == status.HTTP_200_OK
+    return user_token, address_response.json()["id"]
 
 
 @pytest.mark.anyio
@@ -174,3 +272,68 @@ async def test_authenticated_user_can_checkout_read_and_cancel_order(
     )
     assert cancel_response.status_code == status.HTTP_200_OK
     assert cancel_response.json()["status"] == "cancelled"
+
+
+@pytest.mark.anyio
+async def test_checkout_rejects_product_removed_after_adding_to_cart(
+    client: AsyncClient,
+    db_session: AsyncSession,
+):
+    admin_token, product = await create_admin_product(
+        client,
+        db_session,
+        stock_qty=5,
+    )
+    variant_id = product["variants"][0]["id"]
+    user_token, address_id = await create_user_address_and_cart(
+        client,
+        variant_id=variant_id,
+    )
+    slot = await create_test_delivery_slot(db_session)
+
+    delete_response = await client.delete(
+        f"/api/products/{product['id']}",
+        headers=auth_header(admin_token),
+    )
+    assert delete_response.status_code == status.HTTP_204_NO_CONTENT
+
+    checkout_response = await client.post(
+        "/orders/checkout",
+        headers=auth_header(user_token),
+        json=checkout_payload(address_id, slot.id),
+    )
+    assert checkout_response.status_code == status.HTTP_409_CONFLICT
+    assert checkout_response.json()["detail"] == "An item in your cart is no longer available"
+
+
+@pytest.mark.anyio
+async def test_checkout_rejects_cart_item_that_runs_out_of_stock(
+    client: AsyncClient,
+    db_session: AsyncSession,
+):
+    admin_token, product = await create_admin_product(
+        client,
+        db_session,
+        stock_qty=5,
+    )
+    variant = product["variants"][0]
+    user_token, address_id = await create_user_address_and_cart(
+        client,
+        variant_id=variant["id"],
+    )
+    slot = await create_test_delivery_slot(db_session)
+
+    stock_response = await client.patch(
+        f"/api/products/{product['id']}/variants/{variant['id']}",
+        headers=auth_header(admin_token),
+        json={"stock_qty": 0},
+    )
+    assert stock_response.status_code == status.HTTP_200_OK
+
+    checkout_response = await client.post(
+        "/orders/checkout",
+        headers=auth_header(user_token),
+        json=checkout_payload(address_id, slot.id),
+    )
+    assert checkout_response.status_code == status.HTTP_409_CONFLICT
+    assert checkout_response.json()["detail"] == f"Not enough stock for {product['name']}"
