@@ -106,7 +106,11 @@ async def _get_or_create_cart(
 
 
 async def _get_variant_or_404(db: AsyncSession, variant_id: int) -> ProductVariant:
-    result = await db.execute(select(ProductVariant).where(ProductVariant.id == variant_id))
+    result = await db.execute(
+        select(ProductVariant).where(
+            (ProductVariant.id == variant_id) & (ProductVariant.is_deleted.is_(False))
+        )
+    )
     variant = result.scalar_one_or_none()
     if not variant:
         raise HTTPException(
@@ -369,8 +373,3 @@ async def update_cart_item(
 
     cart = await _get_cart_with_items(db, user_id=identity.user_id, guest_token=identity.guest_token)
     return _build_cart_response(cart, identity.user_id, identity.guest_token)
-
-
-
-
-

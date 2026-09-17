@@ -1064,10 +1064,11 @@
               <button onClick="{{ addSize }}" style="border: 0; background: none; cursor: pointer; font-size: 13px; font-weight: 700; color: #0f7a4a;">+ افزودن اندازه</button>
             </div>
             <sc-for list="{{ draftSizes }}" as="s" hint-placeholder-count="2">
-              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 42px; gap: 8px; align-items: center;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 42px; gap: 8px; align-items: center;">
                 <input value="{{ s.label }}" onChange="{{ s.onLabel }}" placeholder="250 g" style="height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px;" />
                 <input value="{{ s.price }}" onChange="{{ s.onPrice }}" placeholder="قیمت" style="height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px;" />
                 <input value="{{ s.old }}" onChange="{{ s.onOld }}" placeholder="قیمت قبلی" style="height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px;" />
+                <input type="number" min="0" value="{{ s.qty }}" onChange="{{ s.onQty }}" placeholder="موجودی" style="height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 13.5px;" />
                 <button onClick="{{ s.onRemove }}" style="width: 42px; height: 44px; border: 0; border-radius: 999px; background: #fdece2; cursor: pointer; color: #b8451f; display: flex; align-items: center; justify-content: center;" aria-label="حذف اندازه">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
                 </button>
@@ -1835,7 +1836,7 @@ class Component extends DCLogic {
     const d = this.state.draft;
     const wasNew = this.state.editing === "new";
     if (!d.name.trim()) { this.flash("ابتدا نام محصول را وارد کنید"); return; }
-    const sizes = d.sizes.filter((s) => s.label.trim()).map((s) => ({ _id: s._id, label: s.label, price: parse(s.price), old: parse(s.old), out: !!s.out, qty: s.qty || 0 }));
+    const sizes = d.sizes.filter((s) => s.label.trim()).map((s) => ({ _id: s._id, label: s.label, price: parse(s.price), old: parse(s.old), out: !!s.out, qty: parse(s.qty) }));
     if (!sizes.length) { this.flash("حداقل یک اندازه بسته اضافه کنید"); return; }
     const cat = this.state.cats.find((c) => c.id === d.cat) || this.state.cats.find((c) => c._id === d.categoryId);
     if (!cat || !cat._id) { this.flash("ابتدا یک دسته‌بندی انتخاب کنید"); return; }
@@ -1854,7 +1855,7 @@ class Component extends DCLogic {
             label: s.label,
             price: s.price,
             compare_at_price: s.old > 0 ? s.old : null,
-            stock_qty: s.out ? 0 : 10
+            stock_qty: s.out ? 0 : s.qty
           }))
         };
         const created = await apiSend("POST", "/api/products", body);
@@ -1888,13 +1889,13 @@ class Component extends DCLogic {
           const prev = s._id ? beforeById.get(s._id) : null;
           if (prev) {
             keptIds.push(s._id);
-            const changed = prev.label !== s.label || prev.price !== s.price || prev.old !== s.old || prev.out !== s.out;
+            const changed = prev.label !== s.label || prev.price !== s.price || prev.old !== s.old || prev.out !== s.out || prev.qty !== s.qty;
             if (changed) {
               await apiSend("PATCH", `/api/products/${d._id}/variants/${s._id}`, {
                 label: s.label,
                 price: s.price,
                 compare_at_price: s.old > 0 ? s.old : null,
-                stock_qty: s.out ? 0 : (prev.qty > 0 ? prev.qty : 10)
+                stock_qty: s.out ? 0 : s.qty
               });
             }
           } else {
@@ -1903,7 +1904,7 @@ class Component extends DCLogic {
               label: s.label,
               price: s.price,
               compare_at_price: s.old > 0 ? s.old : null,
-              stock_qty: s.out ? 0 : 10
+              stock_qty: s.out ? 0 : s.qty
             });
             keptIds.push(createdV.id);
           }
@@ -2646,9 +2647,11 @@ class Component extends DCLogic {
         onLabel: (e) => { const v = e.target.value; this.setDraft({ sizes: d0.sizes.map((x, j) => (j === i ? Object.assign({}, x, { label: v }) : x)) }); },
         onPrice: (e) => { const v = e.target.value; this.setDraft({ sizes: d0.sizes.map((x, j) => (j === i ? Object.assign({}, x, { price: v }) : x)) }); },
         onOld: (e) => { const v = e.target.value; this.setDraft({ sizes: d0.sizes.map((x, j) => (j === i ? Object.assign({}, x, { old: v }) : x)) }); },
+        qty: s.qty,
+        onQty: (e) => { const v = e.target.value; this.setDraft({ sizes: d0.sizes.map((x, j) => (j === i ? Object.assign({}, x, { qty: v }) : x)) }); },
         onRemove: () => this.setDraft({ sizes: d0.sizes.filter((x, j) => j !== i) })
       })),
-      addSize: () => this.setDraft({ sizes: d0.sizes.concat([{ label: "", price: "", old: "", out: false }]) }),
+      addSize: () => this.setDraft({ sizes: d0.sizes.concat([{ label: "", price: "", old: "", out: false, qty: 10 }]) }),
       draftStockLabel: draftOut ? "ناموجود" : "موجود",
       draftStockBg: draftOut ? "#fdece2" : "#eaf6ee",
       draftStockFg: draftOut ? "#b8451f" : "#0b5c38",

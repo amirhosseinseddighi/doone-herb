@@ -78,6 +78,13 @@ class ProductVariant(Base):
     compare_at_price: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     stock_qty: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     sku: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
+    is_deleted: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+        server_default="false",
+        index=True,
+    )
 
     product: Mapped["Product"] = relationship("Product", back_populates="variants")
     offers: Mapped[list["Offer"]] = relationship("Offer", back_populates="product_variant")

@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 from fastapi import status
 from httpx import AsyncClient
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.category import Category, Product, ProductVariant
@@ -207,6 +207,7 @@ async def test_authenticated_user_can_list_orders_when_empty(client: AsyncClient
     }
 
 
+
 @pytest.mark.anyio
 async def test_authenticated_user_can_checkout_read_and_cancel_order(
     client: AsyncClient,
@@ -275,7 +276,7 @@ async def test_authenticated_user_can_checkout_read_and_cancel_order(
 
 
 @pytest.mark.anyio
-async def test_checkout_rejects_product_removed_after_adding_to_cart(
+async def test_cart_item_being_deleted_after_admin_delete_the_product(
     client: AsyncClient,
     db_session: AsyncSession,
 ):
@@ -302,8 +303,9 @@ async def test_checkout_rejects_product_removed_after_adding_to_cart(
         headers=auth_header(user_token),
         json=checkout_payload(address_id, slot.id),
     )
-    assert checkout_response.status_code == status.HTTP_409_CONFLICT
-    assert checkout_response.json()["detail"] == "An item in your cart is no longer available"
+
+    assert checkout_response.status_code == status.HTTP_400_BAD_REQUEST
+    assert checkout_response.json()["detail"] == "Cart is empty"
 
 
 @pytest.mark.anyio
@@ -337,3 +339,104 @@ async def test_checkout_rejects_cart_item_that_runs_out_of_stock(
     )
     assert checkout_response.status_code == status.HTTP_409_CONFLICT
     assert checkout_response.json()["detail"] == f"Not enough stock for {product['name']}"
+
+
+@pytest.mark.anyio
+async def test_deleting_variant_after_checkout_does_not_affect_existing_order(
+    client: AsyncClient,
+    db_session: AsyncSession,
+):
+    admin_token, product = await create_admin_product(
+        client,
+        db_session,
+        stock_qty=5,
+    )
+
+    variant_response = await client.post(
+        f"/api/products/{product['id']}/variants",
+        headers=auth_header(admin_token),
+        json={
+            "label": "50g",
+            "price": 800,
+            "compare_at_price": None,
+            "stock_qty": 5,
+        },
+    )
+    assert variant_response.status_code == status.HTTP_201_CREATED
+    variant_id = variant_response.json()["id"]
+
+    user_token, address_id = await create_user_address_and_cart(
+        client,
+        variant_id=variant_id,
+    )
+    slot = await create_test_delivery_slot(db_session)
+
+    checkout_response = await client.post(
+        "/orders/checkout",
+        headers=auth_header(user_token),
+        json=checkout_payload(address_id, slot.id),
+    )
+    assert checkout_response.status_code == status.HTTP_201_CREATED
+    order = checkout_response.json()
+
+    delete_variant_response = await client.delete(
+        f"/api/products/{product['id']}/variants/{variant_id}",
+        headers=auth_header(admin_token),
+    )
+    assert delete_variant_response.status_code == status.HTTP_204_NO_CONTENT
+
+    detail_response = await client.get(
+        f"/orders/{order['id']}", headers=auth_header(user_token)
+    )
+    assert detail_response.status_code == status.HTTP_200_OK
+    assert detail_response.json()["id"] == order["id"]
+    assert detail_response.json()["items"][0]["qty"] == order["items"][0]["qty"]
+
+    list_response = await client.get("/orders", headers=auth_header(user_token))
+    assert list_response.status_code == status.HTTP_200_OK
+    assert list_response.json()["total"] == 1
+
+
+@pytest.mark.anyio
+async def test_deleting_product_after_checkout_does_not_affect_existing_order(
+    client: AsyncClient,
+    db_session: AsyncSession,
+):
+    admin_token, product = await create_admin_product(
+        client,
+        db_session,
+        stock_qty=5,
+    )
+    variant_id = product["variants"][0]["id"]
+    user_token, address_id = await create_user_address_and_cart(
+        client,
+        variant_id=variant_id,
+    )
+    slot = await create_test_delivery_slot(db_session)
+
+    checkout_response = await client.post(
+        "/orders/checkout",
+        headers=auth_header(user_token),
+        json=checkout_payload(address_id, slot.id),
+    )
+    assert checkout_response.status_code == status.HTTP_201_CREATED
+    order = checkout_response.json()
+
+    delete_response = await client.delete(
+        f"/api/products/{product['id']}",
+        headers=auth_header(admin_token),
+    )
+    assert delete_response.status_code == status.HTTP_204_NO_CONTENT
+
+    detail_response = await client.get(
+        f"/orders/{order['id']}", headers=auth_header(user_token)
+    )
+    assert detail_response.status_code == status.HTTP_200_OK
+    assert detail_response.json()["id"] == order["id"]
+    assert detail_response.json()["items"][0]["qty"] == order["items"][0]["qty"]
+
+    code_response = await client.get(
+        f"/orders/code/{order['order_no']}", headers=auth_header(user_token)
+    )
+    assert code_response.status_code == status.HTTP_200_OK
+    assert code_response.json()["id"] == order["id"]

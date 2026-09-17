@@ -14,17 +14,19 @@ from fastapi import (
 from fastapi.concurrency import run_in_threadpool
 from pydantic import Field
 from slugify import slugify
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, func, or_, select, update, delete as sql_delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload, with_loader_criteria
 
 from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
+from app.models.cart import CartItem
 from app.models.category import Category, Offer, Product, ProductImage, ProductVariant
 from app.schemas.products import ImageUploadResponse, NewProductRequest, NewProductVariantRequest, PaginatedProductResponse, ProductResponse, ProductVariantResponse, UpdateProductImageRequest, UpdateProductRequest, UpdateProductVariantRequest
 from app.utils.image_utils import process_product_image
 from app.utils.product_utils import generate_sku
 from app.core.config import settings
+
 
 router = APIRouter()
 
@@ -215,7 +217,12 @@ async def get_all_products(
                 Offer,
                 lambda cls: cls.active.is_(True) & (cls.starts_at <= now) & (cls.ends_at >= now),
                 include_aliases=True
-            )
+            ),
+            with_loader_criteria(
+                ProductVariant,
+                lambda cls: cls.is_deleted.is_(False),
+                include_aliases=True,
+            ),
         )
         .where(and_(*conditions))
         .offset(offset)
@@ -255,7 +262,12 @@ async def show_product_details(product_slug: str, db: Annotated[AsyncSession, De
                 Offer,
                 lambda cls: cls.active.is_(True) & (cls.starts_at <= now) & (cls.ends_at >= now),
                 include_aliases=True
-            )
+            ),
+            with_loader_criteria(
+                ProductVariant,
+                lambda cls: cls.is_deleted.is_(False),
+                include_aliases=True,
+            ),
         )
         .where(
             Product.is_hidden.is_(False) & 
@@ -326,7 +338,12 @@ async def add_product(
         .options(
             selectinload(Product.category),
             selectinload(Product.images),
-            selectinload(Product.variants).selectinload(ProductVariant.offers)
+            selectinload(Product.variants).selectinload(ProductVariant.offers),
+            with_loader_criteria(
+                ProductVariant,
+                lambda cls: cls.is_deleted.is_(False),
+                include_aliases=True,
+            ),
         )
     )
     return await db.scalar(stmt)
@@ -339,7 +356,9 @@ async def delete_product(
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
     result = await db.execute(
-        select(Product).where((Product.id == product_id) & Product.is_deleted.is_(False))
+        select(Product)
+        .options(selectinload(Product.variants))
+        .where((Product.id == product_id) & Product.is_deleted.is_(False))
     )
     product = result.scalar_one_or_none()
     if not product:
@@ -348,6 +367,14 @@ async def delete_product(
     # soft delete product
     product.is_deleted = True
     product.is_hidden = True
+
+    # TODO: delete all cart items with this product
+    variants = product.variants
+    for variant in variants:
+        await db.execute(sql_delete(CartItem).where(CartItem.product_variant_id == variant.id))
+    # TODO: soft-delete all product variants of this product
+    await db.execute(update(ProductVariant).where(ProductVariant.product_id == product_id).values(is_deleted=True))
+
     await db.commit()
     return None
 
@@ -430,7 +457,12 @@ async def update_product(
         .options(
             selectinload(Product.category),
             selectinload(Product.images),
-            selectinload(Product.variants).selectinload(ProductVariant.offers)
+            selectinload(Product.variants).selectinload(ProductVariant.offers),
+            with_loader_criteria(
+                ProductVariant,
+                lambda cls: cls.is_deleted.is_(False),
+                include_aliases=True,
+            ),
         )
     )
     refetched_product = await db.scalar(refetched_stmt)
@@ -526,9 +558,11 @@ async def delete_product_variant(
             detail="Product not found"
         )
 
-    # get variant belonging to this specific product
+    # get variant belonging to this specific product (and not already removed)
     variant_stmt = select(ProductVariant).where(
-        (ProductVariant.id == variant_id) & (ProductVariant.product_id == product_id)
+        (ProductVariant.id == variant_id)
+        & (ProductVariant.product_id == product_id)
+        & (ProductVariant.is_deleted.is_(False))
     )
     variant_result = await db.execute(variant_stmt)
     variant = variant_result.scalar_one_or_none()
@@ -543,7 +577,10 @@ async def delete_product_variant(
     count_stmt = (
         select(func.count())
         .select_from(ProductVariant)
-        .where(ProductVariant.product_id == product_id)
+        .where(
+            (ProductVariant.product_id == product_id)
+            & (ProductVariant.is_deleted.is_(False))
+        )
     )
     total_variants = await db.scalar(count_stmt)
     if total_variants <= 1:
@@ -552,7 +589,14 @@ async def delete_product_variant(
             detail="Cannot delete the only remaining variant of a product"
         )
 
-    await db.delete(variant)
+    # Soft delete: a hard delete here would either violate the FK from
+    # cart_items (no cascade defined) or, for order_items, get nullified by
+    # the ORM's default relationship handling and violate its NOT NULL
+    # constraint. Orders keep their own name/price snapshot, so they don't
+    # need the row to keep existing.
+    variant.is_deleted = True
+    await db.execute(sql_delete(CartItem).where(CartItem.product_variant_id == variant.id))
+
     await db.commit()
     return None
 
@@ -583,7 +627,11 @@ async def update_product_variant(
     now = datetime.now(UTC)
     stmt = (
         select(ProductVariant)
-        .where((ProductVariant.id == variant_id) & (ProductVariant.product_id == product_id))
+        .where(
+            (ProductVariant.id == variant_id)
+            & (ProductVariant.product_id == product_id)
+            & (ProductVariant.is_deleted.is_(False))
+        )
         .options(
             selectinload(ProductVariant.offers),
             with_loader_criteria(
@@ -611,7 +659,3 @@ async def update_product_variant(
     await db.refresh(variant)
 
     return variant
-
-
-
-
