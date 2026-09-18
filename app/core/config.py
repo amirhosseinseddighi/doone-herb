@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     # PRODUCT IMAGE
     PRODUCT_IMAGE_UPLOAD_DIRECTORY: str = "media/products"
 
+    # CATEGORY IMAGE
+    CATEGORY_IMAGE_UPLOAD_DIRECTORY: str = "media/categories"
+
 
     # Email-related variables
     MAIL_SERVER: str = "sandbox.smtp.mailtrap.io"

@@ -8,7 +8,7 @@ from tests.conftest import auth_header, create_test_user, login_user
 # unauthenticated user get address 
 @pytest.mark.anyio
 async def test_unauthenticated_get_address(client: AsyncClient):
-    response = await client.get("/api/addresses")
+    response = await client.get("/api/v1/addresses")
     data = response.json()
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert data['detail'] == "Not authenticated"
@@ -16,7 +16,7 @@ async def test_unauthenticated_get_address(client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_unauthenticated_get_single_address(client: AsyncClient):
-    response = await client.get("/api/addresses/1")
+    response = await client.get("/api/v1/addresses/1")
     data = response.json()
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert data['detail'] == "Not authenticated"
@@ -39,7 +39,7 @@ async def test_unauthenticated_create_address(client: AsyncClient):
         "lng": 0,
         "is_default": False
     }
-    response = await client.post("/api/addresses", json=data)
+    response = await client.post("/api/v1/addresses", json=data)
     data = response.json()
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert data['detail'] == "Not authenticated"
@@ -58,7 +58,7 @@ async def test_unauthenticated_edit_address(client: AsyncClient):
         "lng": 0,
         "is_default": True
     }
-    response = await client.patch("/api/addresses/123", json=data)
+    response = await client.patch("/api/v1/addresses/123", json=data)
     data = response.json()
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert data['detail'] == "Not authenticated"
@@ -77,7 +77,7 @@ async def test_unauthenticated_set_default_address(client: AsyncClient):
         "lng": 0,
         "is_default": False
     }
-    response = await client.post("/api/addresses/123/set-default", json=data)
+    response = await client.post("/api/v1/addresses/123/set-default", json=data)
     data = response.json()
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert data['detail'] == "Not authenticated"
@@ -86,7 +86,7 @@ async def test_unauthenticated_set_default_address(client: AsyncClient):
 # unauthenticated user delete address
 @pytest.mark.anyio
 async def test_unauthenticated_delete_address(client: AsyncClient):
-    response = await client.delete("/api/addresses/1")
+    response = await client.delete("/api/v1/addresses/1")
     data = response.json()
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert data['detail'] == "Not authenticated"
@@ -102,7 +102,7 @@ async def test_unauthorized_user_get_other_user_address(client: AsyncClient):
     headers1 = auth_header(token=token1)
 
     addr_resp = await client.post(
-        "/api/addresses",
+        "/api/v1/addresses",
         json={
             "label": "Home",
             "line": "User 1 St",
@@ -119,7 +119,7 @@ async def test_unauthorized_user_get_other_user_address(client: AsyncClient):
     token2 = await login_user(client, email="user2@example.com")
     headers2 = auth_header(token=token2)
 
-    response = await client.get(f"/api/addresses/{addr_id}", headers=headers2)
+    response = await client.get(f"/api/v1/addresses/{addr_id}", headers=headers2)
     assert response.status_code in (status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND)
 
 
@@ -133,7 +133,7 @@ async def test_unauthorized_user_set_default_other_user_address(client: AsyncCli
     headers1 = auth_header(token=token1)
 
     addr_resp = await client.post(
-        "/api/addresses",
+        "/api/v1/addresses",
         json={
             "label": "Home",
             "line": "User 1 St",
@@ -153,7 +153,7 @@ async def test_unauthorized_user_set_default_other_user_address(client: AsyncCli
     headers2 = auth_header(token=token2)
 
     response = await client.post(
-        f"/api/addresses/{addr_id}/set-default", headers=headers2
+        f"/api/v1/addresses/{addr_id}/set-default", headers=headers2
     )
     assert response.status_code in (
         status.HTTP_403_FORBIDDEN,
@@ -169,7 +169,7 @@ async def test_unauthorized_user_edit_other_user_address(client: AsyncClient):
     headers1 = auth_header(token=token1)
 
     addr_resp = await client.post(
-        "/api/addresses",
+        "/api/v1/addresses",
         json={
             "label": "Home",
             "line": "User 1 St",
@@ -187,7 +187,7 @@ async def test_unauthorized_user_edit_other_user_address(client: AsyncClient):
     headers2 = auth_header(token=token2)
 
     response = await client.patch(
-        f"/api/addresses/{addr_id}",
+        f"/api/v1/addresses/{addr_id}",
         json={"label": "Hacked"},
         headers=headers2,
     )
@@ -202,7 +202,7 @@ async def test_unauthorized_user_delete_other_user_address(client: AsyncClient):
     headers1 = auth_header(token=token1)
 
     addr_resp = await client.post(
-        "/api/addresses",
+        "/api/v1/addresses",
         json={
             "label": "Home",
             "line": "User 1 St",
@@ -219,7 +219,7 @@ async def test_unauthorized_user_delete_other_user_address(client: AsyncClient):
     token2 = await login_user(client, email="user2@example.com")
     headers2 = auth_header(token=token2)
 
-    response = await client.delete(f"/api/addresses/{addr_id}", headers=headers2)
+    response = await client.delete(f"/api/v1/addresses/{addr_id}", headers=headers2)
     assert response.status_code in (status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND)
 
 
@@ -231,7 +231,7 @@ async def test_get_authenticated_user_addresses_empty(client: AsyncClient):
     token = await login_user(client)
     test_user_authentication_headers = auth_header(token=token)
 
-    response = await client.get("/api/addresses", headers=test_user_authentication_headers)
+    response = await client.get("/api/v1/addresses", headers=test_user_authentication_headers)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == []
@@ -252,7 +252,7 @@ async def test_create_address_with_null_required_fields(client: AsyncClient):
         "lat": None,
         "lng": None,
     }
-    response = await client.post("/api/addresses", json=payload, headers=headers)
+    response = await client.post("/api/v1/addresses", json=payload, headers=headers)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -263,7 +263,7 @@ async def test_create_address_with_empty_json(client: AsyncClient):
     token = await login_user(client)
     headers = auth_header(token=token)
 
-    response = await client.post("/api/addresses", json={}, headers=headers)
+    response = await client.post("/api/v1/addresses", json={}, headers=headers)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -274,14 +274,14 @@ async def test_delete_address_that_does_not_exist(client: AsyncClient):
     token = await login_user(client)
     headers = auth_header(token=token)
 
-    response = await client.delete("/api/addresses/99999", headers=headers)
+    response = await client.delete("/api/v1/addresses/99999", headers=headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 # guest user can't get his addresses
 @pytest.mark.anyio
 async def test_guest_user_cannot_get_addresses(client: AsyncClient):
-    response = await client.get("/api/addresses")
+    response = await client.get("/api/v1/addresses")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
@@ -294,7 +294,7 @@ async def test_having_two_default_addresses_resets_previous_default(client: Asyn
 
     # First address set as default
     await client.post(
-        "/api/addresses",
+        "/api/v1/addresses",
         json={
             "label": "Home",
             "line": "First St",
@@ -310,7 +310,7 @@ async def test_having_two_default_addresses_resets_previous_default(client: Asyn
     # Second address set as default
     addr2 = (
         await client.post(
-            "/api/addresses",
+            "/api/v1/addresses",
             json={
                 "label": "Work",
                 "line": "Second St",
@@ -325,7 +325,7 @@ async def test_having_two_default_addresses_resets_previous_default(client: Asyn
     ).json()
 
     # Fetch all user addresses to ensure only one remains as default
-    all_addresses = (await client.get("/api/addresses", headers=headers)).json()
+    all_addresses = (await client.get("/api/v1/addresses", headers=headers)).json()
     defaults = [a for a in all_addresses if a["is_default"]]
 
     assert len(defaults) == 1
@@ -339,7 +339,7 @@ async def test_set_default_address_not_found(client: AsyncClient):
     token = await login_user(client)
     headers = auth_header(token=token)
 
-    response = await client.post("/api/addresses/99999/set-default", headers=headers)
+    response = await client.post("/api/v1/addresses/99999/set-default", headers=headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -350,7 +350,7 @@ async def test_set_default_address_invalid_id_type(client: AsyncClient):
     token = await login_user(client)
     headers = auth_header(token=token)
 
-    response = await client.post("/api/addresses/invalid_id/set-default", headers=headers)
+    response = await client.post("/api/v1/addresses/invalid_id/set-default", headers=headers)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -373,13 +373,13 @@ async def test_create_and_get_address_success(client: AsyncClient):
         "is_default": False,
     }
 
-    create_res = await client.post("/api/addresses", json=payload, headers=headers)
+    create_res = await client.post("/api/v1/addresses", json=payload, headers=headers)
     assert create_res.status_code == status.HTTP_201_CREATED
     data = create_res.json()
     assert data["label"] == payload["label"]
     assert "id" in data
 
-    get_res = await client.get(f"/api/addresses/{data['id']}", headers=headers)
+    get_res = await client.get(f"/api/v1/addresses/{data['id']}", headers=headers)
     assert get_res.status_code == status.HTTP_200_OK
     assert get_res.json()["id"] == data["id"]
 
@@ -392,7 +392,7 @@ async def test_update_address_success(client: AsyncClient):
 
     created = (
         await client.post(
-            "/api/addresses",
+            "/api/v1/addresses",
             json={
                 "label": "Home",
                 "line": "Old Street",
@@ -406,7 +406,7 @@ async def test_update_address_success(client: AsyncClient):
     ).json()
 
     update_res = await client.patch(
-        f"/api/addresses/{created['id']}",
+        f"/api/v1/addresses/{created['id']}",
         json={"label": "Work", "unit": "Suite 100"},
         headers=headers,
     )
@@ -425,7 +425,7 @@ async def test_delete_address_success(client: AsyncClient):
 
     created = (
         await client.post(
-            "/api/addresses",
+            "/api/v1/addresses",
             json={
                 "label": "Temp",
                 "line": "To Delete",
@@ -438,10 +438,10 @@ async def test_delete_address_success(client: AsyncClient):
         )
     ).json()
 
-    del_res = await client.delete(f"/api/addresses/{created['id']}", headers=headers)
+    del_res = await client.delete(f"/api/v1/addresses/{created['id']}", headers=headers)
     assert del_res.status_code == status.HTTP_204_NO_CONTENT
 
-    get_res = await client.get(f"/api/addresses/{created['id']}", headers=headers)
+    get_res = await client.get(f"/api/v1/addresses/{created['id']}", headers=headers)
     assert get_res.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -456,7 +456,7 @@ async def test_set_default_address_success(client: AsyncClient):
     # 1. Create Address A (currently default)
     addr_a = (
         await client.post(
-            "/api/addresses",
+            "/api/v1/addresses",
             json={
                 "label": "Home",
                 "line": "First St",
@@ -473,7 +473,7 @@ async def test_set_default_address_success(client: AsyncClient):
     # 2. Create Address B (not default)
     addr_b = (
         await client.post(
-            "/api/addresses",
+            "/api/v1/addresses",
             json={
                 "label": "Work",
                 "line": "Second St",
@@ -489,7 +489,7 @@ async def test_set_default_address_success(client: AsyncClient):
 
     # 3. Call endpoint to set Address B as default
     response = await client.post(
-        f"/api/addresses/{addr_b['id']}/set-default", headers=headers
+        f"/api/v1/addresses/{addr_b['id']}/set-default", headers=headers
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -498,7 +498,7 @@ async def test_set_default_address_success(client: AsyncClient):
     assert data["is_default"] is True
 
     # 4. Verify only Address B remains marked as default across all user addresses
-    all_addresses = (await client.get("/api/addresses", headers=headers)).json()
+    all_addresses = (await client.get("/api/v1/addresses", headers=headers)).json()
     
     addr_a_refreshed = next(a for a in all_addresses if a["id"] == addr_a["id"])
     addr_b_refreshed = next(a for a in all_addresses if a["id"] == addr_b["id"])
@@ -516,7 +516,7 @@ async def test_set_default_address_idempotent(client: AsyncClient):
 
     addr = (
         await client.post(
-            "/api/addresses",
+            "/api/v1/addresses",
             json={
                 "label": "Home",
                 "line": "Main St",
@@ -532,7 +532,7 @@ async def test_set_default_address_idempotent(client: AsyncClient):
 
     # Call endpoint on already-default address
     response = await client.post(
-        f"/api/addresses/{addr['id']}/set-default", headers=headers
+        f"/api/v1/addresses/{addr['id']}/set-default", headers=headers
     )
 
     assert response.status_code == status.HTTP_200_OK

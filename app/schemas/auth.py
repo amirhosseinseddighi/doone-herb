@@ -1,6 +1,6 @@
 from datetime import datetime
 import re
-from typing import Annotated
+from typing import Annotated, Optional
 
 from pydantic import (
     BaseModel, 
@@ -41,7 +41,30 @@ class CurrentUserInfoResponse(BaseModel):
     last_seen_at: datetime
     role: str
     created_at: datetime
-    telegram_opt_in: bool 
+    telegram_opt_in: bool
+
+
+class UpdateProfileRequest(BaseModel):
+    """Partial update of the fields a user may change on their own profile.
+
+    Email and phone are deliberately absent: email is the login identifier, so
+    changing it would need a re-verification flow.
+    """
+
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        extra="forbid"
+    )
+
+    name: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=50,
+        description="User full name",
+        examples=["Amir sed"]
+    )
+    sms_opt_in: Optional[bool] = Field(default=None)
+    telegram_opt_in: Optional[bool] = Field(default=None)
 
 
 class NewUserCreate(BaseModel):

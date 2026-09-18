@@ -16,6 +16,7 @@ class Category(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     tint_color: Mapped[str] = mapped_column(String(7), nullable=False)
     dot_color: Mapped[str] = mapped_column(String(7), nullable=False)
+    image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, server_default="true")
     is_deleted: Mapped[bool] = mapped_column(

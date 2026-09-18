@@ -21,7 +21,7 @@ async def test_user_wrong_password_login(client: AsyncClient):
     }
 
     response = await client.post(
-        "/api/auth/login",
+        "/api/v1/auth/login",
         data = login_data
     )
 
@@ -32,13 +32,13 @@ async def test_user_wrong_password_login(client: AsyncClient):
 @pytest.mark.anyio
 async def test_empty_login_felds(client: AsyncClient):
     response = await client.post(
-        "/api/auth/login",
+        "/api/v1/auth/login",
         data={"username": "", "password": ""}
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     response = await client.post(
-        "/api/auth/login",
+        "/api/v1/auth/login",
         data={}
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
@@ -47,7 +47,7 @@ async def test_empty_login_felds(client: AsyncClient):
 @pytest.mark.anyio
 async def test_wrong_email_format(client: AsyncClient):
     response = await client.post(
-        "/api/auth/login",
+        "/api/v1/auth/login",
         data={"username": "not-an-email", "password": "Pass@123456"}
     )
     assert response.status_code in (status.HTTP_401_UNAUTHORIZED, status.HTTP_422_UNPROCESSABLE_CONTENT)
@@ -60,7 +60,7 @@ async def test_login_username_trailing_space(client: AsyncClient):
     await create_test_user(client, email=email)
 
     response = await client.post(
-        "/api/auth/login",
+        "/api/v1/auth/login",
         data={"username": email + " ", "password": "Pass@123456"}
     )
     assert response.status_code != status.HTTP_200_OK
@@ -73,18 +73,18 @@ async def test_login_username_case_sensitivity(client: AsyncClient):
     await create_test_user(client, email=email)
 
     response = await client.post(
-        "/api/auth/login",
+        "/api/v1/auth/login",
         data={"username": email.lower(), "password": "Pass@123456"}
     )
     assert response.status_code in (status.HTTP_200_OK, status.HTTP_401_UNAUTHORIZED)
 
 
-# test /api/auth/me with unauthenticated user
+# test /api/v1/auth/me with unauthenticated user
 @pytest.mark.anyio
 async def test_unauthenticated_get_current_user_info(client: AsyncClient):
 
     response = await client.get(
-        "/api/auth/me"
+        "/api/v1/auth/me"
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()['detail'] == 'Not authenticated'
@@ -92,7 +92,7 @@ async def test_unauthenticated_get_current_user_info(client: AsyncClient):
 
 # ======= AFTER LOGIN ==========
 
-# test /api/auth/me
+# test /api/v1/auth/me
 @pytest.mark.anyio
 async def test_get_current_user_info(client: AsyncClient):
 
@@ -103,7 +103,7 @@ async def test_get_current_user_info(client: AsyncClient):
 
 
     response = await client.get(
-        "/api/auth/me",
+        "/api/v1/auth/me",
         headers=header
     )
     assert response.status_code == status.HTTP_200_OK
@@ -131,7 +131,7 @@ async def test_admin_can_list_customers(client: AsyncClient, db_session):
 
     token = await login_user(client, email="admin@example.com", password="Admin@123")
     response = await client.get(
-        "/api/auth/admin/users",
+        "/api/v1/auth/admin/users",
         headers=auth_header(token),
     )
 
@@ -161,7 +161,7 @@ async def test_login_while_already_authenticated(client: AsyncClient):
     header = auth_header(token)
 
     response = await client.post(
-        "/api/auth/login",
+        "/api/v1/auth/login",
         data={"username": email, "password": "Pass@123456"},
         headers=header
     )
@@ -174,7 +174,7 @@ async def test_login_while_already_authenticated(client: AsyncClient):
 @pytest.mark.anyio
 async def test_normal_registration(client: AsyncClient):
     response = await client.post(
-        "/api/auth/register",
+        "/api/v1/auth/register",
         json={
             "email": "newuser@example.com",
             "phone": "09121231235",
@@ -193,7 +193,7 @@ async def test_register_duplicate_email(client: AsyncClient):
     await create_test_user(client, email=email)
 
     response = await client.post(
-        "/api/auth/register",
+        "/api/v1/auth/register",
         json={
             "email": email,
             "phone": "09121231236",
@@ -212,7 +212,7 @@ async def test_register_duplicate_phone(client: AsyncClient):
     await create_test_user(client, phone=phone)
 
     response = await client.post(
-        "/api/auth/register",
+        "/api/v1/auth/register",
         json={
             "email": "phone2@example.com",
             "phone": phone,
@@ -236,7 +236,7 @@ async def test_registration_missing_fields(client: AsyncClient):
     }
     for key in list(base.keys()):
         payload = {k: v for k, v in base.items() if k != key}
-        response = await client.post("/api/auth/register", json=payload)
+        response = await client.post("/api/v1/auth/register", json=payload)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -244,7 +244,7 @@ async def test_registration_missing_fields(client: AsyncClient):
 @pytest.mark.anyio
 async def test_registration_mismatched_types(client: AsyncClient):
     response = await client.post(
-        "/api/auth/register",
+        "/api/v1/auth/register",
         json={
             "email": 123,
             "phone": 9121231234,
@@ -266,7 +266,7 @@ async def test_registration_while_authenticated(client: AsyncClient):
     header = auth_header(token)
 
     response = await client.post(
-        "/api/auth/register",
+        "/api/v1/auth/register",
         json={
             "email": "another@example.com",
             "phone": "09121231238",
@@ -293,7 +293,7 @@ async def test_forget_password_normal_flow(client: AsyncClient):
     ) as mock_send:
 
         response = await client.post(
-            "/api/auth/forget-password",
+            "/api/v1/auth/forget-password",
             json={"email": email}
         )
         assert response.status_code == status.HTTP_202_ACCEPTED
@@ -323,7 +323,7 @@ async def test_reset_password_normal_flow(client: AsyncClient):
     ) as mock_send:
 
         response = await client.post(
-            "/api/auth/forget-password",
+            "/api/v1/auth/forget-password",
             json={"email": email}
         )
         assert response.status_code == status.HTTP_202_ACCEPTED
@@ -339,7 +339,7 @@ async def test_reset_password_normal_flow(client: AsyncClient):
         token = kwargs['token']
 
     reset_password_response = await client.post(
-        "/api/auth/reset-password",
+        "/api/v1/auth/reset-password",
         json = {
             "new_password": "Pass@321321",
             "password_repeat": "Pass@321321",
@@ -367,7 +367,7 @@ async def test_forget_password_while_authenticated(client: AsyncClient):
     header = auth_header(token)
 
     response = await client.post(
-        "/api/auth/forget-password",
+        "/api/v1/auth/forget-password",
         json={"email": email},
         headers=header
     )
@@ -385,7 +385,7 @@ async def test_change_password_normal_flow(client: AsyncClient):
     header = auth_header(token)
 
     response = await client.post(
-        "/api/auth/change-password",
+        "/api/v1/auth/change-password",
         json={
             "current_password": "Pass@123456",
             "new_password": "NewPass@123",
@@ -394,3 +394,128 @@ async def test_change_password_normal_flow(client: AsyncClient):
         headers=header
     )
     assert response.status_code == status.HTTP_200_OK
+
+
+# ======= UPDATE PROFILE =========
+
+@pytest.mark.anyio
+async def test_update_profile_name_only(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"name": "Renamed User"},
+        headers=header
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    body = response.json()
+    assert body["name"] == "Renamed User"
+    # a partial update must not blank out untouched fields
+    assert body["sms_opt_in"] is False
+    assert body["telegram_opt_in"] is False
+
+
+@pytest.mark.anyio
+async def test_update_profile_notification_prefs(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"sms_opt_in": True, "telegram_opt_in": True},
+        headers=header
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    body = response.json()
+    assert body["sms_opt_in"] is True
+    assert body["telegram_opt_in"] is True
+    # name left alone
+    assert body["name"] == "The Test User"
+
+
+@pytest.mark.anyio
+async def test_update_profile_empty_body_is_noop(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    before = await client.get("/api/v1/auth/me", headers=header)
+    response = await client.patch("/api/v1/auth/me", json={}, headers=header)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["name"] == before.json()["name"]
+
+
+@pytest.mark.anyio
+async def test_update_profile_persists(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    await client.patch(
+        "/api/v1/auth/me",
+        json={"name": "Persisted Name", "sms_opt_in": True},
+        headers=header
+    )
+
+    refetched = await client.get("/api/v1/auth/me", headers=header)
+    assert refetched.status_code == status.HTTP_200_OK
+    assert refetched.json()["name"] == "Persisted Name"
+    assert refetched.json()["sms_opt_in"] is True
+
+
+@pytest.mark.anyio
+async def test_update_profile_rejects_short_name(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"name": ""},
+        headers=header
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.anyio
+async def test_update_profile_rejects_long_name(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"name": "x" * 51},
+        headers=header
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.anyio
+async def test_update_profile_rejects_unknown_field(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    # email/phone are intentionally not self-editable
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"email": "hacked@example.com"},
+        headers=header
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.anyio
+async def test_update_profile_unauthenticated(client: AsyncClient):
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"name": "Nobody"}
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED

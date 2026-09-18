@@ -13,8 +13,17 @@ class CategoryResponse(BaseModel):
     name: str = Field(min_length=0)
     tint_color: Optional[str] = Field(min_length=7, max_length=7)
     dot_color: Optional[str] = Field(min_length=7, max_length=7)
+    image_url: Optional[str] = None
     sort_order: int
     is_active: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+
+class CategoryImageResponse(BaseModel):
+    id: int
+    image_url: str
 
     model_config = ConfigDict(from_attributes=True)
 

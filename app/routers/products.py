@@ -1,5 +1,4 @@
 from datetime import UTC, datetime
-import os
 from typing import Annotated
 
 from PIL import UnidentifiedImageError
@@ -23,12 +22,12 @@ from app.db.database import AsyncSession
 from app.models.cart import CartItem
 from app.models.category import Category, Offer, Product, ProductImage, ProductVariant
 from app.schemas.products import ImageUploadResponse, NewProductRequest, NewProductVariantRequest, PaginatedProductResponse, ProductResponse, ProductVariantResponse, UpdateProductImageRequest, UpdateProductRequest, UpdateProductVariantRequest
-from app.utils.image_utils import process_product_image
+from app.utils.image_utils import delete_image_file, process_product_image
 from app.utils.product_utils import generate_sku
 from app.core.config import settings
 
 
-router = APIRouter()
+router = APIRouter(prefix="/products", tags=["products"])
 
 
 # ============= PRODUCT IMAGE UPLOAD ===================
@@ -166,11 +165,9 @@ async def delete_product_image(
 
     await db.delete(image)
     await db.commit()
-    
-    if os.path.exists(image.url):
-        os.remove(image.url)
 
-    
+    delete_image_file(image.url)
+
     return None
 
 

@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.staticfiles import StaticFiles
 from app.routers import addresses, cart, category, auth, orders, products
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi import APIRouter
 
 origins = [
     "http://localhost.tiangolo.com",
@@ -22,13 +22,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+api_v1 = APIRouter(prefix="/api/v1",tags=["API Version 1"])
 
-app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-app.include_router(category.router, prefix="/api/categories", tags=["category"])
-app.include_router(products.router, prefix="/api/products", tags=["products"])
-app.include_router(cart.router, prefix="/api/cart", tags=["cart"])
-app.include_router(addresses.router,prefix="/api/addresses", tags=["addresses"])
-app.include_router(orders.router,prefix="/orders", tags=["orders"])
+api_v1.include_router(auth.router)
+api_v1.include_router(category.router)
+api_v1.include_router(products.router)
+api_v1.include_router(cart.router)
+api_v1.include_router(addresses.router)
+api_v1.include_router(orders.router)
+
+
+app.include_router(api_v1)
 
 @app.get("/healthz")
 def healthz():
