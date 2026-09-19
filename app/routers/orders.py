@@ -36,7 +36,7 @@ from app.schemas.orders import (
     OrderSummary,
 )
 
-router = APIRouter(prefix="/orders", tags=["orders"])
+router = APIRouter()
 
 
 # Statuses a customer can still back out of themselves.

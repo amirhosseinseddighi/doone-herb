@@ -12,7 +12,7 @@ from app.schemas.cart import AddCartItemRequest, CartItemResponse, CartResponse,
 from app.core.config import settings
 
 
-router = APIRouter(prefix="/cart", tags=["cart"])
+router = APIRouter()
 
 
 # ========== HELPERS =============
@@ -188,7 +188,7 @@ async def merge_guest_cart_to_user(
     # if user doesn't have a cart, then convert guest cart to user cart
     if not user_cart:
         guest_cart.user_id = current_user.id
-        guest_cart.guest_token = None
+        guest_cart.guest_token = ""
         await db.commit()
         return
 

@@ -12,11 +12,13 @@ from app.db.database import AsyncSession
 from app.core import security
 from app.core.config import settings
 from app.routers.cart import merge_guest_cart_to_user
-from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token, UpdateProfileRequest
+from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token
 from app.utils.email_utils import send_password_reset_email
 
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter()
+
+
 
 @router.post("/login", response_model=Token)
 async def login(
@@ -80,24 +82,6 @@ async def login(
 
 @router.get("/me", response_model=CurrentUserInfoResponse)
 async def read_users_me(current_user: CurrentUser):
-    return current_user
-
-
-@router.patch("/me", response_model=CurrentUserInfoResponse)
-async def update_users_me(
-    profile_update: UpdateProfileRequest,
-    current_user: CurrentUser,
-    db: Annotated[AsyncSession, Depends(get_db)],
-):
-    """Update the signed-in user's own profile (name and notification opt-ins)."""
-    update_data = profile_update.model_dump(exclude_unset=True)
-
-    for field, value in update_data.items():
-        setattr(current_user, field, value)
-
-    await db.commit()
-    await db.refresh(current_user)
-
     return current_user
 
 

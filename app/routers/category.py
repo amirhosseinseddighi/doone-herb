@@ -1,27 +1,17 @@
 from typing import Annotated
 
-from PIL import UnidentifiedImageError
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
-from fastapi.concurrency import run_in_threadpool
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from slugify import slugify
 from sqlalchemy import and_, func, select
 
-from app.core.config import settings
 from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
 from app.models.category import Category, Product, ProductVariant
-from app.schemas.categories import (
-    CategoryDetails,
-    CategoryImageResponse,
-    CategoryResponse,
-    NewCategoryRequest,
-    UpdateCategoryRequest,
-)
-from app.utils.image_utils import delete_image_file, process_category_image
+from app.schemas.categories import CategoryDetails, CategoryResponse, NewCategoryRequest, UpdateCategoryRequest
 from sqlalchemy.orm import selectinload
 
 from app.schemas.products import BaseProductResponse
-router = APIRouter(prefix="/categories", tags=["category"])
+router = APIRouter()
 
 
 
@@ -173,103 +163,4 @@ async def delete_category(
     category.is_deleted = True
     category.is_active = False
     await db.commit()
-    return None
-
-
-# ============= CATEGORY IMAGE ===================
-
-
-async def _get_active_category(db: AsyncSession, category_id: int) -> Category:
-    """Load a non-soft-deleted category or 404."""
-    result = await db.execute(
-        select(Category).where((Category.id == category_id) & (Category.is_deleted.is_(False)))
-    )
-    category = result.scalar_one_or_none()
-    if not category:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
-    return category
-
-
-@router.get("/{category_id}/image", response_model=CategoryImageResponse)
-async def get_category_image(
-    category_id: int,
-    db: Annotated[AsyncSession, Depends(get_db)]
-):
-    category = await _get_active_category(db, category_id)
-
-    if not category.image_url:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category image not found"
-        )
-
-    return category
-
-
-@router.post("/{category_id}/image", response_model=CategoryImageResponse)
-async def upload_category_image(
-    category_id: int,
-    file: UploadFile,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
-):
-    category = await _get_active_category(db, category_id)
-
-    image = await file.read()
-
-    if not image:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="File is empty"
-        )
-
-    # check image size
-    max_image_size = settings.MAX_IMAGE_SIZE_MEGA_BYTE * 1024 * 1024
-    if len(image) > max_image_size:
-        raise HTTPException(
-            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-            detail=f"Image size is larger than limit: {settings.MAX_IMAGE_SIZE_MEGA_BYTE}MB"
-        )
-
-    try:
-        new_filename = await run_in_threadpool(process_category_image, image)
-
-    except UnidentifiedImageError as err:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid image file. Please upload a valid image (JPEG, PNG, GIF, WebP).",
-        ) from err
-
-    # replacing an existing image leaves the old file orphaned otherwise
-    previous_image_url = category.image_url
-
-    category.image_url = new_filename
-    await db.commit()
-    await db.refresh(category)
-
-    delete_image_file(previous_image_url)
-
-    return category
-
-
-@router.delete("/{category_id}/image", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_category_image(
-    category_id: int,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
-):
-    category = await _get_active_category(db, category_id)
-
-    if not category.image_url:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category image not found"
-        )
-
-    image_url = category.image_url
-    category.image_url = None
-    await db.commit()
-
-    delete_image_file(image_url)
-
     return None

@@ -9,7 +9,7 @@ from app.db.database import AsyncSession
 from app.models.identity import Address
 from app.schemas.addresses import AddressCreate, AddressRead, AddressUpdate
 
-router = APIRouter(prefix="/addresses", tags=["addresses"])
+router = APIRouter()
 
 DbDep = Annotated[AsyncSession, Depends(get_db)]
 

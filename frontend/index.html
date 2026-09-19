@@ -807,9 +807,33 @@
                 <sc-if value="{{ o.canCancel }}" hint-placeholder-val="{{ false }}">
                   <button onClick="{{ o.onCancel }}" style="flex: 1; min-width: 120px; height: 42px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; font-size: 13px; font-weight: 700; cursor: pointer;">لغو سفارش</button>
                 </sc-if>
+                <sc-if value="{{ o.canReview }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ o.onReview }}" style="flex: 1; min-width: 130px; height: 42px; border: 0; border-radius: 999px; background: #f1efe8; font-size: 13px; font-weight: 700; cursor: pointer;">ثبت نظر</button>
+                </sc-if>
                 <button onClick="{{ o.onHelp }}" style="flex: none; width: 42px; height: 42px; border: 0; border-radius: 999px; background: #f1efe8; cursor: pointer; display: flex; align-items: center; justify-content: center;" aria-label="راهنمایی برای این سفارش">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.2 9.3a3 3 0 0 1 5.6 1.2c0 2-2.8 2.8-2.8 2.8"></path><path d="M12 17h.01"></path></svg>
                 </button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabReviews }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <sc-for list="{{ myReviews }}" as="r" hint-placeholder-count="3">
+            <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 16px; display: flex; gap: 12px;">
+              <div style="width: 54px; height: 54px; flex: none; border-radius: 16px; background: {{ r.tint }}; background-image: url({{ r.img }}); background-size: cover; background-position: center;"></div>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px;">
+                <div style="display: flex; align-items: baseline; gap: 10px;">
+                  <span style="font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.product }}</span>
+                  <span style="margin-right: auto; font-size: 12px; color: #a2a89f; white-space: nowrap;">{{ r.date }}</span>
+                </div>
+                <span style="font-size: 13px; color: #e0a12a; letter-spacing: 0.08em;">{{ r.stars }}</span>
+                <span style="font-size: 13px; color: #55605a; line-height: 1.55;">{{ r.text }}</span>
+                <sc-if value="{{ r.hasReply }}" hint-placeholder-val="{{ false }}">
+                  <span style="margin-top: 4px; padding: 10px 12px; border-radius: 14px; background: #eaf6ee; font-size: 12.5px; color: #0b5c38; line-height: 1.5;">پاسخ دونه هرب: {{ r.reply }}</span>
+                </sc-if>
               </div>
             </div>
           </sc-for>
@@ -844,56 +868,6 @@
             </div>
           </sc-for>
           <button onClick="{{ addAddress }}" style="height: 50px; border: 1px dashed #cfd4cc; border-radius: 22px; background: none; font-size: 14px; font-weight: 700; cursor: pointer; color: #0f7a4a;">+ افزودن آدرس روی نقشه</button>
-        </div>
-      </sc-if>
-
-      <sc-if value="{{ tabProfile }}" hint-placeholder-val="{{ false }}">
-        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 620px;">
-          <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
-            <h2 style="font-size: 19px;">اطلاعات پروفایل</h2>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">نام و نام خانوادگی
-              <input value="{{ profileName }}" onChange="{{ onProfileName }}" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
-            </label>
-            <label style="display: flex; align-items: center; gap: 12px; font-size: 13px;">
-              <span style="flex: 1; min-width: 0;">به‌روزرسانی پیامکی</span>
-              <button onClick="{{ onToggleSmsOptIn }}" style="flex: none; height: 34px; padding: 0 16px; border: 0; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 700; background: {{ smsOptBg }}; color: {{ smsOptFg }};">{{ smsOptLabel }}</button>
-            </label>
-            <label style="display: flex; align-items: center; gap: 12px; font-size: 13px;">
-              <span style="flex: 1; min-width: 0;">به‌روزرسانی تلگرام</span>
-              <button onClick="{{ onToggleTelegramOptIn }}" style="flex: none; height: 34px; padding: 0 16px; border: 0; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 700; background: {{ telegramOptBg }}; color: {{ telegramOptFg }};">{{ telegramOptLabel }}</button>
-            </label>
-            <div style="display: flex; align-items: center; gap: 12px; padding-top: 4px; border-top: 1px solid #f1efe8; font-size: 12.5px; color: #7d857f;">
-              <span style="width: 130px; flex: none;">ایمیل</span>
-              <span style="flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; color: #12211a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ profileEmail }}</span>
-            </div>
-            <sc-if value="{{ hasProfileErr }}" hint-placeholder-val="{{ false }}">
-              <span style="font-size: 12.5px; font-weight: 600; color: #b8451f;">{{ profileErr }}</span>
-            </sc-if>
-            <sc-if value="{{ hasProfileMsg }}" hint-placeholder-val="{{ false }}">
-              <span style="font-size: 12.5px; font-weight: 600; color: #0b5c38;">{{ profileMsg }}</span>
-            </sc-if>
-            <button onClick="{{ saveProfile }}" disabled="{{ profileBusy }}" style="height: 46px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14px; font-weight: 700; cursor: pointer; opacity: {{ profileBusyOpacity }};">{{ profileSaveLabel }}</button>
-          </div>
-
-          <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
-            <h2 style="font-size: 19px;">تغییر رمز عبور</h2>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">رمز عبور فعلی
-              <input type="password" value="{{ pwCurrent }}" onChange="{{ onPwCurrent }}" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
-            </label>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">رمز عبور جدید
-              <input type="password" value="{{ pwNew }}" onChange="{{ onPwNew }}" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
-            </label>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">تکرار رمز عبور جدید
-              <input type="password" value="{{ pwRepeat }}" onChange="{{ onPwRepeat }}" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
-            </label>
-            <sc-if value="{{ hasPwErr }}" hint-placeholder-val="{{ false }}">
-              <span style="font-size: 12.5px; font-weight: 600; color: #b8451f;">{{ pwErr }}</span>
-            </sc-if>
-            <sc-if value="{{ hasPwMsg }}" hint-placeholder-val="{{ false }}">
-              <span style="font-size: 12.5px; font-weight: 600; color: #0b5c38;">{{ pwMsg }}</span>
-            </sc-if>
-            <button onClick="{{ changePassword }}" disabled="{{ pwBusy }}" style="height: 46px; border: 0; border-radius: 999px; background: #f1efe8; color: #12211a; font-size: 14px; font-weight: 700; cursor: pointer; opacity: {{ pwBusyOpacity }};">{{ pwChangeLabel }}</button>
-          </div>
         </div>
       </sc-if>
     </div>
@@ -1049,16 +1023,18 @@ const productPageData = (data) => ({
 // Cart calls must send cookies: guests are tracked with the backend's HttpOnly
 // `guest_cart_token` cookie and the API uses CORS with allow_credentials.
 const FETCH_CREDENTIALS = "include";
-// Fallback delivery slots (until GET /api/v1/orders/delivery-slots responds).
+// Fallback delivery slots (until GET /orders/delivery-slots responds).
 // Indexes match the checkout screen's slot picker (st.slot).
 const SLOTS = [
   { label: "امروز، ۱۷:۰۰ تا ۲۱:۰۰", note: "پیک همان‌روز", fee: 45000, pickup: false },
   { label: "فردا، ۹:۰۰ تا ۱۳:۰۰", note: "بازه صبح فردا", fee: 35000, pickup: false },
   { label: "تحویل حضوری از فروشگاه", note: "پیشخوان خیابان ولی‌عصر", fee: 0, pickup: true }
 ];
+const MY_REVIEWS = [];
+
 async function apiLogin(username, password) {
   const body = new URLSearchParams({ username, password, grant_type: "password" });
-  const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: "POST",
     credentials: FETCH_CREDENTIALS,
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -1081,7 +1057,7 @@ async function apiLogin(username, password) {
 }
 
 async function apiMe(token) {
-  const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
+  const res = await fetch(`${API_BASE}/api/auth/me`, {
     credentials: FETCH_CREDENTIALS,
     headers: { Authorization: "Bearer " + token }
   });
@@ -1089,66 +1065,9 @@ async function apiMe(token) {
   return res.json();
 }
 
-// Shared error extraction for authenticated JSON writes.
-async function authJsonRequest(method, path, payload, fallbackMsg) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    credentials: FETCH_CREDENTIALS,
-    headers: authHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok) {
-    let msg = fallbackMsg;
-    try {
-      const data = await res.json();
-      if (data && data.detail) {
-        msg = typeof data.detail === "string" ? data.detail : msg;
-        // FastAPI 422 validation errors come as an array of {msg, loc}.
-        if (Array.isArray(data.detail) && data.detail.length && data.detail[0].msg) msg = data.detail[0].msg;
-      }
-    } catch (e) { /* non-JSON error body */ }
-    const err = new Error(msg);
-    err.status = res.status;
-    throw err;
-  }
-  return res.json();
-}
-
-// PATCH /api/v1/auth/me — UpdateProfileRequest {name?, sms_opt_in?, telegram_opt_in?}
-async function apiUpdateProfile(payload) {
-  return authJsonRequest("PATCH", "/api/v1/auth/me", payload, "ذخیره پروفایل ممکن نشد.");
-}
-
-// POST /api/v1/auth/change-password — ChangePasswordRequest
-async function apiChangePassword({ currentPassword, newPassword, passwordRepeat }) {
-  return authJsonRequest(
-    "POST",
-    "/api/v1/auth/change-password",
-    {
-      current_password: currentPassword,
-      new_password: newPassword,
-      password_repeat: passwordRepeat
-    },
-    "تغییر رمز عبور ممکن نشد."
-  );
-}
-
-// Mirrors the backend's PasswordMixin rules so the user gets an inline message
-// instead of a raw 422.
-function passwordProblem(pw, repeat) {
-  if (!pw || pw.length < 8) return "رمز عبور باید حداقل ۸ کاراکتر باشد.";
-  if (pw.length > 128) return "رمز عبور نباید بیشتر از ۱۲۸ کاراکتر باشد.";
-  if (!/[A-Z]/.test(pw)) return "رمز عبور باید حداقل یک حرف بزرگ داشته باشد.";
-  if (!/[a-z]/.test(pw)) return "رمز عبور باید حداقل یک حرف کوچک داشته باشد.";
-  if (!/[0-9]/.test(pw)) return "رمز عبور باید حداقل یک عدد داشته باشد.";
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(pw)) return "رمز عبور باید حداقل یک کاراکتر ویژه داشته باشد.";
-  if (pw !== repeat) return "تکرار رمز عبور مطابقت ندارد.";
-  return "";
-}
-
-// POST /api/v1/auth/register — NewUserCreate
+// POST /api/auth/register — NewUserCreate
 async function apiSignup({ email, phone, name, password, passwordRepeat }) {
-  const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -1174,9 +1093,9 @@ async function apiSignup({ email, phone, name, password, passwordRepeat }) {
   return { ok: true };
 }
 
-// POST /api/v1/auth/forget-password — {email}
+// POST /api/auth/forget-password — {email}
 async function apiRequestReset(email) {
-  const res = await fetch(`${API_BASE}/api/v1/auth/forget-password`, {
+  const res = await fetch(`${API_BASE}/api/auth/forget-password`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email })
@@ -1192,7 +1111,7 @@ async function apiRequestReset(email) {
   return res.json();
 }
 
-// POST /api/v1/auth/reset-password is handled by the dedicated reset-password page.
+// POST /api/auth/reset-password is handled by the dedicated reset-password page.
 
 
 
@@ -1201,7 +1120,6 @@ const mapCategory = (c) => ({
   name: c.name,
   tint: c.tint_color || "#f1efe8",
   dot: c.dot_color || "#7d857f",
-  img: c.image_url ? productImageUrl(c.image_url) : "",
   kw: c.slug,
   _id: c.id
 });
@@ -1234,18 +1152,18 @@ function authHeaders(extra) {
 // Cart requests always carry credentials: signed-in carts are resolved from the
 // Bearer token, guest carts from the backend's HttpOnly `guest_cart_token` cookie.
 
-// GET /api/v1/cart → CartResponse {id, user_id, guest_token, items, total_items, total_price}
+// GET /api/cart → CartResponse {id, user_id, guest_token, items, total_items, total_price}
 // items: CartItemResponse {id (cart_item_id), product_variant_id, qty, product_name?,
 //        variant_label?, price?, stock_qty?, subtotal?}
 async function apiGetCart() {
-  const res = await fetch(`${API_BASE}/api/v1/cart`, { credentials: FETCH_CREDENTIALS, headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/cart`, { credentials: FETCH_CREDENTIALS, headers: authHeaders() });
   if (!res.ok) throw new Error("بارگذاری سبد خرید ممکن نشد.");
   return res.json();
 }
 
-// POST /api/v1/cart  {product_variant_id, qty} → {message, cart_id}
+// POST /api/cart  {product_variant_id, qty} → {message, cart_id}
 async function apiAddCartItem(productVariantId, qty) {
-  const res = await fetch(`${API_BASE}/api/v1/cart`, {
+  const res = await fetch(`${API_BASE}/api/cart`, {
     method: "POST",
     credentials: FETCH_CREDENTIALS,
     headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
@@ -1259,9 +1177,9 @@ async function apiAddCartItem(productVariantId, qty) {
   return res.json();
 }
 
-// PATCH /api/v1/cart/{cart_item_id}  {qty} → CartResponse
+// PATCH /api/cart/{cart_item_id}  {qty} → CartResponse
 async function apiUpdateCartItem(cartItemId, qty) {
-  const res = await fetch(`${API_BASE}/api/v1/cart/${cartItemId}`, {
+  const res = await fetch(`${API_BASE}/api/cart/${cartItemId}`, {
     method: "PATCH",
     credentials: FETCH_CREDENTIALS,
     headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
@@ -1271,30 +1189,30 @@ async function apiUpdateCartItem(cartItemId, qty) {
   return res.json();
 }
 
-// DELETE /api/v1/cart/{cart_item_id} → {message, cart_id}
+// DELETE /api/cart/{cart_item_id} → {message, cart_id}
 async function apiDeleteCartItem(cartItemId) {
-  const res = await fetch(`${API_BASE}/api/v1/cart/${cartItemId}`, { method: "DELETE", credentials: FETCH_CREDENTIALS, headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/cart/${cartItemId}`, { method: "DELETE", credentials: FETCH_CREDENTIALS, headers: authHeaders() });
   if (!res.ok) throw new Error("حذف کالا ممکن نشد.");
   return res.json();
 }
 
-// GET /api/v1/orders/delivery-slots (public)
+// GET /orders/delivery-slots (public)
 async function apiGetSlots() {
-  const res = await fetch(`${API_BASE}/api/v1/orders/delivery-slots`, { credentials: FETCH_CREDENTIALS });
+  const res = await fetch(`${API_BASE}/orders/delivery-slots`, { credentials: FETCH_CREDENTIALS });
   if (!res.ok) throw new Error("بارگذاری گزینه‌های ارسال ممکن نشد.");
   return res.json();
 }
 
-// GET /api/v1/addresses (auth)
+// GET /api/addresses (auth)
 async function apiListAddresses() {
-  const res = await fetch(`${API_BASE}/api/v1/addresses`, { headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/addresses`, { headers: authHeaders() });
   if (!res.ok) throw new Error("بارگذاری آدرس‌ها ممکن نشد.");
   return res.json();
 }
 
-// POST /api/v1/addresses
+// POST /api/addresses
 async function apiCreateAddress(payload) {
-  const res = await fetch(`${API_BASE}/api/v1/addresses`, {
+  const res = await fetch(`${API_BASE}/api/addresses`, {
     method: "POST",
     headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
     body: JSON.stringify(payload)
@@ -1312,37 +1230,37 @@ async function apiCreateAddress(payload) {
   return res.json();
 }
 
-// POST /api/v1/addresses/{id}/set-default
+// POST /api/addresses/{id}/set-default
 async function apiSetDefaultAddress(id) {
-  const res = await fetch(`${API_BASE}/api/v1/addresses/${id}/set-default`, { method: "POST", headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/addresses/${id}/set-default`, { method: "POST", headers: authHeaders() });
   if (!res.ok) throw new Error("تنظیم آدرس پیش‌فرض ممکن نشد.");
   return res.json();
 }
 
-// DELETE /api/v1/addresses/{id}
+// DELETE /api/addresses/{id}
 async function apiDeleteAddress(id) {
-  const res = await fetch(`${API_BASE}/api/v1/addresses/${id}`, { method: "DELETE", headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/addresses/${id}`, { method: "DELETE", headers: authHeaders() });
   if (!res.ok) throw new Error("حذف آدرس ممکن نشد.");
   return res.json();
 }
 
-// GET /api/v1/orders (auth, paginated) — {items: OrderSummary[], total, page, page_size}
+// GET /orders (auth, paginated) — {items: OrderSummary[], total, page, page_size}
 async function apiListMyOrders() {
-  const res = await fetch(`${API_BASE}/api/v1/orders?page=1&page_size=50`, { headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/orders?page=1&page_size=50`, { headers: authHeaders() });
   if (!res.ok) throw new Error("بارگذاری سفارش‌های شما ممکن نشد.");
   return res.json();
 }
 
-// GET /api/v1/orders/code/{order_no} (auth) — full OrderRead with items/events/payments
+// GET /orders/code/{order_no} (auth) — full OrderRead with items/events/payments
 async function apiGetOrder(orderNo) {
-  const res = await fetch(`${API_BASE}/api/v1/orders/code/${encodeURIComponent(orderNo)}`, { headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/orders/code/${encodeURIComponent(orderNo)}`, { headers: authHeaders() });
   if (!res.ok) throw new Error("بارگذاری سفارش ممکن نشد.");
   return res.json();
 }
 
-// POST /api/v1/orders/{id}/cancel (auth)
+// POST /orders/{id}/cancel (auth)
 async function apiCancelOrder(id) {
-  const res = await fetch(`${API_BASE}/api/v1/orders/${id}/cancel`, { method: "POST", headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/orders/${id}/cancel`, { method: "POST", headers: authHeaders() });
   if (!res.ok) {
     let msg = "لغو سفارش ممکن نشد.";
     try { const d = await res.json(); if (d && d.detail) msg = typeof d.detail === "string" ? d.detail : msg; } catch (e) {}
@@ -1351,9 +1269,9 @@ async function apiCancelOrder(id) {
   return res.json();
 }
 
-// POST /api/v1/orders/checkout  OrderCreate — items and money come from the server-side cart
+// POST /orders/checkout  OrderCreate — items and money come from the server-side cart
 async function apiCheckout(payload) {
-  const res = await fetch(`${API_BASE}/api/v1/orders/checkout`, {
+  const res = await fetch(`${API_BASE}/orders/checkout`, {
     method: "POST",
     headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
     body: JSON.stringify(payload)
@@ -1407,7 +1325,7 @@ const mapOrder = (o) => ({
   badge: ORDER_STATUS_BADGE[o.status] || { bg: "#f1efe8", fg: "#6f7a72" },
   total: o.total, paymentPaid: o.payment_status === "paid", paid: o.payment_status === "paid",
   paymentStatus: o.payment_status,
-  items: [], // lazily hydrated via GET /api/v1/orders/code/{no}
+  items: [], // lazily hydrated via GET /orders/code/{no}
   loaded: false,
   rider: "پیک", eta: ORDER_STATUS_LABEL[o.status] || "",
   pickup: false,
@@ -1479,10 +1397,7 @@ class Component extends DCLogic {
   state = {
     // cart mirrors the server cart: product_variant_id → { itemId: cart_item_id, qty }
     screen: "home", cat: "all", q: "", pid: null, imageIdx: 0, sizeIdx: 0, qty: 1, cart: {}, cartOpen: false, toast: "", faq: null,
-    user: null, me: null, acctOpen: false,
-    profileName: "", smsOptIn: false, telegramOptIn: false,
-    profileBusy: false, profileMsg: "", profileErr: "",
-    pwCurrent: "", pwNew: "", pwRepeat: "", pwBusy: false, pwMsg: "", pwErr: "",
+    user: null, acctOpen: false,
     authTab: "pw", signupMode: false, forgotOpen: false, forgotSent: false, authBusy: false,
     loginUser: "", loginPass: "", loginPass2: "", signupName: "", signupPhone: "",
     forgotUser: "",
@@ -1526,12 +1441,8 @@ class Component extends DCLogic {
         return;
       }
       this.setState({
-        me,
         user: { name: me.name || "Member", username: me.phone || "", phone: me.phone || "", role: me.role || "customer" },
-        form: Object.assign({}, this.state.form, { name: me.name || "", phone: me.phone || "" }),
-        profileName: me.name || "",
-        smsOptIn: !!me.sms_opt_in,
-        telegramOptIn: !!me.telegram_opt_in
+        form: Object.assign({}, this.state.form, { name: me.name || "", phone: me.phone || "" })
       });
       this.loadAddresses();
       this.loadOrders();
@@ -1547,8 +1458,8 @@ class Component extends DCLogic {
     this._dataP = (async () => {
       try {
         const [catRes, prodRes] = await Promise.all([
-          fetch(`${API_BASE}/api/v1/categories`),
-          fetch(`${API_BASE}/api/v1/products`)
+          fetch(`${API_BASE}/api/categories`),
+          fetch(`${API_BASE}/api/products`)
         ]);
         if (!catRes.ok) throw new Error("بارگذاری دسته‌ها ممکن نشد");
         if (!prodRes.ok) throw new Error("بارگذاری محصولات ممکن نشد");
@@ -1580,7 +1491,7 @@ class Component extends DCLogic {
     if (this.state.productLoading) return;
     this.setState({ productLoading: true });
     try {
-      const res = await fetch(`${API_BASE}/api/v1/products?offset=${offset}&limit=${this.state.productLimit}`);
+      const res = await fetch(`${API_BASE}/api/products?offset=${offset}&limit=${this.state.productLimit}`);
       if (!res.ok) throw new Error("بارگذاری محصولات ممکن نشد");
       const data = productPageData(await res.json());
       const products = data.products.map(mapProduct);
@@ -1612,7 +1523,7 @@ class Component extends DCLogic {
 
   key = (id, i) => id + ":" + i;
 
-  // --- Cart ↔ backend (/api/v1/cart) -----------------------------------------
+  // --- Cart ↔ backend (/api/cart) -----------------------------------------
   // The server cart is the source of truth. State keys are product_variant_id
   // and each entry carries the server's cart_item_id used by PATCH / DELETE.
   setCartFromServer(data) {
@@ -1643,7 +1554,7 @@ class Component extends DCLogic {
     } catch (e) { /* the SLOTS fallback stays in place */ }
   }
 
-  // --- Addresses ↔ backend (/api/v1/addresses, auth) --------------------------
+  // --- Addresses ↔ backend (/api/addresses, auth) --------------------------
   async loadAddresses() {
     if (!localStorage.getItem(AUTH_TOKEN_KEY)) return;
     try {
@@ -1652,49 +1563,7 @@ class Component extends DCLogic {
     } catch (e) { /* keep whatever we already have */ }
   }
 
-  // --- Profile ↔ backend (/api/v1/auth/me, /api/v1/auth/change-password) ---------
-  async saveProfile() {
-    const name = (this.state.profileName || "").trim();
-    if (!name) { this.setState({ profileErr: "نام را وارد کنید.", profileMsg: "" }); return; }
-    if (name.length > 50) { this.setState({ profileErr: "نام نباید بیشتر از ۵۰ کاراکتر باشد.", profileMsg: "" }); return; }
-    this.setState({ profileBusy: true, profileErr: "", profileMsg: "" });
-    try {
-      const me = await apiUpdateProfile({
-        name,
-        sms_opt_in: !!this.state.smsOptIn,
-        telegram_opt_in: !!this.state.telegramOptIn
-      });
-      this.setState((s) => ({
-        me,
-        profileBusy: false,
-        profileMsg: "پروفایل ذخیره شد.",
-        // keep the header/account chrome in sync
-        user: Object.assign({}, s.user, { name: me.name }),
-        form: Object.assign({}, s.form, { name: me.name })
-      }));
-      this.flash("پروفایل ذخیره شد");
-    } catch (e) {
-      this.setState({ profileBusy: false, profileErr: e.message || "ذخیره پروفایل ممکن نشد." });
-    }
-  }
-
-  async changePassword() {
-    const { pwCurrent, pwNew, pwRepeat } = this.state;
-    if (!pwCurrent) { this.setState({ pwErr: "رمز عبور فعلی را وارد کنید.", pwMsg: "" }); return; }
-    if (pwCurrent === pwNew) { this.setState({ pwErr: "رمز عبور جدید باید متفاوت باشد.", pwMsg: "" }); return; }
-    const problem = passwordProblem(pwNew, pwRepeat);
-    if (problem) { this.setState({ pwErr: problem, pwMsg: "" }); return; }
-    this.setState({ pwBusy: true, pwErr: "", pwMsg: "" });
-    try {
-      await apiChangePassword({ currentPassword: pwCurrent, newPassword: pwNew, passwordRepeat: pwRepeat });
-      this.setState({ pwBusy: false, pwMsg: "رمز عبور تغییر کرد.", pwCurrent: "", pwNew: "", pwRepeat: "" });
-      this.flash("رمز عبور تغییر کرد");
-    } catch (e) {
-      this.setState({ pwBusy: false, pwErr: e.message || "تغییر رمز عبور ممکن نشد." });
-    }
-  }
-
-  // --- Orders ↔ backend (/api/v1/orders, auth) ------------------------------------
+  // --- Orders ↔ backend (/orders, auth) ------------------------------------
   async loadOrders() {
     if (!localStorage.getItem(AUTH_TOKEN_KEY)) return;
     try {
@@ -1774,7 +1643,7 @@ class Component extends DCLogic {
   };
 
   // Builds the success-screen receipt from the real OrderRead returned by
-  // POST /api/v1/orders/checkout — money and lines come from the server, not the UI.
+  // POST /orders/checkout — money and lines come from the server, not the UI.
   buildReceipt(order, f) {
     const paid = order.payment_method === "online";
     const pickup = order.fulfillment_method === "pickup";
@@ -1910,7 +1779,7 @@ class Component extends DCLogic {
       offers: PRODUCTS.filter((x) => x.sizes && x.sizes[0] && x.sizes[0].old > 0).map(card).filter(Boolean),
 
       catTiles: CATS.map((c, i) => ({
-        name: c.name, tint: c.tint, slotId: "cat-" + c.id, img: c.img || photo(c.kw, 200 + i, 300),
+        name: c.name, tint: c.tint, slotId: "cat-" + c.id, img: photo(c.kw, 200 + i, 300),
         ring: st.cat === c.id ? INK : "transparent",
         onClick: () => { this.setState({ cat: c.id }); this.top(); }
       })),
@@ -2085,7 +1954,7 @@ class Component extends DCLogic {
         const u = st.loginUser.trim();
         const p = st.loginPass;
         if (st.signupMode) {
-          // --- POST /api/v1/auth/register validation (mirrors NewUserCreate) ---
+          // --- POST /api/auth/register validation (mirrors NewUserCreate) ---
           const name = st.signupName.trim();
           const email = u;
           const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -2131,10 +2000,6 @@ class Component extends DCLogic {
           }
           this.setState({
             user: { name, username: u, phone: me.phone || "", role: me.role || "customer" },
-            me,
-            profileName: me.name || name,
-            smsOptIn: !!me.sms_opt_in,
-            telegramOptIn: !!me.telegram_opt_in,
             acctOpen: false, loginPass: "", authBusy: false, loginErr: "",
             form: Object.assign({}, st.form, { name, phone: me.phone || st.form.phone })
           });
@@ -2164,13 +2029,13 @@ class Component extends DCLogic {
           this.setState({ authBusy: false, loginErr: e.message || "ارسال لینک بازیابی ممکن نشد." });
         }
       },
-      doLogout: () => { localStorage.removeItem(AUTH_TOKEN_KEY); this.setState({ user: null, me: null, acctOpen: false, screen: "home", orders: [], addresses: [], addrId: null, profileMsg: "", profileErr: "", pwMsg: "", pwErr: "", pwCurrent: "", pwNew: "", pwRepeat: "" }); this.syncCart(); this.flash("از حساب خارج شدید"); },
+      doLogout: () => { localStorage.removeItem(AUTH_TOKEN_KEY); this.setState({ user: null, acctOpen: false, screen: "home", orders: [], addresses: [], addrId: null }); this.syncCart(); this.flash("از حساب خارج شدید"); },
       myOrderCount: st.orders.length,
       myActiveCount: st.orders.filter((o) => o.status < 4).length,
       acctLinks: [
         { id: "orders", label: "سفارش‌های من", badge: st.orders.length },
-        { id: "addresses", label: "آدرس‌های من", badge: st.addresses.length },
-        { id: "profile", label: "پروفایل من", badge: 0 }
+        { id: "reviews", label: "نظرهای من", badge: MY_REVIEWS.length },
+        { id: "addresses", label: "آدرس‌های من", badge: st.addresses.length }
       ].map((l) => ({
         label: l.label, badge: l.badge,
         bg: st.acctTab === l.id && st.screen === "account" ? "#eaf6ee" : "#fbfaf7",
@@ -2179,8 +2044,8 @@ class Component extends DCLogic {
       })),
       acctTabs: [
         { id: "orders", label: "سفارش‌ها", count: st.orders.length },
-        { id: "addresses", label: "آدرس‌ها", count: st.addresses.length },
-        { id: "profile", label: "پروفایل", count: 0 }
+        { id: "reviews", label: "نظرها", count: MY_REVIEWS.length },
+        { id: "addresses", label: "آدرس‌ها", count: st.addresses.length }
       ].map((t) => ({
         label: t.label, count: t.count,
         bg: st.acctTab === t.id ? INK : "#f1efe8",
@@ -2188,47 +2053,8 @@ class Component extends DCLogic {
         onClick: () => this.setState({ acctTab: t.id })
       })),
       tabOrders: st.acctTab === "orders",
+      tabReviews: st.acctTab === "reviews",
       tabAddresses: st.acctTab === "addresses",
-      tabProfile: st.acctTab === "profile",
-
-      // ---- profile tab ----
-      profileName: st.profileName,
-      onProfileName: (e) => this.setState({ profileName: e.target.value }),
-      smsOptIn: st.smsOptIn,
-      telegramOptIn: st.telegramOptIn,
-      onToggleSmsOptIn: () => this.setState((s) => ({ smsOptIn: !s.smsOptIn })),
-      onToggleTelegramOptIn: () => this.setState((s) => ({ telegramOptIn: !s.telegramOptIn })),
-      smsOptBg: st.smsOptIn ? "#eaf6ee" : "#f1efe8",
-      smsOptFg: st.smsOptIn ? "#0b5c38" : "#7d857f",
-      smsOptLabel: st.smsOptIn ? "فعال" : "غیرفعال",
-      telegramOptBg: st.telegramOptIn ? "#eaf6ee" : "#f1efe8",
-      telegramOptFg: st.telegramOptIn ? "#0b5c38" : "#7d857f",
-      telegramOptLabel: st.telegramOptIn ? "فعال" : "غیرفعال",
-      profileEmail: st.me ? st.me.email : "—",
-      profileBusy: st.profileBusy,
-      profileBusyOpacity: st.profileBusy ? 0.6 : 1,
-      profileSaveLabel: st.profileBusy ? "در حال ذخیره…" : "ذخیره تغییرات",
-      profileMsg: st.profileMsg,
-      profileErr: st.profileErr,
-      hasProfileMsg: !!st.profileMsg,
-      hasProfileErr: !!st.profileErr,
-      saveProfile: () => this.saveProfile(),
-
-      // ---- change password (profile tab) ----
-      pwCurrent: st.pwCurrent,
-      pwNew: st.pwNew,
-      pwRepeat: st.pwRepeat,
-      onPwCurrent: (e) => this.setState({ pwCurrent: e.target.value }),
-      onPwNew: (e) => this.setState({ pwNew: e.target.value }),
-      onPwRepeat: (e) => this.setState({ pwRepeat: e.target.value }),
-      pwBusy: st.pwBusy,
-      pwBusyOpacity: st.pwBusy ? 0.6 : 1,
-      pwChangeLabel: st.pwBusy ? "چند لحظه…" : "تغییر رمز عبور",
-      pwMsg: st.pwMsg,
-      pwErr: st.pwErr,
-      hasPwMsg: !!st.pwMsg,
-      hasPwErr: !!st.pwErr,
-      changePassword: () => this.changePassword(),
 
       myOrders: st.orders.map((o) => {
         const items = o.items.map((it) => {
@@ -2266,6 +2092,7 @@ class Component extends DCLogic {
             ? (o.paid === false ? "تحویل از پیشخوان · پرداخت هنگام دریافت" : "منتظر شما در پیشخوان، خیابان ولی‌عصر")
             : o.rider + " در راه است" + (o.paid === false ? " · پول نقد آماده داشته باشید" : " · پرداخت شده"),
           eta: o.eta,
+          canReview: o.status === 4,
           canCancel: o.canCancel,
           onCancel: () => this.cancelOrder(o.id),
           onReorder: () => {
@@ -2277,9 +2104,20 @@ class Component extends DCLogic {
             this.setState({ cartOpen: true });
             this.flash("به سبد خرید اضافه شد");
           },
+          onReview: () => { this.setState({ acctTab: "reviews" }); this.flash("محصولی برای ثبت نظر انتخاب کنید"); },
           onHelp: () => { this.setState({ screen: "help" }); this.top(); }
         };
       }),
+
+      myReviews: MY_REVIEWS.map((r) => {
+        const prod = PRODUCTS.find((x) => x.id === r.pid);
+        if (!prod) return null;
+        return {
+          product: prod.name, img: photo(prod.kw, prod.id), tint: catOf(prod.cat).tint,
+          stars: "★★★★★".slice(0, r.stars) + "☆☆☆☆☆".slice(0, 5 - r.stars),
+          date: r.date, text: r.text, reply: r.reply, hasReply: !!r.reply
+        };
+      }).filter(Boolean),
 
       myAddresses: st.addresses.map((a) => ({
         label: a.label, line: a.line, meta: a.meta, isDefault: a.def, canDefault: !a.def,

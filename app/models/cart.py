@@ -12,7 +12,7 @@ class Cart(Base):
     __tablename__="carts"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
-    guest_token: Mapped[str] = mapped_column(String(100),nullable=True, unique=True, index=True)
+    guest_token: Mapped[str] = mapped_column(String(100),nullable=False, unique=True, index=True)
     updated_at: Mapped[datetime] = mapped_column(
             DateTime(timezone=True), 
             default=lambda: datetime.now(UTC), 
