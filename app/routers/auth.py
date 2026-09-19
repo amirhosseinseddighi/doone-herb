@@ -16,7 +16,7 @@ from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, For
 from app.utils.email_utils import send_password_reset_email
 
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["addresses"])
 
 
 

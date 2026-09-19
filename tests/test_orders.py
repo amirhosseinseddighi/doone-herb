@@ -91,7 +91,7 @@ async def create_admin_product(
     admin_token = await login_user(client, email="admin@example.com")
 
     category_response = await client.post(
-        "/api/categories",
+        "/api/v1/categories",
         headers=auth_header(admin_token),
         json={
             "name": f"Admin Herbs {suffix}",
@@ -104,7 +104,7 @@ async def create_admin_product(
     assert category_response.status_code == status.HTTP_201_CREATED
 
     product_response = await client.post(
-        "/api/products",
+        "/api/v1/products",
         headers=auth_header(admin_token),
         json={
             "name": f"Admin Mint {suffix}",
@@ -142,7 +142,7 @@ async def create_user_address_and_cart(
     headers = auth_header(user_token)
 
     address_response = await client.post(
-        "/api/addresses",
+        "/api/v1/addresses",
         headers=headers,
         json={
             "label": "Home",
@@ -156,7 +156,7 @@ async def create_user_address_and_cart(
     assert address_response.status_code == status.HTTP_201_CREATED
 
     cart_response = await client.post(
-        "/api/cart",
+        "/api/v1/cart",
         headers=headers,
         json={"product_variant_id": variant_id, "qty": qty},
     )
@@ -220,7 +220,7 @@ async def test_authenticated_user_can_checkout_read_and_cancel_order(
     slot = await create_test_delivery_slot(db_session)
 
     address_response = await client.post(
-        "/api/addresses",
+        "/api/v1/addresses",
         headers=headers,
         json={
             "label": "Home",
@@ -235,7 +235,7 @@ async def test_authenticated_user_can_checkout_read_and_cancel_order(
     address_id = address_response.json()["id"]
 
     cart_response = await client.post(
-        "/api/cart",
+        "/api/v1/cart",
         headers=headers,
         json={"product_variant_id": variant.id, "qty": 2},
     )
@@ -293,7 +293,7 @@ async def test_cart_item_being_deleted_after_admin_delete_the_product(
     slot = await create_test_delivery_slot(db_session)
 
     delete_response = await client.delete(
-        f"/api/products/{product['id']}",
+        f"/api/v1/products/{product['id']}",
         headers=auth_header(admin_token),
     )
     assert delete_response.status_code == status.HTTP_204_NO_CONTENT
@@ -326,7 +326,7 @@ async def test_checkout_rejects_cart_item_that_runs_out_of_stock(
     slot = await create_test_delivery_slot(db_session)
 
     stock_response = await client.patch(
-        f"/api/products/{product['id']}/variants/{variant['id']}",
+        f"/api/v1/products/{product['id']}/variants/{variant['id']}",
         headers=auth_header(admin_token),
         json={"stock_qty": 0},
     )
@@ -353,7 +353,7 @@ async def test_deleting_variant_after_checkout_does_not_affect_existing_order(
     )
 
     variant_response = await client.post(
-        f"/api/products/{product['id']}/variants",
+        f"/api/v1/products/{product['id']}/variants",
         headers=auth_header(admin_token),
         json={
             "label": "50g",
@@ -380,7 +380,7 @@ async def test_deleting_variant_after_checkout_does_not_affect_existing_order(
     order = checkout_response.json()
 
     delete_variant_response = await client.delete(
-        f"/api/products/{product['id']}/variants/{variant_id}",
+        f"/api/v1/products/{product['id']}/variants/{variant_id}",
         headers=auth_header(admin_token),
     )
     assert delete_variant_response.status_code == status.HTTP_204_NO_CONTENT
@@ -423,7 +423,7 @@ async def test_deleting_product_after_checkout_does_not_affect_existing_order(
     order = checkout_response.json()
 
     delete_response = await client.delete(
-        f"/api/products/{product['id']}",
+        f"/api/v1/products/{product['id']}",
         headers=auth_header(admin_token),
     )
     assert delete_response.status_code == status.HTTP_204_NO_CONTENT

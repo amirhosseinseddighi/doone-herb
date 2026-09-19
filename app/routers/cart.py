@@ -12,7 +12,7 @@ from app.schemas.cart import AddCartItemRequest, CartItemResponse, CartResponse,
 from app.core.config import settings
 
 
-router = APIRouter()
+router = APIRouter(prefix="/cart", tags=["cart"])
 
 
 # ========== HELPERS =============

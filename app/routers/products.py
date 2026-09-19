@@ -28,7 +28,7 @@ from app.utils.product_utils import generate_sku
 from app.core.config import settings
 
 
-router = APIRouter()
+router = APIRouter(prefix="/products", tags=["products"])
 
 
 # ============= PRODUCT IMAGE UPLOAD ===================

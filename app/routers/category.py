@@ -11,7 +11,7 @@ from app.schemas.categories import CategoryDetails, CategoryResponse, NewCategor
 from sqlalchemy.orm import selectinload
 
 from app.schemas.products import BaseProductResponse
-router = APIRouter()
+router = APIRouter(prefix="/categories", tags=["categories"])
 
 
 

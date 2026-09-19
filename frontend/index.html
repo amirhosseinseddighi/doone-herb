@@ -1034,7 +1034,7 @@ const MY_REVIEWS = [];
 
 async function apiLogin(username, password) {
   const body = new URLSearchParams({ username, password, grant_type: "password" });
-  const res = await fetch(`${API_BASE}/api/auth/login`, {
+  const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
     method: "POST",
     credentials: FETCH_CREDENTIALS,
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -1057,7 +1057,7 @@ async function apiLogin(username, password) {
 }
 
 async function apiMe(token) {
-  const res = await fetch(`${API_BASE}/api/auth/me`, {
+  const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
     credentials: FETCH_CREDENTIALS,
     headers: { Authorization: "Bearer " + token }
   });
@@ -1065,9 +1065,9 @@ async function apiMe(token) {
   return res.json();
 }
 
-// POST /api/auth/register — NewUserCreate
+// POST /api/v1/auth/register — NewUserCreate
 async function apiSignup({ email, phone, name, password, passwordRepeat }) {
-  const res = await fetch(`${API_BASE}/api/auth/register`, {
+  const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -1093,9 +1093,9 @@ async function apiSignup({ email, phone, name, password, passwordRepeat }) {
   return { ok: true };
 }
 
-// POST /api/auth/forget-password — {email}
+// POST /api/v1/auth/forget-password — {email}
 async function apiRequestReset(email) {
-  const res = await fetch(`${API_BASE}/api/auth/forget-password`, {
+  const res = await fetch(`${API_BASE}/api/v1/auth/forget-password`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email })
@@ -1111,7 +1111,7 @@ async function apiRequestReset(email) {
   return res.json();
 }
 
-// POST /api/auth/reset-password is handled by the dedicated reset-password page.
+// POST /api/v1/auth/reset-password is handled by the dedicated reset-password page.
 
 
 
@@ -1152,18 +1152,18 @@ function authHeaders(extra) {
 // Cart requests always carry credentials: signed-in carts are resolved from the
 // Bearer token, guest carts from the backend's HttpOnly `guest_cart_token` cookie.
 
-// GET /api/cart → CartResponse {id, user_id, guest_token, items, total_items, total_price}
+// GET /api/v1/cart → CartResponse {id, user_id, guest_token, items, total_items, total_price}
 // items: CartItemResponse {id (cart_item_id), product_variant_id, qty, product_name?,
 //        variant_label?, price?, stock_qty?, subtotal?}
 async function apiGetCart() {
-  const res = await fetch(`${API_BASE}/api/cart`, { credentials: FETCH_CREDENTIALS, headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/v1/cart`, { credentials: FETCH_CREDENTIALS, headers: authHeaders() });
   if (!res.ok) throw new Error("بارگذاری سبد خرید ممکن نشد.");
   return res.json();
 }
 
-// POST /api/cart  {product_variant_id, qty} → {message, cart_id}
+// POST /api/v1/cart  {product_variant_id, qty} → {message, cart_id}
 async function apiAddCartItem(productVariantId, qty) {
-  const res = await fetch(`${API_BASE}/api/cart`, {
+  const res = await fetch(`${API_BASE}/api/v1/cart`, {
     method: "POST",
     credentials: FETCH_CREDENTIALS,
     headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
@@ -1177,9 +1177,9 @@ async function apiAddCartItem(productVariantId, qty) {
   return res.json();
 }
 
-// PATCH /api/cart/{cart_item_id}  {qty} → CartResponse
+// PATCH /api/v1/cart/{cart_item_id}  {qty} → CartResponse
 async function apiUpdateCartItem(cartItemId, qty) {
-  const res = await fetch(`${API_BASE}/api/cart/${cartItemId}`, {
+  const res = await fetch(`${API_BASE}/api/v1/cart/${cartItemId}`, {
     method: "PATCH",
     credentials: FETCH_CREDENTIALS,
     headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
@@ -1189,9 +1189,9 @@ async function apiUpdateCartItem(cartItemId, qty) {
   return res.json();
 }
 
-// DELETE /api/cart/{cart_item_id} → {message, cart_id}
+// DELETE /api/v1/cart/{cart_item_id} → {message, cart_id}
 async function apiDeleteCartItem(cartItemId) {
-  const res = await fetch(`${API_BASE}/api/cart/${cartItemId}`, { method: "DELETE", credentials: FETCH_CREDENTIALS, headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/v1/cart/${cartItemId}`, { method: "DELETE", credentials: FETCH_CREDENTIALS, headers: authHeaders() });
   if (!res.ok) throw new Error("حذف کالا ممکن نشد.");
   return res.json();
 }
@@ -1203,16 +1203,16 @@ async function apiGetSlots() {
   return res.json();
 }
 
-// GET /api/addresses (auth)
+// GET /api/v1/addresses (auth)
 async function apiListAddresses() {
-  const res = await fetch(`${API_BASE}/api/addresses`, { headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/v1/addresses`, { headers: authHeaders() });
   if (!res.ok) throw new Error("بارگذاری آدرس‌ها ممکن نشد.");
   return res.json();
 }
 
-// POST /api/addresses
+// POST /api/v1/addresses
 async function apiCreateAddress(payload) {
-  const res = await fetch(`${API_BASE}/api/addresses`, {
+  const res = await fetch(`${API_BASE}/api/v1/addresses`, {
     method: "POST",
     headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
     body: JSON.stringify(payload)
@@ -1230,16 +1230,16 @@ async function apiCreateAddress(payload) {
   return res.json();
 }
 
-// POST /api/addresses/{id}/set-default
+// POST /api/v1/addresses/{id}/set-default
 async function apiSetDefaultAddress(id) {
-  const res = await fetch(`${API_BASE}/api/addresses/${id}/set-default`, { method: "POST", headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/v1/addresses/${id}/set-default`, { method: "POST", headers: authHeaders() });
   if (!res.ok) throw new Error("تنظیم آدرس پیش‌فرض ممکن نشد.");
   return res.json();
 }
 
-// DELETE /api/addresses/{id}
+// DELETE /api/v1/addresses/{id}
 async function apiDeleteAddress(id) {
-  const res = await fetch(`${API_BASE}/api/addresses/${id}`, { method: "DELETE", headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/v1/addresses/${id}`, { method: "DELETE", headers: authHeaders() });
   if (!res.ok) throw new Error("حذف آدرس ممکن نشد.");
   return res.json();
 }
@@ -1458,8 +1458,8 @@ class Component extends DCLogic {
     this._dataP = (async () => {
       try {
         const [catRes, prodRes] = await Promise.all([
-          fetch(`${API_BASE}/api/categories`),
-          fetch(`${API_BASE}/api/products`)
+          fetch(`${API_BASE}/api/v1/categories`),
+          fetch(`${API_BASE}/api/v1/products`)
         ]);
         if (!catRes.ok) throw new Error("بارگذاری دسته‌ها ممکن نشد");
         if (!prodRes.ok) throw new Error("بارگذاری محصولات ممکن نشد");
@@ -1491,7 +1491,7 @@ class Component extends DCLogic {
     if (this.state.productLoading) return;
     this.setState({ productLoading: true });
     try {
-      const res = await fetch(`${API_BASE}/api/products?offset=${offset}&limit=${this.state.productLimit}`);
+      const res = await fetch(`${API_BASE}/api/v1/products?offset=${offset}&limit=${this.state.productLimit}`);
       if (!res.ok) throw new Error("بارگذاری محصولات ممکن نشد");
       const data = productPageData(await res.json());
       const products = data.products.map(mapProduct);
@@ -1523,7 +1523,7 @@ class Component extends DCLogic {
 
   key = (id, i) => id + ":" + i;
 
-  // --- Cart ↔ backend (/api/cart) -----------------------------------------
+  // --- Cart ↔ backend (/api/v1/cart) -----------------------------------------
   // The server cart is the source of truth. State keys are product_variant_id
   // and each entry carries the server's cart_item_id used by PATCH / DELETE.
   setCartFromServer(data) {
@@ -1554,7 +1554,7 @@ class Component extends DCLogic {
     } catch (e) { /* the SLOTS fallback stays in place */ }
   }
 
-  // --- Addresses ↔ backend (/api/addresses, auth) --------------------------
+  // --- Addresses ↔ backend (/api/v1/addresses, auth) --------------------------
   async loadAddresses() {
     if (!localStorage.getItem(AUTH_TOKEN_KEY)) return;
     try {
@@ -1954,7 +1954,7 @@ class Component extends DCLogic {
         const u = st.loginUser.trim();
         const p = st.loginPass;
         if (st.signupMode) {
-          // --- POST /api/auth/register validation (mirrors NewUserCreate) ---
+          // --- POST /api/v1/auth/register validation (mirrors NewUserCreate) ---
           const name = st.signupName.trim();
           const email = u;
           const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

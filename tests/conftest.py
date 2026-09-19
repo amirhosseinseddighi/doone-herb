@@ -147,7 +147,7 @@ async def create_test_user(
     }
 
     response = await client.post(
-        "/api/auth/register",
+        "/api/v1/auth/register",
         json=new_user_json_data
     )
 
@@ -168,7 +168,7 @@ async def login_user(
     }
 
     response = await client.post(
-        "/api/auth/login",
+        "/api/v1/auth/login",
         data = login_data
     )
 

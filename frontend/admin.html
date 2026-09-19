@@ -1172,7 +1172,7 @@ const imageRequest = async (method, path, file, sortOrder) => {
 };
 
 async function apiMe(token) {
-  const res = await fetch(`${API_BASE}/api/auth/me`, {
+  const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
     headers: { Authorization: "Bearer " + token }
   });
   if (!res.ok) throw new Error("Session expired");
@@ -1599,13 +1599,13 @@ class Component extends DCLogic {
   async loadCatalogue() {
     try {
       const [catData, prodData] = await Promise.all([
-        apiGet("/api/categories"),
-        apiGet("/api/products")
+        apiGet("/api/v1/categories"),
+        apiGet("/api/v1/products")
       ]);
       let cats = (Array.isArray(catData) ? catData : catData.items || catData.results || []).map(mapCategory);
       const categoryDetails = await Promise.all(cats.map(async (category) => {
         try {
-          return await apiGet("/api/categories/" + category._id);
+          return await apiGet("/api/v1/categories/" + category._id);
         } catch (e) {
           console.error("Category detail failed for " + category._id, e);
           return null;
@@ -1641,7 +1641,7 @@ class Component extends DCLogic {
     if (this.state.productLoading) return;
     this.setState({ productLoading: true });
     try {
-      const data = productPageData(await apiGet("/api/products?offset=" + offset + "&limit=" + this.state.productLimit));
+      const data = productPageData(await apiGet("/api/v1/products?offset=" + offset + "&limit=" + this.state.productLimit));
       this.setState({
         products: data.products.map(mapProduct),
         productOffset: data.offset,
@@ -1661,13 +1661,13 @@ class Component extends DCLogic {
     try {
       const trimmedQuery = query.trim();
       const searchPath = trimmedQuery
-        ? "/api/categories?search=" + encodeURIComponent(trimmedQuery)
-        : "/api/categories";
+        ? "/api/v1/categories?search=" + encodeURIComponent(trimmedQuery)
+        : "/api/v1/categories";
       const data = await apiGet(searchPath);
       const rows = (Array.isArray(data) ? data : data.items || data.results || []).map(mapCategory);
       const details = await Promise.all(rows.map(async (category) => {
         try {
-          return await apiGet("/api/categories/" + category._id);
+          return await apiGet("/api/v1/categories/" + category._id);
         } catch (e) {
           console.error("Category detail failed for " + category._id, e);
           return null;
@@ -1708,7 +1708,7 @@ class Component extends DCLogic {
 
   async loadUsers() {
     try {
-      const data = await apiGet("/api/auth/admin/users");
+      const data = await apiGet("/api/v1/auth/admin/users");
       USERS = (Array.isArray(data) ? data : data.items || data.results || []).map((user) => U(
         user.id,
         user.name,
@@ -1779,7 +1779,7 @@ class Component extends DCLogic {
   setDraft = (patch) => this.setState((s) => ({ draft: Object.assign({}, s.draft, patch) }));
 
   refreshProductImages = async (productId) => {
-    const images = (await apiGet(`/api/products/${productId}/images`)).slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map((image) => ({ id: image.id, sort_order: image.sort_order || 0, url: productImageUrl(image) }));
+    const images = (await apiGet(`/api/v1/products/${productId}/images`)).slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map((image) => ({ id: image.id, sort_order: image.sort_order || 0, url: productImageUrl(image) }));
     this.setState((s) => ({
       products: s.products.map((p) => p._id === productId ? Object.assign({}, p, { images }) : p),
       draft: s.draft && s.draft._id === productId ? Object.assign({}, s.draft, { images }) : s.draft
@@ -1790,7 +1790,7 @@ class Component extends DCLogic {
     if (!productId) { this.flash("ابتدا محصول را ذخیره کنید"); return; }
     if (!file) { this.flash("تصویری انتخاب نشده است"); return; }
     try {
-      await imageRequest("POST", `/api/products/${productId}/images`, file);
+      await imageRequest("POST", `/api/v1/products/${productId}/images`, file);
       await this.refreshProductImages(productId);
       this.flash("تصویر اضافه شد");
     } catch (e) { this.flash(e.message || "افزودن تصویر ممکن نشد"); }
@@ -1799,13 +1799,13 @@ class Component extends DCLogic {
   updateProductImage = async (productId, imageId, file, sortOrder) => {
     try {
       if (file) {
-        await imageRequest("DELETE", `/api/products/${productId}/images/${imageId}`);
-        const added = await imageRequest("POST", `/api/products/${productId}/images`, file);
+        await imageRequest("DELETE", `/api/v1/products/${productId}/images/${imageId}`);
+        const added = await imageRequest("POST", `/api/v1/products/${productId}/images`, file);
         if (added && added.id != null && sortOrder != null) {
-          await imageRequest("PATCH", `/api/products/${productId}/images/${added.id}`, null, sortOrder);
+          await imageRequest("PATCH", `/api/v1/products/${productId}/images/${added.id}`, null, sortOrder);
         }
       } else {
-        await imageRequest("PATCH", `/api/products/${productId}/images/${imageId}`, null, sortOrder);
+        await imageRequest("PATCH", `/api/v1/products/${productId}/images/${imageId}`, null, sortOrder);
       }
       await this.refreshProductImages(productId);
       this.flash(file ? "تصویر به‌روزرسانی شد" : "ترتیب تصویر به‌روزرسانی شد");
@@ -1815,7 +1815,7 @@ class Component extends DCLogic {
   deleteProductImage = async (productId, imageId) => {
     if (!window.confirm("این تصویر حذف شود؟")) return;
     try {
-      await imageRequest("DELETE", `/api/products/${productId}/images/${imageId}`);
+      await imageRequest("DELETE", `/api/v1/products/${productId}/images/${imageId}`);
       await this.refreshProductImages(productId);
       this.flash("تصویر حذف شد");
     } catch (e) { this.flash(e.message || "حذف تصویر ممکن نشد"); }
@@ -1825,8 +1825,8 @@ class Component extends DCLogic {
     const otherIndex = index + direction;
     if (otherIndex < 0 || otherIndex >= images.length) return;
     try {
-      await imageRequest("PATCH", `/api/products/${productId}/images/${images[index].id}`, null, otherIndex);
-      await imageRequest("PATCH", `/api/products/${productId}/images/${images[otherIndex].id}`, null, index);
+      await imageRequest("PATCH", `/api/v1/products/${productId}/images/${images[index].id}`, null, otherIndex);
+      await imageRequest("PATCH", `/api/v1/products/${productId}/images/${images[otherIndex].id}`, null, index);
       await this.refreshProductImages(productId);
       this.flash("ترتیب تصویر تغییر کرد");
     } catch (e) { this.flash(e.message || "ترتیب تصاویر تغییر نکرد"); }
@@ -1843,7 +1843,7 @@ class Component extends DCLogic {
     this.setState({ saving: true });
     try {
       if (wasNew) {
-        // POST /api/products — NewProductRequest
+        // POST /api/v1/products — NewProductRequest
         const pendingImage = d.pendingImage;
         const body = {
           name: d.name.trim(),
@@ -1858,7 +1858,7 @@ class Component extends DCLogic {
             stock_qty: s.out ? 0 : s.qty
           }))
         };
-        const created = await apiSend("POST", "/api/products", body);
+        const created = await apiSend("POST", "/api/v1/products", body);
         const rec = mapProduct(created);
         this.setState((s) => ({
           products: [rec].concat(s.products),
@@ -1873,14 +1873,14 @@ class Component extends DCLogic {
         this.flash("محصول اضافه شد؛ اکنون تصویر اضافه کنید");
         if (pendingImage) await this.addProductImage(rec._id, pendingImage);
       } else {
-        // PATCH /api/products/{id} — UpdateProductRequest
+        // PATCH /api/v1/products/{id} — UpdateProductRequest
         const body = {
           name: d.name.trim(),
           category_id: cat._id,
           description: d.desc || "",
           is_featured: !!d.featured
         };
-        await apiSend("PATCH", "/api/products/" + d._id, body);
+        await apiSend("PATCH", "/api/v1/products/" + d._id, body);
         // Sync variant changes (new / renamed / repriced / restocked).
         const before = (this.state.products.find((x) => x.id === d.id) || { sizes: [] }).sizes;
         const beforeById = new Map(before.map((s) => [s._id, s]));
@@ -1891,7 +1891,7 @@ class Component extends DCLogic {
             keptIds.push(s._id);
             const changed = prev.label !== s.label || prev.price !== s.price || prev.old !== s.old || prev.out !== s.out || prev.qty !== s.qty;
             if (changed) {
-              await apiSend("PATCH", `/api/products/${d._id}/variants/${s._id}`, {
+              await apiSend("PATCH", `/api/v1/products/${d._id}/variants/${s._id}`, {
                 label: s.label,
                 price: s.price,
                 compare_at_price: s.old > 0 ? s.old : null,
@@ -1900,7 +1900,7 @@ class Component extends DCLogic {
             }
           } else {
             // New size row — create it on the backend.
-            const createdV = await apiSend("POST", `/api/products/${d._id}/variants`, {
+            const createdV = await apiSend("POST", `/api/v1/products/${d._id}/variants`, {
               label: s.label,
               price: s.price,
               compare_at_price: s.old > 0 ? s.old : null,
@@ -1912,7 +1912,7 @@ class Component extends DCLogic {
         // Sizes removed in the editor — delete them on the backend.
         for (const prev of before) {
           if (prev._id && keptIds.indexOf(prev._id) < 0) {
-            await apiSend("DELETE", `/api/products/${d._id}/variants/${prev._id}`);
+            await apiSend("DELETE", `/api/v1/products/${d._id}/variants/${prev._id}`);
           }
         }
         this.setState((s) => ({
@@ -1938,7 +1938,7 @@ class Component extends DCLogic {
     this.patch(p.id, (x) => { x.sizes[0].out = nextOut; return x; });
     try {
       const restockQty = s0.qty > 0 ? s0.qty : 10;
-      await apiSend("PATCH", `/api/products/${p._id}/variants/${s0._id}`, {
+      await apiSend("PATCH", `/api/v1/products/${p._id}/variants/${s0._id}`, {
         stock_qty: nextOut ? 0 : restockQty
       });
       this.patch(p.id, (x) => { x.sizes[0].qty = nextOut ? 0 : restockQty; return x; });
@@ -1955,7 +1955,7 @@ class Component extends DCLogic {
     this.patch(p.id, (x) => { x.sizes[0].old = 0; return x; });
     try {
       // compare_at_price: null clears the discount on the backend.
-      await apiSend("PATCH", `/api/products/${p._id}/variants/${s0._id}`, { compare_at_price: null });
+      await apiSend("PATCH", `/api/v1/products/${p._id}/variants/${s0._id}`, { compare_at_price: null });
       this.flash("پیشنهاد محصول " + p.name + " پایان یافت");
     } catch (e) {
       this.patch(p.id, (x) => { x.sizes[0].old = s0.old; return x; });
@@ -1967,7 +1967,7 @@ class Component extends DCLogic {
     const next = !p.featured;
     this.patch(p.id, (x) => { x.featured = next; return x; });
     try {
-      await apiSend("PATCH", "/api/products/" + p._id, { is_featured: next });
+      await apiSend("PATCH", "/api/v1/products/" + p._id, { is_featured: next });
       this.flash(next ? "Featured on the shop" : "Removed from featured");
     } catch (e) {
       this.patch(p.id, (x) => { x.featured = !next; return x; });
@@ -1978,7 +1978,7 @@ class Component extends DCLogic {
   deleteProduct = async (p) => {
     if (!window.confirm("Delete “" + p.name + "” from the shop?")) return;
     try {
-      await apiSend("DELETE", "/api/products/" + p._id);
+      await apiSend("DELETE", "/api/v1/products/" + p._id);
       this.setState((s) => ({ products: s.products.filter((x) => x.id !== p.id) }));
       this.flash("محصول حذف شد");
     } catch (e) {
@@ -1990,8 +1990,8 @@ class Component extends DCLogic {
     const next = !c.is_active;
     this.setState((s) => ({ cats: s.cats.map((x) => (x.id === c.id ? Object.assign({}, x, { is_active: next }) : x)) }));
     try {
-      // PATCH /api/categories/{id} — UpdateCategoryRequest
-      await apiSend("PATCH", "/api/categories/" + c._id, { is_active: next });
+      // PATCH /api/v1/categories/{id} — UpdateCategoryRequest
+      await apiSend("PATCH", "/api/v1/categories/" + c._id, { is_active: next });
       this.flash(c.name + (next ? " is visible on the shop" : " hidden from the shop"));
     } catch (e) {
       this.setState((s) => ({ cats: s.cats.map((x) => (x.id === c.id ? Object.assign({}, x, { is_active: !next }) : x)) }));
@@ -2006,7 +2006,7 @@ class Component extends DCLogic {
     if (!nextName) { this.flash("نام دسته‌بندی نمی‌تواند خالی باشد"); return; }
     if (nextName === c.name) return;
     try {
-      const updated = await apiSend("PATCH", "/api/categories/" + c._id, { name: nextName });
+      const updated = await apiSend("PATCH", "/api/v1/categories/" + c._id, { name: nextName });
       this.setState((s) => ({
         cats: s.cats.map((x) => (x.id === c.id ? Object.assign({}, x, mapCategory(updated)) : x))
       }));
@@ -2021,8 +2021,8 @@ class Component extends DCLogic {
     if (name.length < 1) { this.flash("نام دسته‌بندی را وارد کنید"); return; }
     this.setState({ catBusy: true });
     try {
-      // POST /api/categories — NewCategoryRequest
-      const created = await apiSend("POST", "/api/categories", {
+      // POST /api/v1/categories — NewCategoryRequest
+      const created = await apiSend("POST", "/api/v1/categories", {
         name,
         tint_color: "#f1efe8",
         dot_color: "#7d857f",
@@ -2040,7 +2040,7 @@ class Component extends DCLogic {
   deleteCat = async (c) => {
     if (!window.confirm("Delete “" + c.name + "”? Products in it may need a new category.")) return;
     try {
-      await apiSend("DELETE", "/api/categories/" + c._id);
+      await apiSend("DELETE", "/api/v1/categories/" + c._id);
       this.setState((s) => ({ cats: s.cats.filter((x) => x.id !== c.id) }));
       this.flash("دسته‌بندی حذف شد");
     } catch (e) {
