@@ -98,7 +98,7 @@ class OrderRead(BaseModel):
     id: int
     order_no: str
     user_id: int
-    address_id: int
+    address_id: int | None
     delivery_slot: DeliverySlotRead
 
     status: OrderStatus
