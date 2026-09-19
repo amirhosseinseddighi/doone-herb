@@ -1,17 +1,111 @@
+import os
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from PIL import UnidentifiedImageError
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
+from fastapi.concurrency import run_in_threadpool
 from slugify import slugify
 from sqlalchemy import and_, func, select
 
 from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
-from app.models.category import Category, Product, ProductVariant
-from app.schemas.categories import CategoryDetails, CategoryResponse, NewCategoryRequest, UpdateCategoryRequest
+from app.models.category import Category, CategoryImage, Product, ProductVariant
+from app.schemas.categories import CategoryDetails, CategoryImageUploadResponse, CategoryResponse, NewCategoryRequest, UpdateCategoryRequest
 from sqlalchemy.orm import selectinload
+from app.core.config import settings
 
 from app.schemas.products import BaseProductResponse
+from app.utils.image_utils import process_product_image
 router = APIRouter(prefix="/categories", tags=["categories"])
+
+
+# ============= CATEGORY IMAGE UPLOAD ===================
+@router.post("/{category_id}/images", response_model=CategoryImageUploadResponse)
+async def upload_category_image(
+    category_id: int,
+    file: UploadFile,
+    admin: CurrentManagerOrOwner,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    # check if category exists
+    category = await db.get(Category,category_id)
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="category not found"
+        )
+
+    image = await file.read()
+
+    # check image size
+    max_image_size = settings.MAX_IMAGE_SIZE_MEGA_BYTE * 1024 * 1024
+    if len(image) > max_image_size:
+        raise HTTPException(
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+            detail=f"Image size is larger than limit: {settings.MAX_IMAGE_SIZE_MEGA_BYTE}MB"
+        )
+
+    if not image:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File is empty"
+        )
+
+    # check image format
+    try:
+        new_filename = await run_in_threadpool(process_product_image, image)
+
+    except UnidentifiedImageError as err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image file. Please upload a valid image (JPEG, PNG, GIF, WebP).",
+        ) from err
+
+    new_category_image = CategoryImage(
+        category_id = category_id,
+        url = new_filename
+    )
+
+    db.add(new_category_image)
+    await db.commit()
+    await db.refresh(new_category_image)
+
+    return new_category_image
+
+
+@router.delete("/{category_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_category_image(
+    category_id: int,
+    image_id: int,
+    admin: CurrentManagerOrOwner,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    # Retrieve the image ensuring it belongs to the specified category
+    image_req = await db.execute(
+        select(CategoryImage).where(
+            CategoryImage.id == image_id,
+            CategoryImage.category_id == category_id
+        )
+    )
+    image = image_req.scalar_one_or_none()
+
+    if not image:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="category image not found"
+        )
+
+
+    await db.delete(image)
+    await db.commit()
+    
+    if os.path.exists(image.url):
+        os.remove(image.url)
+
+    
+    return None
+
+ #=================================================================
 
 
 

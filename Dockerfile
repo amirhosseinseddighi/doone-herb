@@ -32,6 +32,7 @@ FROM python:3.13-slim-bookworm
 WORKDIR /app
 
 RUN useradd -m appuser && chown -R appuser:appuser /app
+RUN mkdir -p /app/media && chown -R 1000:1000 /app/media
 USER appuser
 
 COPY --from=builder --chown=appuser:appuser /app /app

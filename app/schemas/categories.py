@@ -41,6 +41,12 @@ class UpdateCategoryRequest(BaseModel):
     sort_order: Optional[int] = Field(default=None)
     is_active: Optional[bool] = Field(default=None)
 
+class CategoryImageUploadResponse(BaseModel):
+    id: int
+    url: str
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 
 
