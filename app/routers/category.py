@@ -9,7 +9,7 @@ from sqlalchemy import and_, func, select
 
 from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
-from app.models.category import Category, CategoryImage, Product, ProductVariant
+from app.models.category import Category, Product, ProductVariant
 from app.schemas.categories import CategoryDetails, CategoryImageUploadResponse, CategoryResponse, NewCategoryRequest, UpdateCategoryRequest
 from sqlalchemy.orm import selectinload
 from app.core.config import settings
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/categories", tags=["categories"])
 
 
 # ============= CATEGORY IMAGE UPLOAD ===================
-@router.post("/{category_id}/images", response_model=CategoryImageUploadResponse)
+@router.post("/{category_id}/image", response_model=CategoryResponse)
 async def upload_category_image(
     category_id: int,
     file: UploadFile,
@@ -28,7 +28,7 @@ async def upload_category_image(
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
     # check if category exists
-    category = await db.get(Category,category_id)
+    category = await db.get(Category, category_id)
     if not category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -48,64 +48,65 @@ async def upload_category_image(
     if not image:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File is empty"
+            detail="File is empty"
         )
 
-    # check image format
+    # check image format and process file
     try:
         new_filename = await run_in_threadpool(process_product_image, image)
-
     except UnidentifiedImageError as err:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid image file. Please upload a valid image (JPEG, PNG, GIF, WebP).",
         ) from err
 
-    new_category_image = CategoryImage(
-        category_id = category_id,
-        url = new_filename
-    )
+    # Remove old physical file if replacing an existing image
+    if category.image_url and os.path.exists(category.image_url):
+        os.remove(category.image_url)
 
-    db.add(new_category_image)
+    # Update category image_url attribute directly
+    category.image_url = new_filename
+
+    db.add(category)
     await db.commit()
-    await db.refresh(new_category_image)
+    await db.refresh(category)
 
-    return new_category_image
+    return category
 
 
-@router.delete("/{category_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{category_id}/image", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_category_image(
     category_id: int,
-    image_id: int,
     admin: CurrentManagerOrOwner,
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
-    # Retrieve the image ensuring it belongs to the specified category
-    image_req = await db.execute(
-        select(CategoryImage).where(
-            CategoryImage.id == image_id,
-            CategoryImage.category_id == category_id
+    category = await db.get(Category, category_id)
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="category not found"
         )
-    )
-    image = image_req.scalar_one_or_none()
 
-    if not image:
+    if not category.image_url:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="category image not found"
         )
 
+    old_image_path = category.image_url
 
-    await db.delete(image)
+    # Clear image path on the category
+    category.image_url = None
+    db.add(category)
     await db.commit()
-    
-    if os.path.exists(image.url):
-        os.remove(image.url)
 
-    
+    # Remove file from disk after successful DB commit
+    if os.path.exists(old_image_path):
+        os.remove(old_image_path)
+
     return None
 
- #=================================================================
+# =================================================================
 
 
 

@@ -26,11 +26,7 @@ class Category(Base):
             index=True
         )
 
-    image: Mapped["CategoryImage"] = relationship(
-            "CategoryImage", 
-            back_populates="category",
-            cascade="all, delete-orphan"
-        )
+    image_url: Mapped[str] = mapped_column(String, nullable=True)
 
     products: Mapped[list["Product"]] = relationship("Product", back_populates="category")
 
@@ -151,16 +147,3 @@ class Review(Base):
     product: Mapped["Product"] = relationship("Product", back_populates="reviews")
     user: Mapped["User"] = relationship("User", back_populates="reviews")
     order: Mapped[Optional["Order"]] = relationship("Order", back_populates="reviews")
-
-
-
-class CategoryImage(Base):
-    __tablename__ = "category_images"
-    
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    category_id: Mapped[int] = mapped_column(Integer, ForeignKey("categories.id"), nullable=False, index=True)
-    url: Mapped[str] = mapped_column(String(500), nullable=False)
-    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-
-
-    category: Mapped["Category"] = relationship("Category", back_populates="image")
