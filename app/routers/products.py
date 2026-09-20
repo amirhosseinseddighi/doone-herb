@@ -22,7 +22,6 @@ from app.core.deps import CurrentManagerOrOwner, get_db
 from app.db.database import AsyncSession
 from app.models.cart import CartItem
 from app.models.category import Category, Offer, Product, ProductImage, ProductVariant
-from app.schemas.categories import CategoryResponse
 from app.schemas.products import ImageUploadResponse, NewProductRequest, NewProductVariantRequest, PaginatedProductResponse, ProductResponse, ProductVariantResponse, UpdateProductImageRequest, UpdateProductRequest, UpdateProductVariantRequest
 from app.utils.image_utils import process_product_image
 from app.utils.product_utils import generate_sku
@@ -32,21 +31,51 @@ from app.core.config import settings
 router = APIRouter(prefix="/products", tags=["products"])
 
 
-# ============= CATEGORY IMAGE UPLOAD ===================
-@router.post("/{category_id}/image", response_model=CategoryResponse)
-async def upload_category_image(
-    category_id: int,
+# ============= PRODUCT IMAGE UPLOAD ===================
+async def _get_active_product(product_id: int, db: AsyncSession) -> Product:
+    """Fetch a product that exists and isn't soft-deleted, or 404."""
+    result = await db.execute(
+        select(Product).where(
+            (Product.id == product_id) & (Product.is_deleted.is_(False))
+        )
+    )
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+    return product
+
+
+@router.get("/{product_id}/images", response_model=list[ImageUploadResponse])
+async def get_product_images(
+    product_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    product = await db.execute(
+        select(Product)
+        .where((Product.id == product_id) & (Product.is_deleted.is_(False)))
+        .options(selectinload(Product.images))
+    )
+    product = product.scalar_one_or_none()
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    return product.images
+
+
+@router.post("/{product_id}/images", response_model=ImageUploadResponse, status_code=status.HTTP_201_CREATED)
+async def upload_product_image(
+    product_id: int,
     file: UploadFile,
     admin: CurrentManagerOrOwner,
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
-    # check if category exists
-    category = await db.get(Category, category_id)
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="category not found"
-        )
+    await _get_active_product(product_id, db)
 
     image = await file.read()
 
@@ -64,7 +93,7 @@ async def upload_category_image(
             detail="File is empty"
         )
 
-    # check image format and process file
+    # check image format
     try:
         new_filename = await run_in_threadpool(process_product_image, image)
     except UnidentifiedImageError as err:
@@ -73,49 +102,100 @@ async def upload_category_image(
             detail="Invalid image file. Please upload a valid image (JPEG, PNG, GIF, WebP).",
         ) from err
 
-    # Remove old physical file if replacing an existing image
-    if category.image_url and os.path.exists(category.image_url):
-        os.remove(category.image_url)
+    # Append at the end of the gallery
+    last_order = await db.scalar(
+        select(func.max(ProductImage.sort_order)).where(
+            ProductImage.product_id == product_id
+        )
+    )
 
-    # Update category image_url attribute directly
-    category.image_url = new_filename
+    new_product_image = ProductImage(
+        product_id=product_id,
+        url=new_filename,
+        sort_order=0 if last_order is None else last_order + 1
+    )
 
-    db.add(category)
+    db.add(new_product_image)
     await db.commit()
-    await db.refresh(category)
+    await db.refresh(new_product_image)
 
-    return category
+    return new_product_image
 
 
-@router.delete("/{category_id}/image", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_category_image(
-    category_id: int,
+@router.patch("/{product_id}/images/{image_id}", response_model=ImageUploadResponse)
+async def update_product_image(
+    product_id: int,
+    image_id: int,
+    data: UpdateProductImageRequest,
     admin: CurrentManagerOrOwner,
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
-    category = await db.get(Category, category_id)
-    if not category:
+    await _get_active_product(product_id, db)
+
+    # Retrieve the image ensuring it belongs to the specified product
+    image_req = await db.execute(
+        select(ProductImage).where(
+            ProductImage.id == image_id,
+            ProductImage.product_id == product_id
+        )
+    )
+    image = image_req.scalar_one_or_none()
+
+    if not image:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="category not found"
+            detail="Product image not found"
         )
 
-    if not category.image_url:
+    # sort_order is NOT NULL on the model, so a missing value is a client error
+    # rather than something to write as NULL.
+    if data.sort_order is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="sort_order is required"
+        )
+
+    image.sort_order = data.sort_order
+
+    await db.commit()
+    await db.refresh(image)
+
+    return image
+
+
+@router.delete("/{product_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product_image(
+    product_id: int,
+    image_id: int,
+    admin: CurrentManagerOrOwner,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    await _get_active_product(product_id, db)
+
+    # Retrieve the image ensuring it belongs to the specified product
+    image_req = await db.execute(
+        select(ProductImage).where(
+            ProductImage.id == image_id,
+            ProductImage.product_id == product_id
+        )
+    )
+    image = image_req.scalar_one_or_none()
+
+    if not image:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="category image not found"
+            detail="Product image not found"
         )
 
-    old_image_path = category.image_url
+    # Capture the path before the row is gone, then clear the row first so a
+    # failed DB write never leaves a file deleted without a matching record.
+    image_path = image.url
 
-    # Clear image path on the category
-    category.image_url = None
-    db.add(category)
+    await db.delete(image)
     await db.commit()
 
-    # Remove file from disk after successful DB commit
-    if os.path.exists(old_image_path):
-        os.remove(old_image_path)
+    if image_path and os.path.exists(image_path):
+        os.remove(image_path)
 
     return None
 

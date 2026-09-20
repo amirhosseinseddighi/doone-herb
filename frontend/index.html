@@ -870,6 +870,44 @@
           <button onClick="{{ addAddress }}" style="height: 50px; border: 1px dashed #cfd4cc; border-radius: 22px; background: none; font-size: 14px; font-weight: 700; cursor: pointer; color: #0f7a4a;">+ افزودن آدرس روی نقشه</button>
         </div>
       </sc-if>
+
+      <sc-if value="{{ tabProfile }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+            <h2 style="font-size: 20px;">اطلاعات حساب</h2>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">نام و نام خانوادگی
+              <input value="{{ profileName }}" onChange="{{ onProfileName }}" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">موبایل · ۰۹۱۲ ۰۰۰ ۰۰۰۰
+              <input value="{{ profilePhone }}" onChange="{{ onProfilePhone }}" inputmode="numeric" autocomplete="tel" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">ایمیل (غیرقابل تغییر)
+              <input value="{{ profileEmail }}" disabled style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #8b918c;" />
+            </label>
+            <sc-if value="{{ profileErr }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 12.5px; color: #b8451f;">{{ profileErrText }}</span>
+            </sc-if>
+            <sc-if value="{{ profileOk }}" hint-placeholder-val="{{ false }}">
+              <span style="padding: 10px 12px; border-radius: 14px; background: #eaf6ee; font-size: 12.5px; color: #0b5c38;">ذخیره شد.</span>
+            </sc-if>
+            <button onClick="{{ saveProfile }}" disabled="{{ profileBusy }}" style="height: 48px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 14.5px; font-weight: 700; cursor: pointer; opacity: {{ profileBusyOpacity }};">{{ profileCta }}</button>
+          </div>
+
+          <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+            <h2 style="font-size: 20px;">تغییر رمز عبور</h2>
+            <input type="password" value="{{ pwCurrent }}" onChange="{{ onPwCurrent }}" placeholder="رمز عبور فعلی" autocomplete="current-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+            <input type="password" value="{{ pwNew }}" onChange="{{ onPwNew }}" placeholder="رمز عبور جدید" autocomplete="new-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+            <input type="password" value="{{ pwRepeat }}" onChange="{{ onPwRepeat }}" placeholder="تکرار رمز عبور جدید" autocomplete="new-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+            <sc-if value="{{ pwErr }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 12.5px; color: #b8451f;">{{ pwErrText }}</span>
+            </sc-if>
+            <sc-if value="{{ pwOk }}" hint-placeholder-val="{{ false }}">
+              <span style="padding: 10px 12px; border-radius: 14px; background: #eaf6ee; font-size: 12.5px; color: #0b5c38;">رمز عبور تغییر کرد.</span>
+            </sc-if>
+            <button onClick="{{ changePassword }}" disabled="{{ pwBusy }}" style="height: 48px; border: 0; border-radius: 999px; background: #f1efe8; color: #12211a; font-size: 14.5px; font-weight: 700; cursor: pointer; opacity: {{ pwBusyOpacity }};">{{ pwCta }}</button>
+          </div>
+        </div>
+      </sc-if>
     </div>
   </sc-if>
 
@@ -1065,6 +1103,46 @@ async function apiMe(token) {
   return res.json();
 }
 
+// Turn a FastAPI error body into a readable Persian-facing message.
+function apiErrorDetail(data, fallback) {
+  if (!data || !data.detail) return fallback;
+  if (typeof data.detail === "string") return data.detail;
+  if (Array.isArray(data.detail) && data.detail.length && data.detail[0].msg) return data.detail[0].msg;
+  return fallback;
+}
+
+// PATCH /api/v1/auth/me — UpdateProfileRequest {name?, phone?}
+async function apiUpdateProfile(payload) {
+  const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
+    method: "PATCH",
+    credentials: FETCH_CREDENTIALS,
+    headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    let msg = "ذخیره اطلاعات حساب ممکن نشد.";
+    try { msg = apiErrorDetail(await res.json(), msg); } catch (e) {}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+// POST /api/v1/auth/change-password — ChangePasswordRequest
+async function apiChangePassword(payload) {
+  const res = await fetch(`${API_BASE}/api/v1/auth/change-password`, {
+    method: "POST",
+    credentials: FETCH_CREDENTIALS,
+    headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    let msg = "تغییر رمز عبور ممکن نشد.";
+    try { msg = apiErrorDetail(await res.json(), msg); } catch (e) {}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 // POST /api/v1/auth/register — NewUserCreate
 async function apiSignup({ email, phone, name, password, passwordRepeat }) {
   const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
@@ -1121,6 +1199,7 @@ const mapCategory = (c) => ({
   tint: c.tint_color || "#f1efe8",
   dot: c.dot_color || "#7d857f",
   kw: c.slug,
+  img: productImageUrl(c.image_url),
   _id: c.id
 });
 
@@ -1397,12 +1476,14 @@ class Component extends DCLogic {
   state = {
     // cart mirrors the server cart: product_variant_id → { itemId: cart_item_id, qty }
     screen: "home", cat: "all", q: "", pid: null, imageIdx: 0, sizeIdx: 0, qty: 1, cart: {}, cartOpen: false, toast: "", faq: null,
-    user: null, acctOpen: false,
+    user: null, me: null, acctOpen: false,
     authTab: "pw", signupMode: false, forgotOpen: false, forgotSent: false, authBusy: false,
     loginUser: "", loginPass: "", loginPass2: "", signupName: "", signupPhone: "",
     forgotUser: "",
     loginPhone: "", loginCode: "", codeSent: false, loginErr: "",
     acctTab: "orders", orders: [], addresses: [],
+    profileName: "", profilePhone: "", profileErr: "", profileOk: "", profileBusy: false,
+    pwCurrent: "", pwNew: "", pwRepeat: "", pwErr: "", pwOk: "", pwBusy: false,
     slot: 0, pay: 0, err: "", receipt: null, placing: false, savingAddress: false, addrId: null,
     form: { name: "", phone: "", addr: "", unit: "", postal: "", note: "" },
     pinX: 48, pinY: 52, addrLabel: 0,
@@ -1441,8 +1522,11 @@ class Component extends DCLogic {
         return;
       }
       this.setState({
-        user: { name: me.name || "Member", username: me.phone || "", phone: me.phone || "", role: me.role || "customer" },
-        form: Object.assign({}, this.state.form, { name: me.name || "", phone: me.phone || "" })
+        me,
+        user: { email: me.email || "", name: me.name || "Member", username: me.phone || "", phone: me.phone || "", role: me.role || "customer" },
+        form: Object.assign({}, this.state.form, { name: me.name || "", phone: me.phone || "" }),
+        profileName: me.name || "",
+        profilePhone: me.phone || ""
       });
       this.loadAddresses();
       this.loadOrders();
@@ -1779,7 +1863,7 @@ class Component extends DCLogic {
       offers: PRODUCTS.filter((x) => x.sizes && x.sizes[0] && x.sizes[0].old > 0).map(card).filter(Boolean),
 
       catTiles: CATS.map((c, i) => ({
-        name: c.name, tint: c.tint, slotId: "cat-" + c.id, img: photo(c.kw, 200 + i, 300),
+        name: c.name, tint: c.tint, slotId: "cat-" + c.id, img: c.img || photo(c.kw, 200 + i, 300),
         ring: st.cat === c.id ? INK : "transparent",
         onClick: () => { this.setState({ cat: c.id }); this.top(); }
       })),
@@ -1999,9 +2083,12 @@ class Component extends DCLogic {
             return;
           }
           this.setState({
-            user: { name, username: u, phone: me.phone || "", role: me.role || "customer" },
+            me,
+            user: { email: me.email || "", name, username: u, phone: me.phone || "", role: me.role || "customer" },
             acctOpen: false, loginPass: "", authBusy: false, loginErr: "",
-            form: Object.assign({}, st.form, { name, phone: me.phone || st.form.phone })
+            form: Object.assign({}, st.form, { name, phone: me.phone || st.form.phone }),
+            profileName: name, profilePhone: me.phone || "",
+            profileErr: "", profileOk: "", pwCurrent: "", pwNew: "", pwRepeat: "", pwErr: "", pwOk: ""
           });
           this.syncCart(); // reload the basket under the signed-in identity
           this.loadAddresses();
@@ -2029,13 +2116,14 @@ class Component extends DCLogic {
           this.setState({ authBusy: false, loginErr: e.message || "ارسال لینک بازیابی ممکن نشد." });
         }
       },
-      doLogout: () => { localStorage.removeItem(AUTH_TOKEN_KEY); this.setState({ user: null, acctOpen: false, screen: "home", orders: [], addresses: [], addrId: null }); this.syncCart(); this.flash("از حساب خارج شدید"); },
+      doLogout: () => { localStorage.removeItem(AUTH_TOKEN_KEY); this.setState({ me: null, user: null, acctOpen: false, screen: "home", orders: [], addresses: [], addrId: null, acctTab: "orders", profileName: "", profilePhone: "", profileErr: "", profileOk: "", pwCurrent: "", pwNew: "", pwRepeat: "", pwErr: "", pwOk: "" }); this.syncCart(); this.flash("از حساب خارج شدید"); },
       myOrderCount: st.orders.length,
       myActiveCount: st.orders.filter((o) => o.status < 4).length,
       acctLinks: [
         { id: "orders", label: "سفارش‌های من", badge: st.orders.length },
         { id: "reviews", label: "نظرهای من", badge: MY_REVIEWS.length },
-        { id: "addresses", label: "آدرس‌های من", badge: st.addresses.length }
+        { id: "addresses", label: "آدرس‌های من", badge: st.addresses.length },
+        { id: "profile", label: "پروفایل من", badge: "" }
       ].map((l) => ({
         label: l.label, badge: l.badge,
         bg: st.acctTab === l.id && st.screen === "account" ? "#eaf6ee" : "#fbfaf7",
@@ -2045,7 +2133,8 @@ class Component extends DCLogic {
       acctTabs: [
         { id: "orders", label: "سفارش‌ها", count: st.orders.length },
         { id: "reviews", label: "نظرها", count: MY_REVIEWS.length },
-        { id: "addresses", label: "آدرس‌ها", count: st.addresses.length }
+        { id: "addresses", label: "آدرس‌ها", count: st.addresses.length },
+        { id: "profile", label: "پروفایل", count: "" }
       ].map((t) => ({
         label: t.label, count: t.count,
         bg: st.acctTab === t.id ? INK : "#f1efe8",
@@ -2055,6 +2144,71 @@ class Component extends DCLogic {
       tabOrders: st.acctTab === "orders",
       tabReviews: st.acctTab === "reviews",
       tabAddresses: st.acctTab === "addresses",
+      tabProfile: st.acctTab === "profile",
+
+      profileName: st.profileName,
+      onProfileName: (e) => this.setState({ profileName: e.target.value, profileErr: "", profileOk: "" }),
+      profilePhone: st.profilePhone,
+      onProfilePhone: (e) => this.setState({ profilePhone: e.target.value, profileErr: "", profileOk: "" }),
+      profileEmail: st.user ? (st.user.email || "—") : "—",
+      profileErr: !!st.profileErr,
+      profileErrText: st.profileErr,
+      profileOk: !!st.profileOk,
+      profileBusy: !!st.profileBusy,
+      profileBusyOpacity: st.profileBusy ? 0.6 : 1,
+      profileCta: st.profileBusy ? "در حال ذخیره…" : "ذخیره اطلاعات",
+      saveProfile: async () => {
+        const name = st.profileName.trim();
+        const phone = st.profilePhone.replace(/\s+/g, "");
+        if (!name) { this.setState({ profileErr: "نام نمی‌تواند خالی باشد.", profileOk: "" }); return; }
+        if (!/^09\d{9}$/.test(phone)) { this.setState({ profileErr: "شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.", profileOk: "" }); return; }
+        this.setState({ profileBusy: true, profileErr: "", profileOk: "" });
+        try {
+          const me = await apiUpdateProfile({ name, phone });
+          this.setState({
+            me,
+            user: Object.assign({}, st.user, { email: me.email || "", name: me.name, username: me.phone, phone: me.phone }),
+            form: Object.assign({}, st.form, { name: me.name, phone: me.phone }),
+            profileName: me.name, profilePhone: me.phone,
+            profileBusy: false, profileOk: true
+          });
+          this.flash("اطلاعات حساب ذخیره شد");
+        } catch (e) {
+          this.setState({ profileBusy: false, profileErr: e.message || "ذخیره اطلاعات حساب ممکن نشد." });
+        }
+      },
+
+      pwCurrent: st.pwCurrent,
+      onPwCurrent: (e) => this.setState({ pwCurrent: e.target.value, pwErr: "", pwOk: "" }),
+      pwNew: st.pwNew,
+      onPwNew: (e) => this.setState({ pwNew: e.target.value, pwErr: "", pwOk: "" }),
+      pwRepeat: st.pwRepeat,
+      onPwRepeat: (e) => this.setState({ pwRepeat: e.target.value, pwErr: "", pwOk: "" }),
+      pwErr: !!st.pwErr,
+      pwErrText: st.pwErr,
+      pwOk: !!st.pwOk,
+      pwBusy: !!st.pwBusy,
+      pwBusyOpacity: st.pwBusy ? 0.6 : 1,
+      pwCta: st.pwBusy ? "در حال تغییر…" : "تغییر رمز عبور",
+      changePassword: async () => {
+        const fail = (m) => this.setState({ pwErr: m, pwOk: "" });
+        if (!st.pwCurrent) return fail("رمز عبور فعلی را وارد کنید.");
+        if (st.pwNew.length < 8) return fail("رمز عبور جدید باید حداقل ۸ کاراکتر باشد.");
+        if (!/[A-Z]/.test(st.pwNew)) return fail("رمز عبور جدید باید حداقل یک حرف بزرگ داشته باشد.");
+        if (!/[a-z]/.test(st.pwNew)) return fail("رمز عبور جدید باید حداقل یک حرف کوچک داشته باشد.");
+        if (!/\d/.test(st.pwNew)) return fail("رمز عبور جدید باید حداقل یک عدد داشته باشد.");
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(st.pwNew)) return fail("رمز عبور جدید باید حداقل یک کاراکتر ویژه داشته باشد.");
+        if (st.pwNew !== st.pwRepeat) return fail("تکرار رمز عبور مطابقت ندارد.");
+        if (st.pwNew === st.pwCurrent) return fail("رمز عبور جدید باید با رمز فعلی متفاوت باشد.");
+        this.setState({ pwBusy: true, pwErr: "", pwOk: "" });
+        try {
+          await apiChangePassword({ current_password: st.pwCurrent, new_password: st.pwNew, password_repeat: st.pwRepeat });
+          this.setState({ pwBusy: false, pwOk: true, pwCurrent: "", pwNew: "", pwRepeat: "" });
+          this.flash("رمز عبور تغییر کرد");
+        } catch (e) {
+          this.setState({ pwBusy: false, pwErr: e.message || "تغییر رمز عبور ممکن نشد." });
+        }
+      },
 
       myOrders: st.orders.map((o) => {
         const items = o.items.map((it) => {

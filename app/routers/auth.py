@@ -12,7 +12,7 @@ from app.db.database import AsyncSession
 from app.core import security
 from app.core.config import settings
 from app.routers.cart import merge_guest_cart_to_user
-from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token
+from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token, UpdateProfileRequest
 from app.utils.email_utils import send_password_reset_email
 
 
@@ -82,6 +82,45 @@ async def login(
 
 @router.get("/me", response_model=CurrentUserInfoResponse)
 async def read_users_me(current_user: CurrentUser):
+    return current_user
+
+
+@router.patch("/me", response_model=CurrentUserInfoResponse)
+async def update_users_me(
+    profile_update: UpdateProfileRequest,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Partial profile update. Email is not editable (see UpdateProfileRequest)."""
+    update_data = profile_update.model_dump(exclude_unset=True)
+
+    # check phone uniqueness against every other account
+    new_phone = update_data.get("phone")
+    if new_phone and new_phone != current_user.phone:
+        existing_phone = await db.execute(
+            select(User.id).where(
+                (User.phone == new_phone) & (User.id != current_user.id)
+            )
+        )
+        if existing_phone.first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Phone number already registered",
+            )
+
+    for field, value in update_data.items():
+        setattr(current_user, field, value)
+
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Phone number already registered",
+        )
+
+    await db.refresh(current_user)
     return current_user
 
 

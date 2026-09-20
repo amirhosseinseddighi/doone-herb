@@ -627,12 +627,32 @@
           <div class="catgrid">
           <sc-for list="{{ catCards }}" as="c" hint-placeholder-count="8">
             <div style="border-radius: 22px; overflow: hidden; background: #fff; border: 1px solid #eceae3; display: flex; flex-direction: column;">
-              <div style="aspect-ratio: 16 / 9; background: {{ c.tint }}; background-image: url({{ c.img }}); background-size: cover; background-position: center; opacity: {{ c.dim }};"></div>
+              <div style="position: relative; aspect-ratio: 16 / 9; background: {{ c.tint }}; overflow: hidden; opacity: {{ c.dim }};">
+                <sc-if value="{{ canManageImages }}" hint-placeholder-val="{{ false }}">
+                  <div onClick="{{ c.onPickImage }}" style="width: 100%; height: 100%; cursor: pointer;" title="انتخاب تصویر دسته‌بندی">
+                    <image-slot id="{{ c.slotId }}" src="{{ c.img }}" shape="rect" placeholder="{{ c.name }}"></image-slot>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ !canManageImages }}" hint-placeholder-val="{{ false }}">
+                  <img src="{{ c.img }}" alt="{{ c.name }}" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+                </sc-if>
+              </div>
               <div style="padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 10px;">
                 <span style="display: flex; min-width: 0; flex-direction: column; gap: 1px;">
                   <span style="font-size: 14px; font-weight: 700; line-height: 1.45; overflow-wrap: anywhere;">{{ c.name }}</span>
                   <span style="font-size: 12px; color: #8b918c;">{{ c.count }}</span>
                 </span>
+                <sc-if value="{{ canManageImages }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; gap: 6px;">
+                    <label style="flex: 1; min-width: 0; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: #eaf6ee; color: #0f7a4a; cursor: pointer; font-size: 12px; font-weight: 700;">
+                      {{ c.imageLabel }}
+                      <input id="{{ c.fileId }}" type="file" accept="image/*" onChange="{{ c.onFileImage }}" onInput="{{ c.onFileImage }}" style="position: absolute; width: 1px; height: 1px; opacity: 0;" />
+                    </label>
+                    <button onClick="{{ c.onDeleteImage }}" disabled="{{ !c.hasImage }}" title="حذف تصویر دسته‌بندی" style="flex: none; width: 32px; height: 30px; padding: 0; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fdece2; color: #b8451f; opacity: {{ c.hasImage ? 1 : 0.45 }};" aria-label="حذف تصویر دسته‌بندی">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                    </button>
+                  </div>
+                </sc-if>
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <button onClick="{{ c.onEdit }}" title="ویرایش نام دسته‌بندی" style="flex: none; width: 34px; height: 30px; padding: 0; border: 0; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #f1f2f7; color: #495587;" aria-label="ویرایش نام دسته‌بندی">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>
@@ -900,16 +920,41 @@
               <span style="font-size: 12px; color: #a2a89f;">عضویت از {{ profileSince }}</span>
             </span>
           </div>
+
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 22px; display: flex; flex-direction: column; gap: 12px;">
-            <h2 style="font-size: 20px;">جزئیات حساب</h2>
-            <sc-for list="{{ profileRows }}" as="r" hint-placeholder-count="6">
-              <div style="display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid #f1efe8;">
-                <span style="width: 150px; flex: none; font-size: 12.5px; color: #7d857f;">{{ r.label }}</span>
-                <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.value }}</span>
-              </div>
-              <sc-if value="{{ r.last }}" hint-placeholder-val="{{ false }}"></sc-if>
-            </sc-for>
+            <h2 style="font-size: 20px;">ویرایش اطلاعات</h2>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">نام و نام خانوادگی
+              <input value="{{ profileName }}" onChange="{{ onProfileName }}" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">موبایل · ۰۹۱۲ ۰۰۰ ۰۰۰۰
+              <input value="{{ profilePhoneInput }}" onChange="{{ onProfilePhone }}" inputmode="numeric" autocomplete="tel" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">ایمیل (غیرقابل تغییر)
+              <input value="{{ profileEmail }}" disabled style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #8b918c;" />
+            </label>
+            <sc-if value="{{ profileError }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 10px 12px; border-radius: 14px; background: #fdece2; font-size: 12.5px; color: #b8451f; line-height: 1.5;">{{ profileErrorText }}</div>
+            </sc-if>
+            <sc-if value="{{ profileSaved }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 10px 12px; border-radius: 14px; background: #eaf6ee; font-size: 12.5px; color: #0b5c38;">ذخیره شد.</div>
+            </sc-if>
+            <button onClick="{{ saveProfile }}" disabled="{{ profileBusy }}" style="height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer; opacity: {{ profileBusyOpacity }};">{{ profileCta }}</button>
           </div>
+
+          <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 22px; display: flex; flex-direction: column; gap: 12px;">
+            <h2 style="font-size: 20px;">تغییر رمز عبور</h2>
+            <input type="password" value="{{ pwCurrent }}" onChange="{{ onPwCurrent }}" placeholder="رمز عبور فعلی" autocomplete="current-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+            <input type="password" value="{{ pwNew }}" onChange="{{ onPwNew }}" placeholder="رمز عبور جدید" autocomplete="new-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+            <input type="password" value="{{ pwRepeat }}" onChange="{{ onPwRepeat }}" placeholder="تکرار رمز عبور جدید" autocomplete="new-password" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px;" />
+            <sc-if value="{{ pwError }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 10px 12px; border-radius: 14px; background: #fdece2; font-size: 12.5px; color: #b8451f; line-height: 1.5;">{{ pwErrorText }}</div>
+            </sc-if>
+            <sc-if value="{{ pwSaved }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 10px 12px; border-radius: 14px; background: #eaf6ee; font-size: 12.5px; color: #0b5c38;">رمز عبور تغییر کرد.</div>
+            </sc-if>
+            <button onClick="{{ changePassword }}" disabled="{{ pwBusy }}" style="height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: #f1efe8; color: #12211a; font-size: 13.5px; font-weight: 700; cursor: pointer; opacity: {{ pwBusyOpacity }};">{{ pwCta }}</button>
+          </div>
+
           <div style="display: flex; gap: 10px;">
             <button onClick="{{ doLogout }}" style="height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: #fdece2; color: #b8451f; font-size: 13.5px; font-weight: 700; cursor: pointer;">خروج</button>
           </div>
@@ -1219,6 +1264,7 @@ const mapCategory = (c) => ({
   sort_order: c.sort_order || 0,
   is_active: c.is_active !== false,
   productCount: typeof c.total_products === "number" ? c.total_products : null,
+  img: productImageUrl(c.image_url),
   kw: c.slug
 });
 
@@ -1562,7 +1608,9 @@ class Component extends DCLogic {
     pushText: "", pushAudience: 0,
     catSearch: "",
     editing: null, draft: null, toast: "",
-    monthOffset: 0, selDay: new Date().getDate()
+    monthOffset: 0, selDay: new Date().getDate(),
+    profileName: "", profilePhone: "", profileEmail: "", profileError: "", profileSaved: false, profileBusy: false,
+    pwCurrent: "", pwNew: "", pwRepeat: "", pwError: "", pwSaved: false, pwBusy: false
   };
   catSearchRequest = 0;
 
@@ -1587,6 +1635,9 @@ class Component extends DCLogic {
         userName: me.name || "Admin",
         userRole: me.role,
         userPhone: me.phone || "",
+        profileName: me.name || "",
+        profilePhone: me.phone || "",
+        profileEmail: me.email || "",
         canManageImages: me.role === "owner" || me.role === "manager"
       });
       await Promise.all([this.loadCatalogue(), this.loadOrders(), this.loadUsers()]);
@@ -1765,6 +1816,54 @@ class Component extends DCLogic {
     window.location.href = "./index.html";
   };
 
+  // ---- Profile -------------------------------------------------------------
+
+  saveProfile = async () => {
+    const name = (this.state.profileName || "").trim();
+    const phone = (this.state.profilePhone || "").replace(/\s+/g, "");
+    if (!name) { this.setState({ profileError: "نام نمی‌تواند خالی باشد.", profileSaved: false }); return; }
+    if (!/^09\d{9}$/.test(phone)) { this.setState({ profileError: "شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.", profileSaved: false }); return; }
+    this.setState({ profileBusy: true, profileError: "", profileSaved: false });
+    try {
+      const me = await apiSend("PATCH", "/api/v1/auth/me", { name, phone });
+      this.setState({
+        me,
+        userName: me.name || "Admin",
+        userPhone: me.phone || "",
+        profileName: me.name || "",
+        profilePhone: me.phone || "",
+        profileEmail: me.email || "",
+        profileBusy: false, profileSaved: true
+      });
+      this.flash("اطلاعات حساب ذخیره شد");
+    } catch (e) {
+      this.setState({ profileBusy: false, profileError: e.message || "ذخیره اطلاعات حساب ممکن نشد." });
+    }
+  };
+
+  changePassword = async () => {
+    const { pwCurrent, pwNew, pwRepeat } = this.state;
+    const fail = (m) => this.setState({ pwError: m, pwSaved: false });
+    if (!pwCurrent) return fail("رمز عبور فعلی را وارد کنید.");
+    if (pwNew.length < 8) return fail("رمز عبور جدید باید حداقل ۸ کاراکتر باشد.");
+    if (!/[A-Z]/.test(pwNew)) return fail("رمز عبور جدید باید حداقل یک حرف بزرگ داشته باشد.");
+    if (!/[a-z]/.test(pwNew)) return fail("رمز عبور جدید باید حداقل یک حرف کوچک داشته باشد.");
+    if (!/\d/.test(pwNew)) return fail("رمز عبور جدید باید حداقل یک عدد داشته باشد.");
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(pwNew)) return fail("رمز عبور جدید باید حداقل یک کاراکتر ویژه داشته باشد.");
+    if (pwNew !== pwRepeat) return fail("تکرار رمز عبور مطابقت ندارد.");
+    if (pwNew === pwCurrent) return fail("رمز عبور جدید باید با رمز فعلی متفاوت باشد.");
+    this.setState({ pwBusy: true, pwError: "", pwSaved: false });
+    try {
+      await apiSend("POST", "/api/v1/auth/change-password", {
+        current_password: pwCurrent, new_password: pwNew, password_repeat: pwRepeat
+      });
+      this.setState({ pwBusy: false, pwSaved: true, pwCurrent: "", pwNew: "", pwRepeat: "" });
+      this.flash("رمز عبور تغییر کرد");
+    } catch (e) {
+      this.setState({ pwBusy: false, pwError: e.message || "تغییر رمز عبور ممکن نشد." });
+    }
+  };
+
   patch = (id, fn) => this.setState((s) => ({
     products: s.products.map((p) => (p.id === id ? fn(Object.assign({}, p, { sizes: p.sizes.map((x) => Object.assign({}, x)) })) : p))
   }));
@@ -1830,6 +1929,37 @@ class Component extends DCLogic {
       await this.refreshProductImages(productId);
       this.flash("ترتیب تصویر تغییر کرد");
     } catch (e) { this.flash(e.message || "ترتیب تصاویر تغییر نکرد"); }
+  };
+
+  // Category images are a single slot per category: POST replaces whatever is
+  // there, DELETE clears it. Both return the updated CategoryResponse.
+  uploadCategoryImage = async (c, file) => {
+    if (!file) { this.flash("تصویری انتخاب نشده است"); return; }
+    try {
+      const updated = await imageRequest("POST", `/api/v1/categories/${c._id}/image`, file);
+      this.replaceCategory(updated);
+      this.flash("تصویر دسته‌بندی ذخیره شد");
+    } catch (e) { this.flash(e.message || "ذخیره تصویر دسته‌بندی ممکن نشد"); }
+  };
+
+  deleteCategoryImage = async (c) => {
+    if (!window.confirm("تصویر «" + c.name + "» حذف شود؟")) return;
+    try {
+      await imageRequest("DELETE", `/api/v1/categories/${c._id}/image`);
+      this.replaceCategory(Object.assign({}, c, { image_url: null }));
+      this.flash("تصویر دسته‌بندی حذف شد");
+    } catch (e) { this.flash(e.message || "حذف تصویر دسته‌بندی ممکن نشد"); }
+  };
+
+  // Preserve the locally-derived productCount across a category refresh.
+  replaceCategory = (source) => {
+    this.setState((s) => ({
+      cats: s.cats.map((x) => (
+        x._id === source.id
+          ? Object.assign({}, mapCategory(source), { productCount: x.productCount })
+          : x
+      ))
+    }));
   };
 
   save = async () => {
@@ -2393,6 +2523,33 @@ class Component extends DCLogic {
       goOrders: () => this.setState({ page: "orders" }),
       goProducts: () => this.setState({ page: "products", stock: "out" }),
 
+      profileName: st.profileName,
+      onProfileName: (e) => this.setState({ profileName: e.target.value, profileError: "", profileSaved: false }),
+      profilePhoneInput: st.profilePhone,
+      onProfilePhone: (e) => this.setState({ profilePhone: e.target.value, profileError: "", profileSaved: false }),
+      profileEmail: st.profileEmail || "—",
+      profileError: !!st.profileError,
+      profileErrorText: st.profileError,
+      profileSaved: !!st.profileSaved,
+      profileBusy: !!st.profileBusy,
+      profileBusyOpacity: st.profileBusy ? 0.6 : 1,
+      profileCta: st.profileBusy ? "در حال ذخیره…" : "ذخیره اطلاعات",
+      saveProfile: () => this.saveProfile(),
+
+      pwCurrent: st.pwCurrent,
+      onPwCurrent: (e) => this.setState({ pwCurrent: e.target.value, pwError: "", pwSaved: false }),
+      pwNew: st.pwNew,
+      onPwNew: (e) => this.setState({ pwNew: e.target.value, pwError: "", pwSaved: false }),
+      pwRepeat: st.pwRepeat,
+      onPwRepeat: (e) => this.setState({ pwRepeat: e.target.value, pwError: "", pwSaved: false }),
+      pwError: !!st.pwError,
+      pwErrorText: st.pwError,
+      pwSaved: !!st.pwSaved,
+      pwBusy: !!st.pwBusy,
+      pwBusyOpacity: st.pwBusy ? 0.6 : 1,
+      pwCta: st.pwBusy ? "در حال تغییر…" : "تغییر رمز عبور",
+      changePassword: () => this.changePassword(),
+
       today: WEEKDAYS[(now.getDay() + 1) % 7] + " " + now.getDate() + " " + MONTHS[now.getMonth()],
       greeting: notSent + (notSent === 1 ? " سفارش در انتظار بسته‌بندی" : " سفارش در انتظار بسته‌بندی"),
       dashLine: "آخرین زمان ارسال همان‌روز ۱۴:۰۰ است؛ " + outCount + " محصول نیازمند تأمین موجودی است.",
@@ -2498,12 +2655,24 @@ class Component extends DCLogic {
           ? c.productCount
           : st.products.filter((p) => p.cat === c.id).length;
         const hidden = !c.is_active;
+        const fileId = "dh-cat-file-" + c._id;
         return {
           name: c.name, count: n + (n === 1 ? " product" : " products"),
-          tint: c.tint, img: photo(c.kw, 200 + (c._id || 0), 400), dim: hidden ? 0.35 : 1,
+          tint: c.tint, img: c.img || photo(c.kw, 200 + (c._id || 0), 400), dim: hidden ? 0.35 : 1,
           state: hidden ? "پنهان" : "نمایش داده‌شده",
           bg: hidden ? "#f1efe8" : "#eaf6ee",
           fg: hidden ? "#7d857f" : "#0b5c38",
+          slotId: "dh-cat-slot-" + c._id,
+          fileId,
+          hasImage: !!c.img,
+          imageLabel: c.img ? "جایگزین تصویر" : "افزودن تصویر",
+          onPickImage: () => { const input = document.getElementById(fileId); if (input) input.click(); },
+          onFileImage: (e) => {
+            const file = e && e.target && e.target.files && e.target.files[0];
+            if (file) this.uploadCategoryImage(c, file);
+            if (e && e.target) e.target.value = "";
+          },
+          onDeleteImage: () => { if (c.img) this.deleteCategoryImage(c); },
           onEdit: () => this.editCat(c),
           onToggle: () => this.toggleCat(c),
           onDelete: () => this.deleteCat(c)

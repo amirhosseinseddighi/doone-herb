@@ -166,6 +166,7 @@ async def get_category_details(
         dot_color=category.dot_color,
         sort_order=category.sort_order,
         is_active=category.is_active,
+        image_url=category.image_url,
         products=[BaseProductResponse.model_validate(p) for p in category.products],
         total_products=len(category.products),
     )

@@ -394,3 +394,186 @@ async def test_change_password_normal_flow(client: AsyncClient):
         headers=header
     )
     assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.anyio
+async def test_change_password_wrong_current_password(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    response = await client.post(
+        "/api/v1/auth/change-password",
+        json={
+            "current_password": "NotMyPassword@1",
+            "new_password": "NewPass@123",
+            "password_repeat": "NewPass@123"
+        },
+        headers=header
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['detail'] == 'Incorrect current password.'
+
+
+@pytest.mark.anyio
+async def test_change_password_mismatched_repeat(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    response = await client.post(
+        "/api/v1/auth/change-password",
+        json={
+            "current_password": "Pass@123456",
+            "new_password": "NewPass@123",
+            "password_repeat": "OtherPass@123"
+        },
+        headers=header
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+
+# ======= UPDATE PROFILE =========
+
+@pytest.mark.anyio
+async def test_unauthenticated_update_profile(client: AsyncClient):
+    response = await client.patch("/api/v1/auth/me", json={"name": "New Name"})
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.anyio
+async def test_update_profile_name(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"name": "Renamed User"},
+        headers=header
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['name'] == "Renamed User"
+
+    # the change persists
+    me = await client.get("/api/v1/auth/me", headers=header)
+    assert me.json()['name'] == "Renamed User"
+
+
+@pytest.mark.anyio
+async def test_update_profile_phone(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"phone": "09129998877"},
+        headers=header
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['phone'] == "09129998877"
+
+
+@pytest.mark.anyio
+async def test_update_profile_partial_update_leaves_other_fields(client: AsyncClient):
+    """A name-only PATCH must not clear the phone (exclude_unset semantics)."""
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"name": "Only Name"},
+        headers=header
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['name'] == "Only Name"
+    assert response.json()['phone'] == "09121231234"
+
+
+@pytest.mark.anyio
+async def test_update_profile_duplicate_phone(client: AsyncClient):
+    await create_test_user(client, email="user@example.com", phone="09121231234")
+    await create_test_user(client, email="other@example.com", phone="09129998877", name="Other")
+    token = await login_user(client, email="user@example.com")
+    header = auth_header(token)
+
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"phone": "09129998877"},
+        headers=header
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['detail'] == 'Phone number already registered'
+
+
+@pytest.mark.anyio
+async def test_update_profile_keeping_own_phone_is_allowed(client: AsyncClient):
+    """Re-sending the caller's own phone must not trip the uniqueness check."""
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"phone": "09121231234"},
+        headers=header
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.anyio
+async def test_update_profile_invalid_phone_format(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    for bad_phone in ("1234", "0812345678", "091212312345", "not-a-phone"):
+        response = await client.patch(
+            "/api/v1/auth/me",
+            json={"phone": bad_phone},
+            headers=header
+        )
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT, f"accepted {bad_phone}"
+
+
+@pytest.mark.anyio
+async def test_update_profile_rejects_email_and_unknown_fields(client: AsyncClient):
+    """Email is not user-editable, and extra fields are rejected outright."""
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    email_attempt = await client.patch(
+        "/api/v1/auth/me",
+        json={"email": "hijack@example.com"},
+        headers=header
+    )
+    assert email_attempt.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    unknown_attempt = await client.patch(
+        "/api/v1/auth/me",
+        json={"role": "owner"},
+        headers=header
+    )
+    assert unknown_attempt.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    # the account is untouched
+    me = await client.get("/api/v1/auth/me", headers=header)
+    assert me.json()['email'] == "user@example.com"
+    assert me.json()['role'] == "customer"
+
+
+@pytest.mark.anyio
+async def test_update_profile_rejects_blank_name(client: AsyncClient):
+    await create_test_user(client)
+    token = await login_user(client)
+    header = auth_header(token)
+
+    response = await client.patch(
+        "/api/v1/auth/me",
+        json={"name": "   "},
+        headers=header
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT

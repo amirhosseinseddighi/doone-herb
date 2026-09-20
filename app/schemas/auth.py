@@ -41,7 +41,34 @@ class CurrentUserInfoResponse(BaseModel):
     last_seen_at: datetime
     role: str
     created_at: datetime
-    telegram_opt_in: bool 
+    telegram_opt_in: bool
+
+
+class UpdateProfileRequest(BaseModel):
+    """Partial profile update. Email is intentionally absent: it identifies the
+    account and is used for password reset, so it is not user-editable."""
+
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        extra="forbid"
+    )
+
+    name: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=50,
+        description="User full name",
+        examples=["Amir sed"]
+    )
+
+    phone: str | None = Field(
+        default=None,
+        min_length=11,
+        max_length=11,
+        pattern=r"^09\d{9}$",
+        description="phone number format (09121231234)"
+    )
+
 
 
 class NewUserCreate(BaseModel):
