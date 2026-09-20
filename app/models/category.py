@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timezone
 from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
@@ -128,22 +128,44 @@ class Offer(Base):
 
 class Review(Base):
     __tablename__ = "reviews"
-    
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    product_id: Mapped[int] = mapped_column(Integer, ForeignKey("products.id"), nullable=False, index=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    order_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("orders.id"), nullable=True, index=True)
-    stars: Mapped[int] = mapped_column(Integer, nullable=False)
-    text: Mapped[str] = mapped_column(Text, nullable=False)
-    admin_reply: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(UTC), 
-        nullable=False, 
-        index=True
+    product_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("products.id"), nullable=False, index=True
+    )
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False, index=True
+    )
+    order_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("orders.id"), nullable=True, index=True
+    )
+    
+    # Self-referencing FK for nested replies
+    parent_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("reviews.id", ondelete="CASCADE"), nullable=True, index=True
     )
 
+    stars: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Optional for replies
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True,
+    )
 
+    # Relationships
     product: Mapped["Product"] = relationship("Product", back_populates="reviews")
     user: Mapped["User"] = relationship("User", back_populates="reviews")
     order: Mapped[Optional["Order"]] = relationship("Order", back_populates="reviews")
+
+    # Parent/Child relationship for replies
+    parent: Mapped[Optional["Review"]] = relationship(
+        "Review", remote_side=[id], back_populates="replies"
+    )
+    replies: Mapped[list["Review"]] = relationship(
+        "Review",
+        back_populates="parent",
+        cascade="all, delete-orphan",
+        order_by="Review.created_at.asc()",
+    )

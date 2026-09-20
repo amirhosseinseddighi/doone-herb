@@ -1,6 +1,15 @@
 from fastapi import FastAPI, Request, status
 from fastapi.staticfiles import StaticFiles
-from app.routers import addresses, cart, category, auth, orders, products
+from app.routers import (
+    addresses, 
+    cart, 
+    category, 
+    auth, 
+    orders, 
+    products, 
+    shop_settings, 
+    review
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import APIRouter
 
@@ -30,7 +39,8 @@ api_v1.include_router(products.router)
 api_v1.include_router(cart.router)
 api_v1.include_router(addresses.router)
 api_v1.include_router(orders.router)
-
+api_v1.include_router(shop_settings.router)
+api_v1.include_router(review.router)
 
 app.include_router(api_v1)
 

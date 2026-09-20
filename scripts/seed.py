@@ -15,6 +15,10 @@ from app.models.admin import (
     PushCampaign,
     PushCampaignRecipient,
 )
+from app.models.cart import (
+    Cart,
+    CartItem,
+)
 from app.models.category import (
     Category,
     Offer,
@@ -26,21 +30,48 @@ from app.models.category import (
 from app.models.identity import (
     Address,
     Roles,
-    Roles,
     User,
     UserTier,
 )
-from app.models.cart import (
-    Cart,
-    CartItem,
+from app.models.order import (
+    DeliverySlot,
+    DeliverySlotKind,
+    FulfillmentMethod,
+    Order,
+    OrderItem,
+    OrderStatus,
+    OrderStatusEvent,
+    OrderStatusEventActor,
+    Payment,
+    PaymentMethod,
+    PaymentProvider,
+    PaymentStatus,
 )
-from app.models.order import DeliverySlot, DeliverySlotKind, FulfillmentMethod, Order, OrderItem, OrderStatus, OrderStatusEvent, OrderStatusEventActor, Payment, PaymentMethod, PaymentProvider, PaymentStatus
+from app.models.general import ShopSettings
 
 
 SessionLocal = async_sessionmaker(
     bind=engine,
     expire_on_commit=False,
 )
+
+
+SHOP_SETTINGS = [
+    {"key": "shop_name", "value": "دونه هرب"},
+    {"key": "footer_label", "value": "پلاک ۴۲، رویِ بازارِ سبزیجات"},
+    {
+        "key": "footer_description",
+        "value": "خیابان ولی‌عصر، تهران · شنبه تا پنجشنبه، ۹:۰۰ تا ۲۰:۰۰ · ۰۲۱ ۸۸۴۲ ۱۱۹۰",
+    },
+    {
+        "key": "address",
+        "value": "تهران، خیابان ولیعصر، ردیف بازار گیاهان، پلاک ۴۲",
+    },
+    {"key": "support_number", "value": "021 8842 1190"},
+    {"key": "tehran_fee", "value": "45000"},
+    {"key": "free_send_threshold", "value": "900000"},
+    {"key": "last_send_hour", "value": "14:00"},
+]
 
 
 DELIVERY_SLOTS = [
@@ -69,7 +100,6 @@ DELIVERY_SLOTS = [
         "active": True,
     },
 ]
-
 
 
 async def seed_admin(session) -> User:
@@ -118,7 +148,6 @@ async def seed_customer(session) -> User:
     return user
 
 
-
 async def seed_address(session, user: User) -> Address:
     result = await session.execute(
         select(Address).where(Address.user_id == user.id)
@@ -160,6 +189,27 @@ async def seed_delivery_slots(session) -> list[DeliverySlot]:
     await session.flush()
     return slots
 
+
+async def seed_shop_settings(session) -> list[ShopSettings]:
+    settings = []
+    for data in SHOP_SETTINGS:
+        result = await session.execute(
+            select(ShopSettings).where(ShopSettings.key == data["key"])
+        )
+        setting = result.scalar_one_or_none()
+
+        if setting is None:
+            setting = ShopSettings(key=data["key"], value=data["value"])
+            session.add(setting)
+        else:
+            setting.value = data["value"]
+
+        settings.append(setting)
+
+    await session.flush()
+    return settings
+
+
 async def main():
     async with SessionLocal() as session:
         try:
@@ -168,6 +218,8 @@ async def main():
 
             address = await seed_address(session, user)
             delivery_slots = await seed_delivery_slots(session)
+            shop_settings = await seed_shop_settings(session)
+
             await session.commit()
             print("Seed completed successfully.")
 

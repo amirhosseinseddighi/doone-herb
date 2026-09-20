@@ -961,30 +961,45 @@
         </div>
       </sc-if>
       <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ hasSettingsError }}" hint-placeholder-val="{{ false }}">
+          <div style="border: 1px solid #f7d9c7; background: #fdece2; color: #b8451f; border-radius: 16px; padding: 12px 16px; font-size: 13px; margin-bottom: 14px;">{{ settingsErrorText }}</div>
+        </sc-if>
         <div class="setgrid">
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
             <h2 style="font-size: 20px;">فروشگاه</h2>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">نام فروشگاه
-              <input defaultValue="دونه هرب" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
-            </label>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">نشانی
-              <input defaultValue="تهران، خیابان ولیعصر، ردیف بازار گیاهان، پلاک ۴۲" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
-            </label>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">شماره پشتیبانی
-              <input defaultValue="021 8842 1190" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
-            </label>
+            <sc-for list="{{ storeFields }}" as="f" hint-placeholder-count="3">
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">{{ f.label }}
+                <input value="{{ f.value }}" onChange="{{ f.onChange }}" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+              </label>
+            </sc-for>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+              <button onClick="{{ saveStoreSettings }}" disabled="{{ storeSaving }}" style="height: 44px; padding: 0 22px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer; opacity: {{ storeSaveOpacity }};">{{ storeSaveCta }}</button>
+              <span style="font-size: 11.5px; color: #a2a89f;">{{ storeUpdatedLabel }}</span>
+            </div>
           </div>
           <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
             <h2 style="font-size: 20px;">ارسال</h2>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">هزینه ارسال تهران
-              <input defaultValue="۴۵٬۰۰۰ تومان" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
-            </label>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">ارسال رایگان برای خرید بالای
-              <input defaultValue="۹۰۰٬۰۰۰ تومان" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
-            </label>
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">آخرین زمان ارسال همان‌روز
-              <input defaultValue="14:00" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
-            </label>
+            <sc-for list="{{ shippingFields }}" as="f" hint-placeholder-count="3">
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">{{ f.label }}
+                <input type="{{ f.type }}" value="{{ f.value }}" onChange="{{ f.onChange }}" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+              </label>
+            </sc-for>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+              <button onClick="{{ saveShippingSettings }}" disabled="{{ shippingSaving }}" style="height: 44px; padding: 0 22px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer; opacity: {{ shippingSaveOpacity }};">{{ shippingSaveCta }}</button>
+              <span style="font-size: 11.5px; color: #a2a89f;">{{ shippingUpdatedLabel }}</span>
+            </div>
+          </div>
+          <div style="border: 1px solid #eceae3; border-radius: 22px; background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+            <h2 style="font-size: 20px;">فوتر</h2>
+            <sc-for list="{{ footerFields }}" as="f" hint-placeholder-count="2">
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #7d857f;">{{ f.label }}
+                <input value="{{ f.value }}" onChange="{{ f.onChange }}" style="height: 46px; padding: 0 16px; border: 0; border-radius: 999px; background: #f1efe8; outline: none; font-size: 14px; color: #12211a;" />
+              </label>
+            </sc-for>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+              <button onClick="{{ saveFooterSettings }}" disabled="{{ footerSaving }}" style="height: 44px; padding: 0 22px; border: 0; border-radius: 999px; background: #12211a; color: #d8f24b; font-size: 13.5px; font-weight: 700; cursor: pointer; opacity: {{ footerSaveOpacity }};">{{ footerSaveCta }}</button>
+              <span style="font-size: 11.5px; color: #a2a89f;">{{ footerUpdatedLabel }}</span>
+            </div>
           </div>
         </div>
       </sc-if>
@@ -1588,6 +1603,35 @@ const salesFor = (y, m, d) => {
   return Math.round((1.6 + r * 4.2) * 1000000);
 };
 
+// ---- Shop settings (/api/v1/settings) ----
+// Field metadata: label shown in the admin UI + which card ("group") it belongs to.
+const SETTINGS_FIELDS = {
+  shop_name: { label: "نام فروشگاه", group: "store" },
+  address: { label: "نشانی", group: "store" },
+  support_number: { label: "شماره پشتیبانی", group: "store" },
+  tehran_fee: { label: "هزینه ارسال تهران (تومان)", group: "shipping" },
+  free_send_threshold: { label: "ارسال رایگان برای خرید بالای (تومان)", group: "shipping" },
+  last_send_hour: { label: "آخرین زمان ارسال همان‌روز", group: "shipping", type: "time" },
+  footer_label: { label: "عنوان فوتر", group: "footer" },
+  footer_description: { label: "توضیح فوتر", group: "footer" }
+};
+const SETTINGS_GROUP_KEYS = {
+  store: ["shop_name", "address", "support_number"],
+  shipping: ["tehran_fee", "free_send_threshold", "last_send_hour"],
+  footer: ["footer_label", "footer_description"]
+};
+// Shown until the real values load from the backend, so the panel isn't blank.
+const SETTINGS_DEFAULTS = {
+  shop_name: "دونه هرب",
+  address: "تهران، خیابان ولیعصر، ردیف بازار گیاهان، پلاک ۴۲",
+  support_number: "021 8842 1190",
+  tehran_fee: "45000",
+  free_send_threshold: "900000",
+  last_send_hour: "14:00",
+  footer_label: "پلاک ۴۲، رویِ بازارِ سبزیجات",
+  footer_description: "خیابان ولی‌عصر، تهران · شنبه تا پنجشنبه، ۹:۰۰ تا ۲۰:۰۰ · ۰۲۱ ۸۸۴۲ ۱۱۹۰"
+};
+
 class Component extends DCLogic {
   state = {
     page: "dash",
@@ -1610,7 +1654,11 @@ class Component extends DCLogic {
     editing: null, draft: null, toast: "",
     monthOffset: 0, selDay: new Date().getDate(),
     profileName: "", profilePhone: "", profileEmail: "", profileError: "", profileSaved: false, profileBusy: false,
-    pwCurrent: "", pwNew: "", pwRepeat: "", pwError: "", pwSaved: false, pwBusy: false
+    pwCurrent: "", pwNew: "", pwRepeat: "", pwError: "", pwSaved: false, pwBusy: false,
+    settings: [],
+    settingsDraft: Object.assign({}, SETTINGS_DEFAULTS),
+    settingsSaving: { store: false, shipping: false, footer: false },
+    settingsError: ""
   };
   catSearchRequest = 0;
 
@@ -1640,7 +1688,7 @@ class Component extends DCLogic {
         profileEmail: me.email || "",
         canManageImages: me.role === "owner" || me.role === "manager"
       });
-      await Promise.all([this.loadCatalogue(), this.loadOrders(), this.loadUsers()]);
+      await Promise.all([this.loadCatalogue(), this.loadOrders(), this.loadUsers(), this.loadSettings()]);
     } catch (e) {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       window.location.href = "./index.html";
@@ -1861,6 +1909,46 @@ class Component extends DCLogic {
       this.flash("رمز عبور تغییر کرد");
     } catch (e) {
       this.setState({ pwBusy: false, pwError: e.message || "تغییر رمز عبور ممکن نشد." });
+    }
+  };
+
+  // ---- Shop settings --------------------------------------------------------
+
+  async loadSettings() {
+    try {
+      const data = await apiGet("/api/v1/settings");
+      const list = Array.isArray(data) ? data : [];
+      const draft = Object.assign({}, SETTINGS_DEFAULTS);
+      list.forEach((s) => { draft[s.key] = s.value; });
+      this.setState({ settings: list, settingsDraft: draft, settingsError: "" });
+    } catch (e) {
+      this.setState({ settingsError: e.message || "بارگذاری تنظیمات ممکن نشد." });
+    }
+  }
+
+  setSettingDraft = (key, value) => this.setState((s) => ({
+    settingsDraft: Object.assign({}, s.settingsDraft, { [key]: value })
+  }));
+
+  saveSettingsGroup = async (group) => {
+    const keys = SETTINGS_GROUP_KEYS[group] || [];
+    this.setState((s) => ({ settingsSaving: Object.assign({}, s.settingsSaving, { [group]: true }) }));
+    try {
+      const payload = { settings: keys.map((k) => ({ key: k, value: String(this.state.settingsDraft[k] ?? "") })) };
+      // PUT /api/v1/settings/bulk — BulkUpdateShopSettingRequest -> ShopSettingResponse[]
+      const updated = await apiSend("PUT", "/api/v1/settings/bulk", payload);
+      this.setState((s) => {
+        const settings = s.settings.slice();
+        (updated || []).forEach((u) => {
+          const idx = settings.findIndex((x) => x.key === u.key);
+          if (idx >= 0) settings[idx] = u; else settings.push(u);
+        });
+        return { settings, settingsSaving: Object.assign({}, s.settingsSaving, { [group]: false }) };
+      });
+      this.flash("تنظیمات ذخیره شد");
+    } catch (e) {
+      this.setState((s) => ({ settingsSaving: Object.assign({}, s.settingsSaving, { [group]: false }) }));
+      this.flash(e.message || "ذخیره تنظیمات ممکن نشد.");
     }
   };
 
@@ -2330,9 +2418,9 @@ class Component extends DCLogic {
 
     const navDefs = [
       { id: "dash", label: "داشبورد", badge: "", dot: GREEN },
-      { id: "analytics", label: "تحلیل‌ها", badge: "", dot: "#8a6bb0" },
+      <!-- { id: "analytics", label: "تحلیل‌ها", badge: "", dot: "#8a6bb0" }, -->
       { id: "users", label: "مشتریان", badge: String(USERS.length), dot: "#3c5c9c" },
-      { id: "calendar", label: "تقویم", badge: "", dot: "#5b6ab0" },
+      <!-- { id: "calendar", label: "تقویم", badge: "", dot: "#5b6ab0" }, -->
       { id: "products", label: "محصولات", badge: String(st.products.length), dot: "#b08b52" },
       { id: "cats", label: "دسته‌بندی‌ها", badge: String(st.cats.length), dot: "#8a6bb0" },
       { id: "offers", label: "پیشنهادها", badge: String(offerProducts.length), dot: ORANGE },
@@ -2343,9 +2431,9 @@ class Component extends DCLogic {
 
     const titles = {
       dash: ["صبح بخیر، " + st.userName, "هر چیزی که امروز نیاز به توجه دارد، یکجا."],
-      analytics: ["تحلیل‌ها", "همه اعداد فروشگاه در بازه‌ای که انتخاب می‌کنید."],
+      <!-- analytics: ["تحلیل‌ها", "همه اعداد فروشگاه در بازه‌ای که انتخاب می‌کنید."], -->
       users: ["مشتریان", "چه کسی خرید می‌کند، چگونه با او تماس بگیرید و چه خواسته‌ای دارد."],
-      calendar: ["تقویم", "فروش، خرید و یادداشت‌های فروشگاه، ماه‌به‌ماه."],
+      <!-- calendar: ["تقویم", "فروش، خرید و یادداشت‌های فروشگاه، ماه‌به‌ماه."], -->
       products: ["محصولات", "همه چیزهایی که می‌فروشید؛ ویرایش‌ها بلافاصله اعمال می‌شوند."],
       cats: ["دسته‌بندی‌ها", "یک قفسه را پنهان کنید تا از فروشگاه حذف شود."],
       offers: ["پیشنهادها", "تخفیف‌های روزانه در بالای فروشگاه نمایش داده می‌شوند."],
@@ -2549,6 +2637,46 @@ class Component extends DCLogic {
       pwBusyOpacity: st.pwBusy ? 0.6 : 1,
       pwCta: st.pwBusy ? "در حال تغییر…" : "تغییر رمز عبور",
       changePassword: () => this.changePassword(),
+
+      ...(() => {
+        const settingsByKey = {};
+        st.settings.forEach((s) => { settingsByKey[s.key] = s; });
+        const fieldsFor = (keys) => keys.map((k) => ({
+          key: k,
+          label: (SETTINGS_FIELDS[k] && SETTINGS_FIELDS[k].label) || k,
+          type: (SETTINGS_FIELDS[k] && SETTINGS_FIELDS[k].type) || "text",
+          value: st.settingsDraft[k] != null ? st.settingsDraft[k] : "",
+          onChange: (e) => this.setSettingDraft(k, e.target.value)
+        }));
+        const updatedLabelFor = (keys) => {
+          const dates = keys.map((k) => settingsByKey[k] && settingsByKey[k].updated_at).filter(Boolean).map((d) => new Date(d));
+          if (!dates.length) return "";
+          const latest = new Date(Math.max.apply(null, dates));
+          return "آخرین به‌روزرسانی: " + latest.toLocaleString("fa-IR");
+        };
+        return {
+          storeFields: fieldsFor(SETTINGS_GROUP_KEYS.store),
+          shippingFields: fieldsFor(SETTINGS_GROUP_KEYS.shipping),
+          footerFields: fieldsFor(SETTINGS_GROUP_KEYS.footer),
+          storeSaving: !!st.settingsSaving.store,
+          shippingSaving: !!st.settingsSaving.shipping,
+          footerSaving: !!st.settingsSaving.footer,
+          storeSaveOpacity: st.settingsSaving.store ? 0.6 : 1,
+          shippingSaveOpacity: st.settingsSaving.shipping ? 0.6 : 1,
+          footerSaveOpacity: st.settingsSaving.footer ? 0.6 : 1,
+          storeSaveCta: st.settingsSaving.store ? "در حال ذخیره…" : "ذخیره",
+          shippingSaveCta: st.settingsSaving.shipping ? "در حال ذخیره…" : "ذخیره",
+          footerSaveCta: st.settingsSaving.footer ? "در حال ذخیره…" : "ذخیره",
+          saveStoreSettings: () => this.saveSettingsGroup("store"),
+          saveShippingSettings: () => this.saveSettingsGroup("shipping"),
+          saveFooterSettings: () => this.saveSettingsGroup("footer"),
+          storeUpdatedLabel: updatedLabelFor(SETTINGS_GROUP_KEYS.store),
+          shippingUpdatedLabel: updatedLabelFor(SETTINGS_GROUP_KEYS.shipping),
+          footerUpdatedLabel: updatedLabelFor(SETTINGS_GROUP_KEYS.footer),
+          hasSettingsError: !!st.settingsError,
+          settingsErrorText: st.settingsError
+        };
+      })(),
 
       today: WEEKDAYS[(now.getDay() + 1) % 7] + " " + now.getDate() + " " + MONTHS[now.getMonth()],
       greeting: notSent + (notSent === 1 ? " سفارش در انتظار بسته‌بندی" : " سفارش در انتظار بسته‌بندی"),

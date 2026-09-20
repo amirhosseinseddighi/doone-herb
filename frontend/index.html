@@ -55,7 +55,7 @@
         <span style="width: 30px; height: 30px; border-radius: 10px; background: #0f7a4a; display: flex; align-items: center; justify-content: center;">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"></path><path d="M2 21c0-3 1.9-5.4 5.1-6C9.5 14.5 12 13 13 12"></path></svg>
         </span>
-        <span style="font-family: 'Vazirmatn', sans-serif; font-weight: 800; font-size: 19px;">دونه هرب</span>
+        <span style="font-family: 'Vazirmatn', sans-serif; font-weight: 800; font-size: 19px;">{{ shopName }}</span>
       </button>
 
       <div class="d-only" style="flex: 1; max-width: 460px; margin-right: 14px; align-items: center; gap: 10px; height: 42px; padding: 0 16px; border-radius: 999px; background: #f1efe8;">
@@ -335,8 +335,8 @@
       <div class="wrap" style="padding-top: 48px;">
         <div style="border-radius: 24px; background: #12211a; color: #fbfaf7; padding: 28px; display: flex; flex-wrap: wrap; gap: 22px; align-items: center; justify-content: space-between;">
           <div style="min-width: 240px;">
-            <h2 style="font-size: 24px; color: #fbfaf7;">پلاک ۴۲، رویِ بازارِ سبزیجات</h2>
-            <p style="margin: 8px 0 0; font-size: 14px; line-height: 1.8; opacity: 0.7;">خیابان ولی‌عصر، تهران · شنبه تا پنجشنبه، ۹:۰۰ تا ۲۰:۰۰ · ۰۲۱ ۸۸۴۲ ۱۱۹۰</p>
+            <h2 style="font-size: 24px; color: #fbfaf7;">{{ footerLabel }}</h2>
+            <p style="margin: 8px 0 0; font-size: 14px; line-height: 1.8; opacity: 0.7;">{{ footerDescription }}</p>
           </div>
           <button onClick="{{ goHelp }}" style="height: 46px; padding: 0 22px; border: 1px solid rgba(251,250,247,0.35); background: none; color: #fbfaf7; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer;">ارسال و راهنما</button>
         </div>
@@ -1061,7 +1061,7 @@ const productPageData = (data) => ({
 // Cart calls must send cookies: guests are tracked with the backend's HttpOnly
 // `guest_cart_token` cookie and the API uses CORS with allow_credentials.
 const FETCH_CREDENTIALS = "include";
-// Fallback delivery slots (until GET /orders/delivery-slots responds).
+// Fallback delivery slots (until GET /api/v1/orders/delivery-slots responds).
 // Indexes match the checkout screen's slot picker (st.slot).
 const SLOTS = [
   { label: "امروز، ۱۷:۰۰ تا ۲۱:۰۰", note: "پیک همان‌روز", fee: 45000, pickup: false },
@@ -1069,6 +1069,17 @@ const SLOTS = [
   { label: "تحویل حضوری از فروشگاه", note: "پیشخوان خیابان ولی‌عصر", fee: 0, pickup: true }
 ];
 const MY_REVIEWS = [];
+// Shown until GET /api/v1/settings responds, so nothing renders blank.
+const SETTINGS_DEFAULTS = {
+  shop_name: "دونه هرب",
+  address: "تهران، خیابان ولیعصر، ردیف بازار گیاهان، پلاک ۴۲",
+  support_number: "021 8842 1190",
+  tehran_fee: "45000",
+  free_send_threshold: "900000",
+  last_send_hour: "14:00",
+  footer_label: "پلاک ۴۲، رویِ بازارِ سبزیجات",
+  footer_description: "خیابان ولی‌عصر، تهران · شنبه تا پنجشنبه، ۹:۰۰ تا ۲۰:۰۰ · ۰۲۱ ۸۸۴۲ ۱۱۹۰"
+};
 
 async function apiLogin(username, password) {
   const body = new URLSearchParams({ username, password, grant_type: "password" });
@@ -1275,9 +1286,9 @@ async function apiDeleteCartItem(cartItemId) {
   return res.json();
 }
 
-// GET /orders/delivery-slots (public)
+// GET /api/v1/orders/delivery-slots (public)
 async function apiGetSlots() {
-  const res = await fetch(`${API_BASE}/orders/delivery-slots`, { credentials: FETCH_CREDENTIALS });
+  const res = await fetch(`${API_BASE}/api/v1/orders/delivery-slots`, { credentials: FETCH_CREDENTIALS });
   if (!res.ok) throw new Error("بارگذاری گزینه‌های ارسال ممکن نشد.");
   return res.json();
 }
@@ -1323,23 +1334,23 @@ async function apiDeleteAddress(id) {
   return res.json();
 }
 
-// GET /orders (auth, paginated) — {items: OrderSummary[], total, page, page_size}
+// GET /api/v1/orders (auth, paginated) — {items: OrderSummary[], total, page, page_size}
 async function apiListMyOrders() {
-  const res = await fetch(`${API_BASE}/orders?page=1&page_size=50`, { headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/v1/orders?page=1&page_size=50`, { headers: authHeaders() });
   if (!res.ok) throw new Error("بارگذاری سفارش‌های شما ممکن نشد.");
   return res.json();
 }
 
-// GET /orders/code/{order_no} (auth) — full OrderRead with items/events/payments
+// GET /api/v1/orders/code/{order_no} (auth) — full OrderRead with items/events/payments
 async function apiGetOrder(orderNo) {
-  const res = await fetch(`${API_BASE}/orders/code/${encodeURIComponent(orderNo)}`, { headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/v1/orders/code/${encodeURIComponent(orderNo)}`, { headers: authHeaders() });
   if (!res.ok) throw new Error("بارگذاری سفارش ممکن نشد.");
   return res.json();
 }
 
-// POST /orders/{id}/cancel (auth)
+// POST /api/v1/orders/{id}/cancel (auth)
 async function apiCancelOrder(id) {
-  const res = await fetch(`${API_BASE}/orders/${id}/cancel`, { method: "POST", headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/v1/orders/${id}/cancel`, { method: "POST", headers: authHeaders() });
   if (!res.ok) {
     let msg = "لغو سفارش ممکن نشد.";
     try { const d = await res.json(); if (d && d.detail) msg = typeof d.detail === "string" ? d.detail : msg; } catch (e) {}
@@ -1348,9 +1359,9 @@ async function apiCancelOrder(id) {
   return res.json();
 }
 
-// POST /orders/checkout  OrderCreate — items and money come from the server-side cart
+// POST /api/v1/orders/checkout  OrderCreate — items and money come from the server-side cart
 async function apiCheckout(payload) {
-  const res = await fetch(`${API_BASE}/orders/checkout`, {
+  const res = await fetch(`${API_BASE}/api/v1/orders/checkout`, {
     method: "POST",
     headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
     body: JSON.stringify(payload)
@@ -1404,7 +1415,7 @@ const mapOrder = (o) => ({
   badge: ORDER_STATUS_BADGE[o.status] || { bg: "#f1efe8", fg: "#6f7a72" },
   total: o.total, paymentPaid: o.payment_status === "paid", paid: o.payment_status === "paid",
   paymentStatus: o.payment_status,
-  items: [], // lazily hydrated via GET /orders/code/{no}
+  items: [], // lazily hydrated via GET /api/v1/orders/code/{no}
   loaded: false,
   rider: "پیک", eta: ORDER_STATUS_LABEL[o.status] || "",
   pickup: false,
@@ -1492,6 +1503,7 @@ class Component extends DCLogic {
     productOffset: 0, productLimit: 25, productHasMore: false, productLoading: false,
     slots: [],
     dataReady: false,
+    settingsMap: Object.assign({}, SETTINGS_DEFAULTS),
   };
 
   componentDidMount() {
@@ -1500,6 +1512,23 @@ class Component extends DCLogic {
     this.restoreSession();
     this.loadSlots();
     this.syncCart();
+    this.loadSettings();
+  }
+
+  // GET /api/v1/settings — shop_name, address, footer_label, footer_description,
+  // support_number, tehran_fee, free_send_threshold, last_send_hour.
+  async loadSettings() {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/settings`);
+      if (!res.ok) throw new Error("failed");
+      const data = await res.json();
+      const map = {};
+      (Array.isArray(data) ? data : []).forEach((s) => { map[s.key] = s.value; });
+      this.setState((s) => ({ settingsMap: Object.assign({}, s.settingsMap, map) }));
+    } catch (err) {
+      // Non-critical for browsing — keep the defaults already in state.
+      console.error(err);
+    }
   }
 
   // Email links point here: /reset-password?token=…  → hand off to the dedicated reset form.
@@ -1727,7 +1756,7 @@ class Component extends DCLogic {
   };
 
   // Builds the success-screen receipt from the real OrderRead returned by
-  // POST /orders/checkout — money and lines come from the server, not the UI.
+  // POST /api/v1/orders/checkout — money and lines come from the server, not the UI.
   buildReceipt(order, f) {
     const paid = order.payment_method === "online";
     const pickup = order.fulfillment_method === "pickup";
@@ -1757,8 +1786,9 @@ class Component extends DCLogic {
     const PRODUCTS = st.products;
     const SLOT_DEFS = st.slots.length ? st.slots : SLOTS;
 
-    const fee = this.props.deliveryFee ?? 45000;
-    const freeOver = this.props.freeOver ?? 900000;
+    const settingsMap = st.settingsMap || SETTINGS_DEFAULTS;
+    const fee = Number(settingsMap.tehran_fee) || (this.props.deliveryFee ?? 45000);
+    const freeOver = Number(settingsMap.free_send_threshold) || (this.props.freeOver ?? 900000);
     const catOf = (id) =>
       CATS.find((c) => c.id === id) || {
         id: "", name: "", tint: "#f1efe8", dot: "#7d857f", kw: "food"
@@ -1835,6 +1865,13 @@ class Component extends DCLogic {
       isHome: st.screen === "home", isProduct: st.screen === "product", isSearch: st.screen === "search", isHelp: st.screen === "help",
       goHome: () => { this.setState({ screen: "home" }); this.top(); },
       goHelp: () => { this.setState({ screen: "help" }); this.top(); },
+
+      // From GET /api/v1/settings (see loadSettings / SETTINGS_DEFAULTS).
+      shopName: settingsMap.shop_name || SETTINGS_DEFAULTS.shop_name,
+      shopAddress: settingsMap.address || SETTINGS_DEFAULTS.address,
+      footerLabel: settingsMap.footer_label || SETTINGS_DEFAULTS.footer_label,
+      footerDescription: settingsMap.footer_description || SETTINGS_DEFAULTS.footer_description,
+      supportNumber: settingsMap.support_number || SETTINGS_DEFAULTS.support_number,
       scrollShop: () => { try { window.scrollTo({ top: 720, behavior: "smooth" }); } catch (e) { window.scrollTo(0, 720); } },
       scrollOffers: () => { try { window.scrollTo({ top: 420, behavior: "smooth" }); } catch (e) { window.scrollTo(0, 420); } },
       tab: {
@@ -2189,7 +2226,7 @@ class Component extends DCLogic {
       pwOk: !!st.pwOk,
       pwBusy: !!st.pwBusy,
       pwBusyOpacity: st.pwBusy ? 0.6 : 1,
-      pwCta: st.pwBusy ? "در حال تغییر…" : "تغییر رمز عبور",
+      pwCta: st.pwBusy ? "در حال تغییر…" : "ورود",
       changePassword: async () => {
         const fail = (m) => this.setState({ pwErr: m, pwOk: "" });
         if (!st.pwCurrent) return fail("رمز عبور فعلی را وارد کنید.");
@@ -2243,7 +2280,7 @@ class Component extends DCLogic {
           k1: k(0), k2: k(1), k3: k(2), k4: k(3),
           riderInitials: o.pickup ? "PU" : o.rider.slice(0, 2).toUpperCase(),
           riderLine: o.pickup
-            ? (o.paid === false ? "تحویل از پیشخوان · پرداخت هنگام دریافت" : "منتظر شما در پیشخوان، خیابان ولی‌عصر")
+            ? (o.paid === false ? "تحویل از پیشخوان · پرداخت هنگام دریافت" : "منتظر شما در پیشخوان، " + (settingsMap.address || "خیابان ولی‌عصر"))
             : o.rider + " در راه است" + (o.paid === false ? " · پول نقد آماده داشته باشید" : " · پرداخت شده"),
           eta: o.eta,
           canReview: o.status === 4,
@@ -2355,7 +2392,7 @@ class Component extends DCLogic {
         }).catch((e) => this.setState({ savingAddress: false, err: (e && e.message) || "ذخیره آدرس ممکن نشد." }));
       },
       slots: SLOT_DEFS.map((s, i) => ({
-        label: s.label, note: s.note,
+        label: s.label, note: s.pickup ? (settingsMap.address || s.note) : s.note,
         fee: s.fee === 0 || (sub >= freeOver && sub > 0) ? "free" : fmt(s.fee),
         bd: st.slot === i ? GREEN : "#eceae3",
         bg: st.slot === i ? "#eaf6ee" : "#fff",

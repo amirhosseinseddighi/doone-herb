@@ -93,10 +93,27 @@ def require_role(*allowed_roles: Roles):
     return check_role
 
 
+async def get_optional_admin(
+    current_user: OptionalUser,
+) -> Optional[User]:
+    """Return the current user if they're an OWNER/MANAGER, else None.
+ 
+    Mirrors CurrentManagerOrOwner's role set, but never raises -- so it's
+    safe to use alongside a required CurrentUser dependency for "author OR
+    admin" checks.
+    """
+    if current_user is not None and current_user.role in (Roles.OWNER, Roles.MANAGER):
+        return current_user
+    return None
+ 
+ 
+
+
 CurrentUser = Annotated[User, Depends(get_current_user)]
 CurrentAdmin = Annotated[User, Depends(require_role(Roles.OWNER, Roles.PACKER, Roles.MANAGER))]
 CurrentOwner = Annotated[User, Depends(require_role(Roles.OWNER))]
 CurrentManagerOrOwner = Annotated[User, Depends(require_role(Roles.OWNER, Roles.MANAGER))]
+CurrentAdminOptional = Annotated[Optional[User], Depends(get_optional_admin)]
 OptionalUser = Annotated[Optional[User], Depends(get_optional_current_user)]
 
 
@@ -133,4 +150,5 @@ async def require_cart_identity(
 
 CartIdentityDep = Annotated[CartIdentity, Depends(get_cart_identity)]
 RequiredCartIdentityDep = Annotated[CartIdentity, Depends(require_cart_identity)]
+
 
