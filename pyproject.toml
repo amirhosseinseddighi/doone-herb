@@ -17,6 +17,7 @@ dependencies = [
     "python-slugify>=8.0.4",
     "redis>=8.1.0",
     "sqlalchemy>=2.0.51",
+    "structlog>=26.1.0",
 ]
 
 

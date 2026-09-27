@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: int
 
+    ENVIRONMENT: str = "DEV" # OR PROD
+
     # CART
     GUEST_CART_MAX_AGE: int = 30 * 24 * 3600
 

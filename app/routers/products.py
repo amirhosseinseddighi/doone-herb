@@ -26,7 +26,9 @@ from app.schemas.products import ImageUploadResponse, NewProductRequest, NewProd
 from app.utils.image_utils import process_product_image
 from app.utils.product_utils import generate_sku
 from app.core.config import settings
+import structlog
 
+logger = structlog.get_logger()
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -266,7 +268,6 @@ async def get_all_products(
 
     products = result.scalars().all()
 
-    print(products)
 
     return PaginatedProductResponse(
         products=[ProductResponse.model_validate(product) for product in products],

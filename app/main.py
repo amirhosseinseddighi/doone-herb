@@ -1,5 +1,9 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request, status
 from fastapi.staticfiles import StaticFiles
+import structlog
+from app.middleware import ASGILoggingMiddleware
 from app.routers import (
     addresses, 
     cart, 
@@ -12,6 +16,8 @@ from app.routers import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import APIRouter
+from app.core.logging_config import setup_logging
+from app.core.config import settings
 
 origins = [
     "http://localhost.tiangolo.com",
@@ -21,7 +27,22 @@ origins = [
     "http://localhost:7000"
 ]
 
-app = FastAPI()
+logger = structlog.get_logger()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    setup_logging(is_dev=False if (settings.ENVIRONMENT == "PROD") else True)
+    logger.info("Application setup completed! starting server...")
+
+    yield
+
+    logger.info("Application is shutting down!")
+
+
+
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,6 +51,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(ASGILoggingMiddleware)
 
 api_v1 = APIRouter(prefix="/api/v1")
 

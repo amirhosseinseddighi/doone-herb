@@ -5,10 +5,12 @@ from pydantic import EmailStr
 from fastapi.templating import Jinja2Templates
 from app.core.config import settings
 import aiosmtplib
-
+import structlog
 
 templates = Jinja2Templates(directory="templates")
 
+
+logger = structlog.get_logger()
 
 
 async def send_email(
@@ -27,15 +29,20 @@ async def send_email(
         message.add_alternative(html_content, subtype="html")
 
 
-    await aiosmtplib.send(
-        message,
-        hostname=settings.MAIL_SERVER,
-        port=settings.MAIL_PORT,
-        username=settings.MAIL_USERNAME or None,
-        password=settings.MAIL_PASSWORD.get_secret_value() or None,
-        use_tls=settings.MAIL_USE_TLS,
-        start_tls=settings.MAIL_START_TLS,
-    )
+    try:
+        await aiosmtplib.send(
+                message,
+                hostname=settings.MAIL_SERVER,
+                port=settings.MAIL_PORT,
+                username=settings.MAIL_USERNAME or None,
+                password=settings.MAIL_PASSWORD.get_secret_value() or None,
+                use_tls=settings.MAIL_USE_TLS,
+                start_tls=settings.MAIL_START_TLS,
+            )
+
+        logger.info("email sent", email=to_email)
+    except Exception as exc:
+        logger.error("sending email failed", exc_info=True)
 
 
 def generate_reset_token() -> str:
