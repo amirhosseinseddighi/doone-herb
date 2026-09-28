@@ -14,7 +14,9 @@ from app.core.config import settings
 from app.routers.cart import merge_guest_cart_to_user
 from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token, UpdateProfileRequest
 from app.utils.email_utils import send_password_reset_email
+import structlog
 
+logger = structlog.get_logger()
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -45,8 +47,9 @@ async def login(
     user = result.scalars().first()
 
     if not user or not security.verify_password(form_data.password, user.password_hash):
+        logger.warning("Login failed", email=form_data.username)
         raise HTTPException(
-            status_code = status.HTTP_401_UNAUTHORIZED, 
+            status_code = status.HTTP_401_UNAUTHORIZED,
             detail="Wrong Username or Password",
             headers={"WWW-Authenticate": "Bearer"}
         )
@@ -72,9 +75,11 @@ async def login(
         data = {
             "sub": str(user.id),
             "role": user.role
-        }, 
+        },
         expires_delta= access_token_expires
     )
+
+    logger.info("Login successful", user_id=user.id, email=user.email, role=user.role.value)
 
     return Token(access_token= access_token, token_type='bearer')
 
@@ -121,6 +126,7 @@ async def update_users_me(
         )
 
     await db.refresh(current_user)
+    logger.info("Profile updated", user_id=current_user.id, fields=sorted(update_data.keys()))
     return current_user
 
 
@@ -201,10 +207,14 @@ async def create_new_user(
         await db.commit()
     except IntegrityError:
         await db.rollback()
+        logger.warning("Registration failed", email=normalized_email, reason="duplicate")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username or phone number already registered",
         )
+
+    await db.refresh(user)
+    logger.info("User registered", user_id=user.id, email=user.email)
 
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
@@ -263,6 +273,7 @@ async def forget_password(
         await db.commit()
         await db.refresh(reset_token_entry)
 
+        logger.info("Password reset requested", user_id=user.id, email=user.email)
 
         # send email
         background_task.add_task(
@@ -341,6 +352,8 @@ async def reset_password(
     # commit changes
     await db.commit()
 
+    logger.info("Password reset completed", user_id=user.id, email=user.email)
+
     # return response
     return {
         "message": "Password reset successfully. You can now log in with your new password.",
@@ -360,6 +373,7 @@ async def change_password(
     if not security.verify_password(
         change_password_request.current_password, current_user.password_hash
     ):
+        logger.warning("Password change failed", user_id=current_user.id, reason="incorrect current password")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect current password.",
@@ -372,5 +386,7 @@ async def change_password(
 
     db.add(current_user)
     await db.commit()
+
+    logger.info("Password changed", user_id=current_user.id)
 
     return {"message": "Password changed successfully."}

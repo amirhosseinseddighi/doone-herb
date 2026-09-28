@@ -10,7 +10,9 @@ from app.models.category import ProductVariant
 from app.models.cart import Cart, CartItem
 from app.schemas.cart import AddCartItemRequest, CartItemResponse, CartResponse, DeleteCartItemResponse, UpdateCartItemRequest
 from app.core.config import settings
+import structlog
 
+logger = structlog.get_logger()
 
 router = APIRouter(prefix="/cart", tags=["cart"])
 
@@ -190,6 +192,11 @@ async def merge_guest_cart_to_user(
         guest_cart.user_id = current_user.id
         guest_cart.guest_token = ""
         await db.commit()
+        logger.info(
+            "Guest cart converted to user cart",
+            user_id=current_user.id,
+            item_count=len(guest_cart.items),
+        )
         return
 
     # merge items into existing user cart
@@ -216,6 +223,13 @@ async def merge_guest_cart_to_user(
 
     await db.delete(guest_cart)
     await db.commit()
+
+    logger.info(
+        "Guest cart merged into user cart",
+        user_id=current_user.id,
+        guest_items=len(guest_variant_ids),
+        user_items_before=len(user_items_map),
+    )
 
 
 
@@ -268,11 +282,20 @@ async def add_item_to_cart(
     if cart_item:
         new_qty = cart_item.qty + cart_request.qty
         if variant.stock_qty < new_qty:
+            logger.warning(
+                "Cart add rejected: exceeds stock",
+                cart_id=cart.id,
+                user_id=identity.user_id,
+                variant_id=cart_request.product_variant_id,
+                requested_qty=new_qty,
+                stock_qty=variant.stock_qty,
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Cannot add more. Total requested quantity ({new_qty}) exceeds stock ({variant.stock_qty}).",
             )
         cart_item.qty = new_qty
+        action = "updated"
     else:
         cart_item = CartItem(
             cart_id=cart.id,
@@ -280,8 +303,18 @@ async def add_item_to_cart(
             qty=cart_request.qty,
         )
         db.add(cart_item)
+        action = "added"
 
     await db.commit()
+
+    logger.info(
+        "Cart item added",
+        cart_id=cart.id,
+        user_id=identity.user_id,
+        variant_id=cart_request.product_variant_id,
+        qty=cart_request.qty,
+        action=action,
+    )
     return {"message": "Item added to cart successfully", "cart_id": cart.id}
 
 
@@ -310,6 +343,13 @@ async def delete_cart_item(
     await db.delete(cart_item)
     await db.commit()
 
+    logger.info(
+        "Cart item removed",
+        cart_id=cart_id,
+        cart_item_id=cart_item_id,
+        user_id=identity.user_id,
+    )
+
     return {"message": "Item removed from cart", "cart_id": cart_id}
 
 
@@ -327,10 +367,18 @@ async def clear_cart(
             detail="Cart not found",
         )
 
+    removed_count = len(cart.items)
     for item in cart.items:
         await db.delete(item)
 
     await db.commit()
+
+    logger.info(
+        "Cart cleared",
+        cart_id=cart.id,
+        user_id=identity.user_id,
+        removed_items=removed_count,
+    )
 
     # cart now has no items, return empty cart
     cart.items = []
@@ -363,13 +411,30 @@ async def update_cart_item(
     variant = await _get_variant_or_404(db, cart_item.product_variant_id)
 
     if variant.stock_qty < update_request.qty:
+        logger.warning(
+            "Cart update rejected: exceeds stock",
+            cart_item_id=cart_item_id,
+            user_id=identity.user_id,
+            requested_qty=update_request.qty,
+            stock_qty=variant.stock_qty,
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Only {variant.stock_qty} left in stock",
         )
 
+    previous_qty = cart_item.qty
     cart_item.qty = update_request.qty
     await db.commit()
+
+    logger.info(
+        "Cart item quantity updated",
+        cart_id=cart_item.cart_id,
+        cart_item_id=cart_item_id,
+        user_id=identity.user_id,
+        previous_qty=previous_qty,
+        new_qty=update_request.qty,
+    )
 
     cart = await _get_cart_with_items(db, user_id=identity.user_id, guest_token=identity.guest_token)
     return _build_cart_response(cart, identity.user_id, identity.guest_token)

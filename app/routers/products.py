@@ -84,12 +84,25 @@ async def upload_product_image(
     # check image size
     max_image_size = settings.MAX_IMAGE_SIZE_MEGA_BYTE * 1024 * 1024
     if len(image) > max_image_size:
+        logger.warning(
+            "Product image upload rejected",
+            product_id=product_id,
+            admin_id=admin.id,
+            reason="file too large",
+            size_bytes=len(image),
+        )
         raise HTTPException(
             status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail=f"Image size is larger than limit: {settings.MAX_IMAGE_SIZE_MEGA_BYTE}MB"
         )
 
     if not image:
+        logger.warning(
+            "Product image upload rejected",
+            product_id=product_id,
+            admin_id=admin.id,
+            reason="empty file",
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File is empty"
@@ -99,6 +112,12 @@ async def upload_product_image(
     try:
         new_filename = await run_in_threadpool(process_product_image, image)
     except UnidentifiedImageError as err:
+        logger.warning(
+            "Product image upload rejected",
+            product_id=product_id,
+            admin_id=admin.id,
+            reason="unrecognized image format",
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid image file. Please upload a valid image (JPEG, PNG, GIF, WebP).",
@@ -120,6 +139,13 @@ async def upload_product_image(
     db.add(new_product_image)
     await db.commit()
     await db.refresh(new_product_image)
+
+    logger.info(
+        "Product image uploaded",
+        product_id=product_id,
+        image_id=new_product_image.id,
+        admin_id=admin.id,
+    )
 
     return new_product_image
 
@@ -162,6 +188,14 @@ async def update_product_image(
     await db.commit()
     await db.refresh(image)
 
+    logger.info(
+        "Product image updated",
+        product_id=product_id,
+        image_id=image_id,
+        admin_id=admin.id,
+        sort_order=data.sort_order,
+    )
+
     return image
 
 
@@ -196,8 +230,18 @@ async def delete_product_image(
     await db.delete(image)
     await db.commit()
 
+    file_removed = False
     if image_path and os.path.exists(image_path):
         os.remove(image_path)
+        file_removed = True
+
+    logger.info(
+        "Product image deleted",
+        product_id=product_id,
+        image_id=image_id,
+        admin_id=admin.id,
+        file_removed=file_removed,
+    )
 
     return None
 
@@ -356,9 +400,18 @@ async def add_product(
             sku=generate_sku(),
         ) for v in new_product.variants
     ]
-    
+
     db.add_all(variants_to_add)
     await db.commit()
+
+    logger.info(
+        "Product created",
+        product_id=product.id,
+        slug=product.slug,
+        category_id=product.category_id,
+        variant_count=len(variants_to_add),
+        admin_id=admin.id,
+    )
 
     stmt = (
         select(Product)
@@ -404,6 +457,14 @@ async def delete_product(
     await db.execute(update(ProductVariant).where(ProductVariant.product_id == product_id).values(is_deleted=True))
 
     await db.commit()
+
+    logger.info(
+        "Product deleted (soft)",
+        product_id=product_id,
+        slug=product.slug,
+        variant_count=len(variants),
+        admin_id=admin.id,
+    )
     return None
 
 
@@ -495,6 +556,13 @@ async def update_product(
     )
     refetched_product = await db.scalar(refetched_stmt)
 
+    logger.info(
+        "Product updated",
+        product_id=product_id,
+        admin_id=admin.id,
+        fields=sorted(update_data.keys()),
+    )
+
     return refetched_product
 
 
@@ -541,7 +609,19 @@ async def add_product_variant(
             break
         except IntegrityError:
             # Rollback to savepoint on collision
+            logger.warning(
+                "SKU collision on variant create, retrying",
+                product_id=product_id,
+                admin_id=admin.id,
+                attempt=attempt,
+            )
             if attempt == max_retries - 1:
+                logger.error(
+                    "Product variant creation failed: no unique SKU",
+                    product_id=product_id,
+                    admin_id=admin.id,
+                    attempts=max_retries,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
                     detail="Could not generate a unique SKU. Please try again."
@@ -626,6 +706,13 @@ async def delete_product_variant(
     await db.execute(sql_delete(CartItem).where(CartItem.product_variant_id == variant.id))
 
     await db.commit()
+
+    logger.info(
+        "Product variant deleted (soft)",
+        product_id=product_id,
+        variant_id=variant_id,
+        admin_id=admin.id,
+    )
     return None
 
 
@@ -685,5 +772,13 @@ async def update_product_variant(
 
     await db.commit()
     await db.refresh(variant)
+
+    logger.info(
+        "Product variant updated",
+        product_id=product_id,
+        variant_id=variant_id,
+        admin_id=admin.id,
+        fields=sorted(update_data.keys()),
+    )
 
     return variant

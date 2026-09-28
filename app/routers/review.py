@@ -21,6 +21,9 @@ from app.schemas.review import (
     ReviewResponse,
     ReviewUpdate,
 )
+import structlog
+
+logger = structlog.get_logger()
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
@@ -242,10 +245,24 @@ async def create_review(
         # Requires a partial unique constraint, e.g.
         # UNIQUE (product_id, user_id) WHERE parent_id IS NULL.
         await db.rollback()
+        logger.warning(
+            "Duplicate review rejected",
+            product_id=payload.product_id,
+            user_id=current_user.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You have already reviewed this product",
         )
+
+    logger.info(
+        "Review created",
+        review_id=review.id,
+        product_id=payload.product_id,
+        user_id=current_user.id,
+        stars=payload.stars,
+        has_order=payload.order_id is not None,
+    )
     return await _load_review_for_response(db, review.id)
 
 
@@ -272,6 +289,14 @@ async def reply_to_review(
     )
     db.add(reply)
     await db.commit()
+
+    logger.info(
+        "Review reply created",
+        review_id=reply.id,
+        parent_review_id=parent_review.id,
+        product_id=parent_review.product_id,
+        admin_id=admin_user.id,
+    )
     return await _load_review_for_response(db, reply.id)
 
 
@@ -297,6 +322,15 @@ async def update_review(
         setattr(review, key, value)
 
     await db.commit()
+
+    logger.info(
+        "Review updated",
+        review_id=review.id,
+        product_id=review.product_id,
+        user_id=current_user.id,
+        fields=sorted(update_data.keys()),
+        by_admin=current_admin is not None,
+    )
     return await _load_review_for_response(db, review.id)
 
 
@@ -310,5 +344,16 @@ async def delete_review(
     """Delete a review or reply (by author or admin/staff)."""
     _ensure_can_modify(review, current_user, current_admin)
 
+    deleted_review_id = review.id
+    deleted_product_id = review.product_id
+
     await db.delete(review)
     await db.commit()
+
+    logger.info(
+        "Review deleted",
+        review_id=deleted_review_id,
+        product_id=deleted_product_id,
+        user_id=current_user.id,
+        by_admin=current_admin is not None,
+    )

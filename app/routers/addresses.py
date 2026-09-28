@@ -8,6 +8,9 @@ from app.core.deps import CurrentUser, get_db
 from app.db.database import AsyncSession
 from app.models.identity import Address
 from app.schemas.addresses import AddressCreate, AddressRead, AddressUpdate
+import structlog
+
+logger = structlog.get_logger()
 
 router = APIRouter(prefix="/addresses", tags=["addresses"])
 
@@ -80,6 +83,13 @@ async def create_address(
     db.add(address)
     await db.commit()
     await db.refresh(address)
+
+    logger.info(
+        "Address created",
+        address_id=address.id,
+        user_id=current_user.id,
+        is_default=address.is_default,
+    )
     return address
 
 
@@ -110,6 +120,14 @@ async def update_address(
 
     await db.commit()
     await db.refresh(address)
+
+    logger.info(
+        "Address updated",
+        address_id=address_id,
+        user_id=current_user.id,
+        fields=sorted(data.keys()),
+        made_default=making_default is True,
+    )
     return address
 
 
@@ -134,6 +152,13 @@ async def delete_address(address_id: int, current_user: CurrentUser, db: DbDep):
 
     await db.commit()
 
+    logger.info(
+        "Address deleted",
+        address_id=address_id,
+        user_id=current_user.id,
+        was_default=was_default,
+    )
+
 
 @router.post("/{address_id}/set-default", response_model=AddressRead)
 async def set_default_address(address_id: int, current_user: CurrentUser, db: DbDep):
@@ -143,4 +168,5 @@ async def set_default_address(address_id: int, current_user: CurrentUser, db: Db
         address.is_default = True
         await db.commit()
         await db.refresh(address)
+        logger.info("Address set as default", address_id=address_id, user_id=current_user.id)
     return address

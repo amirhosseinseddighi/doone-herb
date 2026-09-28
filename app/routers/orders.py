@@ -36,6 +36,10 @@ from app.schemas.orders import (
     OrderSummary,
 )
 
+import structlog
+
+logger = structlog.get_logger()
+
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 
@@ -174,6 +178,13 @@ async def checkout(
         variant = locked.scalar_one()
 
         if variant.stock_qty < cart_item.qty:
+            logger.warning(
+                "Checkout rejected: insufficient stock",
+                user_id=current_user.id,
+                variant_id=variant.id,
+                requested_qty=cart_item.qty,
+                stock_qty=variant.stock_qty,
+            )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Not enough stock for {variant.product.name}",
@@ -232,10 +243,24 @@ async def checkout(
         await db.commit()
     except IntegrityError:
         # Extremely unlikely order_no collision — retry once with a fresh one.
+        logger.warning("Order number collision, retrying with a new one", user_id=current_user.id)
         await db.rollback()
         order.order_no = _generate_order_no()
         db.add(order)
         await db.commit()
+
+    logger.info(
+        "Order placed",
+        order_id=order.id,
+        order_no=order.order_no,
+        user_id=current_user.id,
+        item_count=len(order_items),
+        subtotal=subtotal,
+        delivery_fee=delivery_fee,
+        total=total,
+        fulfillment_method=payload.fulfillment_method.value,
+        payment_method=payload.payment_method.value,
+    )
 
     return await _load_order_or_404(order.id, db)
 
@@ -301,10 +326,19 @@ async def cancel_order(
     _ensure_owner_or_staff(order, current_user)
 
     if order.status not in CANCELLABLE_STATUSES:
+        logger.warning(
+            "Order cancellation rejected",
+            order_id=order.id,
+            order_no=order.order_no,
+            user_id=current_user.id,
+            current_status=order.status.value,
+        )
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Order in status '{order.status.value}' can no longer be cancelled",
         )
+
+    previous_status = order.status.value
 
     for item in order.items:
         variant_res = await db.execute(select(ProductVariant).where(ProductVariant.id == item.product_variant_id).with_for_update())
@@ -323,6 +357,15 @@ async def cancel_order(
         )
     )
     await db.commit()
+
+    logger.info(
+        "Order cancelled by customer",
+        order_id=order.id,
+        order_no=order.order_no,
+        user_id=current_user.id,
+        previous_status=previous_status,
+        restocked_items=len(order.items),
+    )
     return await _load_order_or_404(order.id, db)
 
 
@@ -367,11 +410,20 @@ async def update_order_status(
 
     allowed = ALLOWED_TRANSITIONS.get(order.status, set())
     if payload.status not in allowed:
+        logger.warning(
+            "Order status transition rejected",
+            order_id=order.id,
+            order_no=order.order_no,
+            staff_id=staff.id,
+            from_status=order.status.value,
+            to_status=payload.status.value,
+        )
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Cannot move order from '{order.status.value}' to '{payload.status.value}'",
         )
 
+    previous_status = order.status.value
     order.status = payload.status
     order.status_events.append(
         OrderStatusEvent(
@@ -383,6 +435,15 @@ async def update_order_status(
     )
     await db.commit()
     await db.refresh(order)
+
+    logger.info(
+        "Order status updated",
+        order_id=order.id,
+        order_no=order.order_no,
+        staff_id=staff.id,
+        from_status=previous_status,
+        to_status=payload.status.value,
+    )
     return order
 
 
@@ -390,7 +451,7 @@ async def update_order_status(
 async def update_order_fulfillment(
     order_id: int,
     payload: OrderFulfillmentUpdate,
-    _staff: CurrentAdmin,
+    staff: CurrentAdmin,
     db: AsyncSession = Depends(get_db),
 ):
     """Attach/update tracking details — no status change."""
@@ -401,4 +462,12 @@ async def update_order_fulfillment(
 
     await db.commit()
     await db.refresh(order)
+
+    logger.info(
+        "Order fulfillment updated",
+        order_id=order.id,
+        order_no=order.order_no,
+        staff_id=staff.id,
+        tracking_code=payload.tracking_code,
+    )
     return order

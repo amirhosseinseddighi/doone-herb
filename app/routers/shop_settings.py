@@ -12,6 +12,9 @@ from app.schemas.shop_settings import (
     ShopSettingResponse,
     UpdateShopSettingRequest,
 )
+import structlog
+
+logger = structlog.get_logger()
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -76,6 +79,8 @@ async def create_setting(
     db.add(setting)
     await db.commit()
     await db.refresh(setting)
+
+    logger.info("Shop setting created", setting_key=setting.key, admin_id=admin.id)
     return setting
 
 
@@ -102,6 +107,13 @@ async def bulk_upsert_settings(
     for s in updated_settings:
         await db.refresh(s)
 
+    logger.info(
+        "Shop settings bulk upserted",
+        admin_id=admin.id,
+        count=len(updated_settings),
+        keys=[s.key for s in updated_settings],
+    )
+
     return updated_settings
 
 
@@ -122,6 +134,8 @@ async def update_setting(
     setting.value = setting_update.value
     await db.commit()
     await db.refresh(setting)
+
+    logger.info("Shop setting updated", setting_key=key, admin_id=admin.id)
     return setting
 
 
@@ -140,4 +154,6 @@ async def delete_setting(
 
     await db.delete(setting)
     await db.commit()
+
+    logger.info("Shop setting deleted", setting_key=key, admin_id=admin.id)
     return None

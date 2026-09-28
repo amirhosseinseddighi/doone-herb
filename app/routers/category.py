@@ -16,6 +16,10 @@ from app.core.config import settings
 
 from app.schemas.products import BaseProductResponse
 from app.utils.image_utils import process_product_image
+import structlog
+
+logger = structlog.get_logger()
+
 router = APIRouter(prefix="/categories", tags=["categories"])
 
 
@@ -40,12 +44,25 @@ async def upload_category_image(
     # check image size
     max_image_size = settings.MAX_IMAGE_SIZE_MEGA_BYTE * 1024 * 1024
     if len(image) > max_image_size:
+        logger.warning(
+            "Category image upload rejected",
+            category_id=category_id,
+            admin_id=admin.id,
+            reason="file too large",
+            size_bytes=len(image),
+        )
         raise HTTPException(
             status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail=f"Image size is larger than limit: {settings.MAX_IMAGE_SIZE_MEGA_BYTE}MB"
         )
 
     if not image:
+        logger.warning(
+            "Category image upload rejected",
+            category_id=category_id,
+            admin_id=admin.id,
+            reason="empty file",
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File is empty"
@@ -55,14 +72,22 @@ async def upload_category_image(
     try:
         new_filename = await run_in_threadpool(process_product_image, image)
     except UnidentifiedImageError as err:
+        logger.warning(
+            "Category image upload rejected",
+            category_id=category_id,
+            admin_id=admin.id,
+            reason="unrecognized image format",
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid image file. Please upload a valid image (JPEG, PNG, GIF, WebP).",
         ) from err
 
     # Remove old physical file if replacing an existing image
+    replaced_existing = False
     if category.image_url and os.path.exists(category.image_url):
         os.remove(category.image_url)
+        replaced_existing = True
 
     # Update category image_url attribute directly
     category.image_url = new_filename
@@ -70,6 +95,13 @@ async def upload_category_image(
     db.add(category)
     await db.commit()
     await db.refresh(category)
+
+    logger.info(
+        "Category image uploaded",
+        category_id=category_id,
+        admin_id=admin.id,
+        replaced_existing=replaced_existing,
+    )
 
     return category
 
@@ -101,8 +133,17 @@ async def delete_category_image(
     await db.commit()
 
     # Remove file from disk after successful DB commit
+    file_removed = False
     if os.path.exists(old_image_path):
         os.remove(old_image_path)
+        file_removed = True
+
+    logger.info(
+        "Category image deleted",
+        category_id=category_id,
+        admin_id=admin.id,
+        file_removed=file_removed,
+    )
 
     return None
 
@@ -201,6 +242,13 @@ async def add_category(
     db.add(category)
     await db.commit()
     await db.refresh(category)
+
+    logger.info(
+        "Category created",
+        category_id=category.id,
+        slug=category.slug,
+        admin_id=admin.id,
+    )
     return category
 
 
@@ -239,6 +287,13 @@ async def update_category(
 
     await db.commit()
     await db.refresh(category)
+
+    logger.info(
+        "Category updated",
+        category_id=category_id,
+        admin_id=admin.id,
+        fields=sorted(update_data.keys()),
+    )
     return category
 
 
@@ -259,4 +314,6 @@ async def delete_category(
     category.is_deleted = True
     category.is_active = False
     await db.commit()
+
+    logger.info("Category deleted (soft)", category_id=category_id, admin_id=admin.id)
     return None

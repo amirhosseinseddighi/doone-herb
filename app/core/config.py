@@ -26,6 +26,9 @@ class Settings(BaseSettings):
 
     ENVIRONMENT: str = "DEV" # OR PROD
 
+    # LOGGING
+    LOG_LEVEL: str = "INFO"
+
     # CART
     GUEST_CART_MAX_AGE: int = 30 * 24 * 3600
 

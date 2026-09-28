@@ -40,9 +40,14 @@ async def send_email(
                 start_tls=settings.MAIL_START_TLS,
             )
 
-        logger.info("email sent", email=to_email)
-    except Exception as exc:
-        logger.error("sending email failed", exc_info=True)
+        logger.info("email sent", email=to_email, subject=subject)
+    except Exception:
+        logger.error(
+            "sending email failed",
+            email=to_email,
+            subject=subject,
+            exc_info=True,
+        )
 
 
 def generate_reset_token() -> str:

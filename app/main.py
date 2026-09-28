@@ -3,15 +3,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.staticfiles import StaticFiles
 import structlog
+from sqlalchemy import text
 from app.middleware import ASGILoggingMiddleware
 from app.routers import (
-    addresses, 
-    cart, 
-    category, 
-    auth, 
-    orders, 
-    products, 
-    shop_settings, 
+    addresses,
+    cart,
+    category,
+    auth,
+    orders,
+    products,
+    shop_settings,
     review
 )
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,12 +27,13 @@ origins = [
     "http://127.0.0.1:7000",
     "http://localhost:7000"
 ]
-
 logger = structlog.get_logger()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    setup_logging(is_dev=False if (settings.ENVIRONMENT == "PROD") else True)
+    IS_DEV = settings.ENVIRONMENT != "PROD"
+    setup_logging(is_dev=IS_DEV)
+
     logger.info("Application setup completed! starting server...")
 
     yield

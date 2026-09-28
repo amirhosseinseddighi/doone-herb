@@ -4,6 +4,7 @@ from typing import Annotated, Optional
 from fastapi import Cookie, status
 from fastapi import Depends, HTTPException
 from sqlalchemy import select
+import structlog
 from app.core.security import oauth2_scheme, verify_access_token, oauth2_scheme_optional
 from app.db.database import AsyncSession
 from app.db.database import Base, AsyncSessionLocal
@@ -35,7 +36,10 @@ async def get_optional_current_user(
     result = await db.execute(
         select(User).where(User.id == user_id_int)
     )
-    return result.scalars().first()
+    user = result.scalars().first()
+    if user is not None:
+        structlog.contextvars.bind_contextvars(user_id=user.id, role=user.role.value)
+    return user
 
 
 
@@ -71,11 +75,12 @@ async def get_current_user(
 
     if not user:
         raise HTTPException(
-            status_code = status.HTTP_401_UNAUTHORIZED, 
-            detail = "Unauthorized User", 
+            status_code = status.HTTP_401_UNAUTHORIZED,
+            detail = "Unauthorized User",
             headers = {"WWW-Authenticate": "Bearer"}
         )
-    
+
+    structlog.contextvars.bind_contextvars(user_id=user.id, role=user.role.value)
     return user
 
 
