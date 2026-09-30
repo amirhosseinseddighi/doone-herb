@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import select
 
 from app.core.deps import CurrentManagerOrOwner, get_db
+from app.core.rate_limiter import limiter
 from app.db.database import AsyncSession
 from app.models.general import ShopSettings
 from app.schemas.shop_settings import (
@@ -20,7 +21,9 @@ router = APIRouter(prefix="/settings", tags=["settings"])
 
 
 @router.get("", response_model=list[ShopSettingResponse])
+@limiter.limit("2/second")
 async def get_all_settings(
+    request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
     search: Annotated[
         str | None,
@@ -45,7 +48,9 @@ async def get_all_settings(
 
 
 @router.get("/{key}", response_model=ShopSettingResponse)
+@limiter.limit("2/second")
 async def get_setting_by_key(
+    request: Request,
     key: str,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
@@ -61,7 +66,9 @@ async def get_setting_by_key(
 # ================= ADMIN OPERATIONS ===================
 
 @router.post("", response_model=ShopSettingResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("20/minute")
 async def create_setting(
+    request: Request,
     admin: CurrentManagerOrOwner,
     new_setting: NewShopSettingRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -85,7 +92,9 @@ async def create_setting(
 
 
 @router.put("/bulk", response_model=list[ShopSettingResponse])
+@limiter.limit("10/minute")
 async def bulk_upsert_settings(
+    request: Request,
     admin: CurrentManagerOrOwner,
     payload: BulkUpdateShopSettingRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -118,7 +127,9 @@ async def bulk_upsert_settings(
 
 
 @router.patch("/{key}", response_model=ShopSettingResponse)
+@limiter.limit("20/minute")
 async def update_setting(
+    request: Request,
     key: str,
     setting_update: UpdateShopSettingRequest,
     admin: CurrentManagerOrOwner,
@@ -140,7 +151,9 @@ async def update_setting(
 
 
 @router.delete("/{key}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("20/minute")
 async def delete_setting(
+    request: Request,
     key: str,
     admin: CurrentManagerOrOwner,
     db: Annotated[AsyncSession, Depends(get_db)],

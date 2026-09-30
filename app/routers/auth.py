@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Response, status
+from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import func, select, delete as sql_delete
@@ -11,6 +11,7 @@ from app.core.deps import CurrentUser, CurrentAdmin, OptionalUser, get_db
 from app.db.database import AsyncSession
 from app.core import security
 from app.core.config import settings
+from app.core.rate_limiter import limiter
 from app.routers.cart import merge_guest_cart_to_user
 from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token, UpdateProfileRequest
 from app.utils.email_utils import send_password_reset_email
@@ -23,8 +24,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=Token)
+@limiter.limit("5/minute")
 async def login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
+    request: Request,
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     response: Response,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: OptionalUser,
@@ -86,12 +89,15 @@ async def login(
 
 
 @router.get("/me", response_model=CurrentUserInfoResponse)
-async def read_users_me(current_user: CurrentUser):
+@limiter.limit("2/second")
+async def read_users_me(request: Request, current_user: CurrentUser):
     return current_user
 
 
 @router.patch("/me", response_model=CurrentUserInfoResponse)
+@limiter.limit("5/minute")
 async def update_users_me(
+    request: Request,
     profile_update: UpdateProfileRequest,
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -131,7 +137,9 @@ async def update_users_me(
 
 
 @router.get("/admin/users")
+@limiter.limit("10/minute")
 async def read_admin_users(
+    request: Request,
     _admin: CurrentAdmin,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
@@ -158,8 +166,10 @@ async def read_admin_users(
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/hour")
 async def create_new_user(
-    new_user: NewUserCreate, 
+    request: Request,
+    new_user: NewUserCreate,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: OptionalUser
 ):
@@ -225,7 +235,9 @@ async def create_new_user(
 
 
 @router.post("/forget-password", status_code=status.HTTP_202_ACCEPTED)
+@limiter.limit("3/hour")
 async def forget_password(
+    request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: OptionalUser,
     background_task: BackgroundTasks,
@@ -294,8 +306,10 @@ async def forget_password(
 
 
 @router.post("/reset-password", status_code=status.HTTP_200_OK)
+@limiter.limit("5/hour")
 async def reset_password(
-    reset_password_request: ResetPasswordRequest, 
+    request: Request,
+    reset_password_request: ResetPasswordRequest,
     current_user: OptionalUser,
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
@@ -362,7 +376,9 @@ async def reset_password(
 
 
 @router.post("/change-password", status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
 async def change_password(
+    request: Request,
     change_password_request: ChangePasswordRequest,
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],

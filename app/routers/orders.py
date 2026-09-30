@@ -4,13 +4,14 @@ import uuid
 from datetime import UTC, datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.deps import CurrentAdmin, CurrentUser, get_db
+from app.core.rate_limiter import limiter
 from app.models.identity import Roles
 from app.models.cart import Cart, CartItem
 from app.models.category import ProductVariant
@@ -113,7 +114,8 @@ def _ensure_owner_or_staff(order: Order, user) -> None:
 # ---------------------------------------------------------------------------
 
 @router.get("/delivery-slots", response_model=list[DeliverySlotRead])
-async def list_delivery_slots(db: AsyncSession = Depends(get_db)):
+@limiter.limit("2/second")
+async def list_delivery_slots(request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(DeliverySlot).where(DeliverySlot.active.is_(True)).order_by(DeliverySlot.cutoff_time)
     )
@@ -125,7 +127,9 @@ async def list_delivery_slots(db: AsyncSession = Depends(get_db)):
 # ---------------------------------------------------------------------------
 
 @router.post("/checkout", response_model=OrderRead, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 async def checkout(
+    request: Request,
     payload: OrderCreate,
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
@@ -270,7 +274,9 @@ async def checkout(
 # ---------------------------------------------------------------------------
 
 @router.get("", response_model=OrderListResponse)
+@limiter.limit("2/second")
 async def list_my_orders(
+    request: Request,
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
     page: int = Query(1, ge=1),
@@ -295,7 +301,9 @@ async def list_my_orders(
 
 
 @router.get("/code/{order_no}", response_model=OrderRead)
+@limiter.limit("2/second")
 async def get_order_by_order_no(
+    request: Request,
     order_no: str,
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
@@ -306,7 +314,9 @@ async def get_order_by_order_no(
 
 
 @router.get("/{order_id}", response_model=OrderRead)
+@limiter.limit("2/second")
 async def get_order(
+    request: Request,
     order_id: int,
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
@@ -317,7 +327,9 @@ async def get_order(
 
 
 @router.post("/{order_id}/cancel", response_model=OrderRead)
+@limiter.limit("10/minute")
 async def cancel_order(
+    request: Request,
     order_id: int,
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
@@ -372,7 +384,9 @@ async def cancel_order(
 # ====================== ADMIN OPERATIONS ========================
 
 @router.get("/admin/all", response_model=OrderListResponse)
+@limiter.limit("10/minute")
 async def list_all_orders(
+    request: Request,
     _staff: CurrentAdmin,
     db: AsyncSession = Depends(get_db),
     page: int = Query(1, ge=1),
@@ -400,7 +414,9 @@ async def list_all_orders(
 
 
 @router.patch("/{order_id}/status", response_model=OrderRead)
+@limiter.limit("30/minute")
 async def update_order_status(
+    request: Request,
     order_id: int,
     payload: OrderStatusUpdate,
     staff: CurrentAdmin,
@@ -448,7 +464,9 @@ async def update_order_status(
 
 
 @router.patch("/{order_id}/fulfillment", response_model=OrderRead)
+@limiter.limit("30/minute")
 async def update_order_fulfillment(
+    request: Request,
     order_id: int,
     payload: OrderFulfillmentUpdate,
     staff: CurrentAdmin,

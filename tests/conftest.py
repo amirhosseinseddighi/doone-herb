@@ -1,4 +1,5 @@
 import os
+import uuid
 from collections.abc import AsyncGenerator
 from fastapi import status
 
@@ -117,7 +118,7 @@ async def client(db_session) -> AsyncGenerator[AsyncClient]:
 
 
     async with AsyncClient(
-        transport=ASGITransport(app=app),
+        transport=ASGITransport(app=app, client=(f"testclient-{uuid.uuid4().hex}", 12345)),
         base_url="http://test"
     ) as ac:
         yield ac

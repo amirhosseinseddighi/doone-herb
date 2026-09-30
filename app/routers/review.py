@@ -1,6 +1,6 @@
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +12,7 @@ from app.core.deps import (
     CurrentUser,
     get_db,
 )
+from app.core.rate_limiter import limiter
 from app.models.category import Product, Review
 from app.models.order import Order, OrderItem
 from app.schemas.review import (
@@ -121,7 +122,9 @@ async def _validate_order_for_review(
 # --------------------------------------------------------------------------
 
 @router.get("/product/{product_id}", response_model=PaginatedReviewResponse)
+@limiter.limit("2/second")
 async def get_product_reviews(
+    request: Request,
     product_id: int,
     offset: int = Query(0, ge=0),
     limit: int = Query(25, ge=1, le=100),
@@ -164,7 +167,9 @@ async def get_product_reviews(
 
 
 @router.get("/me", response_model=PaginatedReviewResponse)
+@limiter.limit("2/second")
 async def get_my_reviews(
+    request: Request,
     current_user: CurrentUser,
     offset: int = Query(0, ge=0),
     limit: int = Query(25, ge=1, le=100),
@@ -200,7 +205,9 @@ async def get_my_reviews(
 
 
 @router.post("", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/hour")
 async def create_review(
+    request: Request,
     payload: ReviewCreate,
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
@@ -267,7 +274,9 @@ async def create_review(
 
 
 @router.post("/{review_id}/reply", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("20/minute")
 async def reply_to_review(
+    request: Request,
     payload: ReviewReplyCreate,
     parent_review: ReviewOrNotFound,
     admin_user: CurrentManagerOrOwner,
@@ -301,7 +310,9 @@ async def reply_to_review(
 
 
 @router.patch("/{review_id}", response_model=ReviewResponse)
+@limiter.limit("10/minute")
 async def update_review(
+    request: Request,
     payload: ReviewUpdate,
     review: ReviewOrNotFound,
     current_user: CurrentUser,
@@ -335,7 +346,9 @@ async def update_review(
 
 
 @router.delete("/{review_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("10/minute")
 async def delete_review(
+    request: Request,
     review: ReviewOrNotFound,
     current_user: CurrentUser,
     current_admin: CurrentAdminOptional,

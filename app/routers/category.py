@@ -2,12 +2,13 @@ import os
 from typing import Annotated
 
 from PIL import UnidentifiedImageError
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, status
 from fastapi.concurrency import run_in_threadpool
 from slugify import slugify
 from sqlalchemy import and_, func, select
 
 from app.core.deps import CurrentManagerOrOwner, get_db
+from app.core.rate_limiter import limiter
 from app.db.database import AsyncSession
 from app.models.category import Category, Product, ProductVariant
 from app.schemas.categories import CategoryDetails, CategoryImageUploadResponse, CategoryResponse, NewCategoryRequest, UpdateCategoryRequest
@@ -25,7 +26,9 @@ router = APIRouter(prefix="/categories", tags=["categories"])
 
 # ============= CATEGORY IMAGE UPLOAD ===================
 @router.post("/{category_id}/image", response_model=CategoryResponse)
+@limiter.limit("20/minute")
 async def upload_category_image(
+    request: Request,
     category_id: int,
     file: UploadFile,
     admin: CurrentManagerOrOwner,
@@ -107,7 +110,9 @@ async def upload_category_image(
 
 
 @router.delete("/{category_id}/image", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("20/minute")
 async def delete_category_image(
+    request: Request,
     category_id: int,
     admin: CurrentManagerOrOwner,
     db: Annotated[AsyncSession, Depends(get_db)]
@@ -152,7 +157,9 @@ async def delete_category_image(
 
 
 @router.get("", response_model=list[CategoryResponse])
+@limiter.limit("2/second")
 async def get_all_categories(
+    request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
     search: Annotated[
         str | None,
@@ -181,7 +188,9 @@ async def get_all_categories(
 
 
 @router.get("/{category_id}", response_model=CategoryDetails)
+@limiter.limit("2/second")
 async def get_category_details(
+    request: Request,
     category_id: int,
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
@@ -215,7 +224,9 @@ async def get_category_details(
 # ================= ADMIN OPERATIONS ===================
 
 @router.post("", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("20/minute")
 async def add_category(
+    request: Request,
     admin: CurrentManagerOrOwner,
     new_category: NewCategoryRequest,
     db: Annotated[AsyncSession, Depends(get_db)]
@@ -253,7 +264,9 @@ async def add_category(
 
 
 @router.patch("/{category_id}", response_model=CategoryResponse)
+@limiter.limit("20/minute")
 async def update_category(
+    request: Request,
     category_id: int,
     category_update: UpdateCategoryRequest,
     admin: CurrentManagerOrOwner,
@@ -298,7 +311,9 @@ async def update_category(
 
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("20/minute")
 async def delete_category(
+    request: Request,
     category_id: int,
     admin: CurrentManagerOrOwner,
     db: Annotated[AsyncSession, Depends(get_db)]

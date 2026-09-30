@@ -4,11 +4,12 @@ from typing import Annotated
 
 from PIL import UnidentifiedImageError
 from fastapi import (
-    APIRouter, 
-    Depends, 
-    HTTPException, 
-    Query, 
-    status, 
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+    status,
     UploadFile
 )
 from fastapi.concurrency import run_in_threadpool
@@ -19,6 +20,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload, with_loader_criteria
 
 from app.core.deps import CurrentManagerOrOwner, get_db
+from app.core.rate_limiter import limiter
 from app.db.database import AsyncSession
 from app.models.cart import CartItem
 from app.models.category import Category, Offer, Product, ProductImage, ProductVariant
@@ -51,7 +53,9 @@ async def _get_active_product(product_id: int, db: AsyncSession) -> Product:
 
 
 @router.get("/{product_id}/images", response_model=list[ImageUploadResponse])
+@limiter.limit("2/second")
 async def get_product_images(
+    request: Request,
     product_id: int,
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
@@ -71,7 +75,9 @@ async def get_product_images(
 
 
 @router.post("/{product_id}/images", response_model=ImageUploadResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("20/minute")
 async def upload_product_image(
+    request: Request,
     product_id: int,
     file: UploadFile,
     admin: CurrentManagerOrOwner,
@@ -151,7 +157,9 @@ async def upload_product_image(
 
 
 @router.patch("/{product_id}/images/{image_id}", response_model=ImageUploadResponse)
+@limiter.limit("20/minute")
 async def update_product_image(
+    request: Request,
     product_id: int,
     image_id: int,
     data: UpdateProductImageRequest,
@@ -200,7 +208,9 @@ async def update_product_image(
 
 
 @router.delete("/{product_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("20/minute")
 async def delete_product_image(
+    request: Request,
     product_id: int,
     image_id: int,
     admin: CurrentManagerOrOwner,
@@ -250,7 +260,9 @@ async def delete_product_image(
 # ============ PRODUCTS =====================
 
 @router.get("", response_model=PaginatedProductResponse)
+@limiter.limit("2/second")
 async def get_all_products(
+    request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
     search: Annotated[
         str | None,
@@ -322,7 +334,8 @@ async def get_all_products(
 
 
 @router.get("/{product_slug}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
-async def show_product_details(product_slug: str, db: Annotated[AsyncSession, Depends(get_db)]):
+@limiter.limit("2/second")
+async def show_product_details(request: Request, product_slug: str, db: Annotated[AsyncSession, Depends(get_db)]):
     now = datetime.now(UTC)
     product_result = await db.execute(
         select(Product)
@@ -358,7 +371,9 @@ async def show_product_details(product_slug: str, db: Annotated[AsyncSession, De
 # =================== ADMIN OPERATIONS ====================
 
 @router.post("", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("20/minute")
 async def add_product(
+    request: Request,
     admin: CurrentManagerOrOwner,
     new_product: NewProductRequest,
     db: Annotated[AsyncSession, Depends(get_db)]
@@ -431,7 +446,9 @@ async def add_product(
 
 
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("20/minute")
 async def delete_product(
+    request: Request,
     product_id: int,
     admin: CurrentManagerOrOwner,
     db: Annotated[AsyncSession, Depends(get_db)]
@@ -475,7 +492,9 @@ async def delete_product(
 
 
 @router.patch("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
+@limiter.limit("20/minute")
 async def update_product(
+    request: Request,
     product_id: int,
     product_update: UpdateProductRequest,
     admin: CurrentManagerOrOwner,
@@ -574,7 +593,9 @@ async def update_product(
         response_model=ProductVariantResponse, 
         status_code=status.HTTP_201_CREATED
 )
+@limiter.limit("20/minute")
 async def add_product_variant(
+    request: Request,
     product_id: int,
     variant_data: NewProductVariantRequest,
     admin: CurrentManagerOrOwner,
@@ -649,7 +670,9 @@ async def add_product_variant(
     "/{product_id}/variants/{variant_id}",
     status_code=status.HTTP_204_NO_CONTENT
 )
+@limiter.limit("20/minute")
 async def delete_product_variant(
+    request: Request,
     product_id: int,
     variant_id: int,
     admin: CurrentManagerOrOwner,
@@ -721,7 +744,9 @@ async def delete_product_variant(
     response_model=ProductVariantResponse,
     status_code=status.HTTP_200_OK,
 )
+@limiter.limit("20/minute")
 async def update_product_variant(
+    request: Request,
     product_id: int,
     variant_id: int,
     variant_update: UpdateProductVariantRequest,

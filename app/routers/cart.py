@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.core.deps import CartIdentityDep, CurrentUser, OptionalUser, RequiredCartIdentityDep, get_db
@@ -10,6 +10,7 @@ from app.models.category import ProductVariant
 from app.models.cart import Cart, CartItem
 from app.schemas.cart import AddCartItemRequest, CartItemResponse, CartResponse, DeleteCartItemResponse, UpdateCartItemRequest
 from app.core.config import settings
+from app.core.rate_limiter import limiter
 import structlog
 
 logger = structlog.get_logger()
@@ -239,7 +240,9 @@ async def merge_guest_cart_to_user(
 # ======== ENDPOINTS =======
 
 @router.get("", response_model=CartResponse)
+@limiter.limit("2/second")
 async def get_cart(
+    request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
     response: Response,
     identity: CartIdentityDep,
@@ -254,7 +257,9 @@ async def get_cart(
 
 
 @router.post("", status_code=status.HTTP_200_OK)
+@limiter.limit("30/minute")
 async def add_item_to_cart(
+    request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
     cart_request: AddCartItemRequest,
     response: Response,
@@ -319,7 +324,9 @@ async def add_item_to_cart(
 
 
 @router.delete("/{cart_item_id}", response_model=DeleteCartItemResponse)
+@limiter.limit("30/minute")
 async def delete_cart_item(
+    request: Request,
     cart_item_id: int,
     db: Annotated[AsyncSession, Depends(get_db)],
     identity: RequiredCartIdentityDep,
@@ -354,7 +361,9 @@ async def delete_cart_item(
 
 
 @router.delete("", response_model=CartResponse)
+@limiter.limit("10/minute")
 async def clear_cart(
+    request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
     identity: RequiredCartIdentityDep,
 ):
@@ -387,7 +396,9 @@ async def clear_cart(
 
 
 @router.patch("/{cart_item_id}", response_model=CartResponse)
+@limiter.limit("30/minute")
 async def update_cart_item(
+    request: Request,
     cart_item_id: int,
     update_request: UpdateCartItemRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
