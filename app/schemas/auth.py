@@ -1,6 +1,6 @@
 from datetime import datetime
 import re
-from typing import Annotated
+from typing import Annotated, Optional
 
 from pydantic import (
     BaseModel, 
@@ -12,7 +12,7 @@ from pydantic import (
     model_validator
 )
 
-from app.models.identity import Roles
+from app.models.identity import Roles, UserTier
 
 PASSWORD_SPECIAL_CHAR_REGEX = re.compile(r"[!@#$%^&*(),.?\":{}|<>]")
 PasswordStr = Annotated[str, StringConstraints(strip_whitespace=False)]
@@ -42,6 +42,28 @@ class CurrentUserInfoResponse(BaseModel):
     role: str
     created_at: datetime
     telegram_opt_in: bool
+
+
+class UserInfoForAdmin(BaseModel):
+    id: int
+    name: str
+    phone: str
+    last_seen_at: datetime
+
+    tier: UserTier = UserTier.NEW
+    note: Optional[str] = ""
+
+    tg: bool = Field(validation_alias="telegram_opt_in")
+    sms: bool = Field(validation_alias="sms_opt_in")
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PaginatedUserResponse(BaseModel):
+    users: list[UserInfoForAdmin]
+    offset: int
+    limit: int
+    has_more: bool
 
 
 class UpdateProfileRequest(BaseModel):

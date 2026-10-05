@@ -28,6 +28,13 @@ class CategoryDetails(CategoryResponse):
     model_config = ConfigDict(from_attributes=True)
 
 
+class PaginatedCategoryResponse(BaseModel):
+    categories: list[CategoryResponse]
+    offset: int
+    limit: int
+    has_more: bool
+
+
 class NewCategoryRequest(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     tint_color: str = Field(min_length=7, max_length=7, pattern=r"^#[0-9a-fA-F]{6}$")

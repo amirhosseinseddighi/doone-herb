@@ -11,7 +11,7 @@ from app.core.deps import CurrentManagerOrOwner, get_db
 from app.core.rate_limiter import limiter
 from app.db.database import AsyncSession
 from app.models.category import Category, Product, ProductVariant
-from app.schemas.categories import CategoryDetails, CategoryImageUploadResponse, CategoryResponse, NewCategoryRequest, UpdateCategoryRequest
+from app.schemas.categories import CategoryDetails, CategoryImageUploadResponse, CategoryResponse, NewCategoryRequest, PaginatedCategoryResponse, UpdateCategoryRequest
 from sqlalchemy.orm import selectinload
 from app.core.config import settings
 
@@ -156,7 +156,7 @@ async def delete_category_image(
 
 
 
-@router.get("", response_model=list[CategoryResponse])
+@router.get("", response_model=PaginatedCategoryResponse)
 @limiter.limit("2/second")
 async def get_all_categories(
     request: Request,
@@ -169,6 +169,8 @@ async def get_all_categories(
             description="Search categories by name",
         ),
     ] = None,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=150)] = 25,
 ):
     conditions = [Category.is_active.is_(True), Category.is_deleted.is_(False)]
 
@@ -182,9 +184,21 @@ async def get_all_categories(
     result = await db.execute(
         select(Category)
         .where(and_(*conditions))
+        .offset(offset).limit(limit)
         .order_by(Category.sort_order.desc())
     )
-    return result.scalars().all()
+    categories = result.scalars().all()
+
+    total_products = await db.execute(select(func.count()).select_from(Category).where(and_(*conditions)))
+    remaining = total_products.scalar() or 0
+    has_more = (offset + limit) < remaining
+
+    return PaginatedCategoryResponse(
+        categories=[CategoryResponse.model_validate(category) for category in categories],
+        offset=offset,
+        limit=limit,
+        has_more=has_more
+    )
 
 
 @router.get("/{category_id}", response_model=CategoryDetails)

@@ -273,7 +273,7 @@ async def get_all_products(
         ),
     ] = None,
     offset: Annotated[int, Query(ge=0)] = 0,
-    limit: Annotated[int, Query(ge=1)] = 25
+    limit: Annotated[int, Query(ge=1, le=150)] = 25
 ):
     now = datetime.now(UTC)
 

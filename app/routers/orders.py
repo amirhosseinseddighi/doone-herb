@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, select
@@ -389,27 +389,37 @@ async def list_all_orders(
     request: Request,
     _staff: CurrentAdmin,
     db: AsyncSession = Depends(get_db),
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 100,
     status_filter: Optional[OrderStatus] = Query(None, alias="status"),
     user_id: Optional[int] = Query(None),
 ):
-    stmt = select(Order).options(selectinload(Order.user))
+    filters = []
     if status_filter:
-        stmt = stmt.where(Order.status == status_filter)
+        filters.append(Order.status == status_filter)
     if user_id:
-        stmt = stmt.where(Order.user_id == user_id)
+        filters.append(Order.user_id == user_id)
 
-
-    total = (await db.execute(select(func.count()).select_from(stmt.subquery()))).scalar_one()
-
-    stmt = stmt.order_by(Order.placed_at.desc()).offset((page - 1) * page_size).limit(page_size)
+    stmt = (
+        select(Order)
+        .options(selectinload(Order.user))
+        .where(*filters)
+        .order_by(Order.placed_at.desc())
+        .offset(offset)
+        .limit(limit)
+    )
     rows = (await db.execute(stmt)).scalars().unique().all()
+
+    count_stmt = select(func.count()).select_from(Order).where(*filters)
+    total_orders = (await db.execute(count_stmt)).scalar() or 0
+
+    has_more = offset + limit < total_orders
+
     return OrderListResponse(
         items=[OrderSummary.model_validate(o) for o in rows],
-        total=total,
-        page=page,
-        page_size=page_size
+        offset=offset,
+        limit=limit,
+        has_more=has_more,
     )
 
 

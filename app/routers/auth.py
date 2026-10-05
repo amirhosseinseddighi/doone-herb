@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import func, select, delete as sql_delete
@@ -13,7 +13,7 @@ from app.core import security
 from app.core.config import settings
 from app.core.rate_limiter import limiter
 from app.routers.cart import merge_guest_cart_to_user
-from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, ResetPasswordRequest, Token, UpdateProfileRequest
+from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, PaginatedUserResponse, ResetPasswordRequest, Token, UpdateProfileRequest, UserInfoForAdmin
 from app.utils.email_utils import send_password_reset_email
 import structlog
 
@@ -136,32 +136,39 @@ async def update_users_me(
     return current_user
 
 
-@router.get("/admin/users")
+@router.get("/admin/users", response_model=PaginatedUserResponse)
 @limiter.limit("10/minute")
 async def read_admin_users(
     request: Request,
     _admin: CurrentAdmin,
     db: Annotated[AsyncSession, Depends(get_db)],
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=150)] = 150,
 ):
-    result = await db.execute(select(User).order_by(User.created_at.desc()))
+    result = await db.execute(
+        select(User)
+        .offset(offset).limit(limit)
+        .where(User.role == Roles.CUSTOMER)
+        .order_by(User.created_at.desc())
+    )
     users = result.scalars().all()
-    return [
-        {
-            "id": user.id,
-            "name": user.name,
-            "phone": user.phone,
-            "city": "",
-            "orders": 0,
-            "spend": 0,
-            "last": "-",
-            "tg": user.telegram_opt_in,
-            "sms": user.sms_opt_in,
-            "tier": user.tier.value,
-            "note": user.note or "",
-        }
-        for user in users
-        if user.role == Roles.CUSTOMER
-    ]
+
+    total_users_req = await db.execute(
+        select(func.count())
+        .select_from(User)
+        .where(User.role == Roles.CUSTOMER)
+    )
+
+    total_users = total_users_req.scalar() or 0
+
+    has_more = offset + limit < total_users
+
+    return PaginatedUserResponse(
+        users = [UserInfoForAdmin.model_validate(user) for user in users],
+        offset=offset,
+        limit=limit,
+        has_more=has_more
+    )
 
 
 

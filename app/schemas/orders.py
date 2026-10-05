@@ -140,6 +140,6 @@ class OrderSummary(BaseModel):
 
 class OrderListResponse(BaseModel):
     items: list[OrderSummary]
-    total: int
-    page: int
-    page_size: int
+    offset: int
+    limit: int
+    has_more: bool

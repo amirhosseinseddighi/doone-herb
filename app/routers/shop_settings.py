@@ -1,6 +1,14 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import (
+    APIRouter, 
+    Depends, 
+    HTTPException, 
+    Query, 
+    Request, 
+    status,
+    BackgroundTasks
+)
 from sqlalchemy import select
 
 from app.core.deps import CurrentManagerOrOwner, get_db
@@ -15,7 +23,10 @@ from app.schemas.shop_settings import (
 )
 import structlog
 
+from app.utils.general_utils import export_database
+
 logger = structlog.get_logger()
+
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -170,3 +181,40 @@ async def delete_setting(
 
     logger.info("Shop setting deleted", setting_key=key, admin_id=admin.id)
     return None
+
+
+
+# =============== IMPORT/EXPORT SHOP SETTINGS ===============
+
+"""
+an endpoint to request database export:
+    - it will create a background task to retrieve database chunk by chunk and then strem it?
+    - or will it add job to background task and upload it chunk by chunk and then there is another
+    endpoint like /download/{export_id} to download the exported db
+
+an endpoint to request database import:
+    - the client will send chunk by chunk(large data)
+    - we will restore and save data in one big file.
+    - then we will import it chunk by chunk into dataset in background task.
+"""
+
+@router.post("/export", status_code=status.HTTP_202_ACCEPTED)
+@limiter.limit("5/hour")
+async def export_request(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_admin: CurrentManagerOrOwner,
+    background_task: BackgroundTasks
+):
+    background_task.add_task(export_database, db)
+    return {"message": "Export request is processing"}
+
+@router.get("/export/download/{export_id}")
+@limiter.limit("5/hour")
+async def download_exported_db(
+    request: Request,
+    current_admin: CurrentManagerOrOwner,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    export_id: int
+):
+    ...
