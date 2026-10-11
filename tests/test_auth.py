@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi import status
 import pytest
 from httpx import AsyncClient
@@ -6,6 +8,8 @@ from tests.conftest import create_test_user, login_user, auth_header
 from app.models.identity import Roles, User
 from app.core import security
 from sqlalchemy import select
+from freezegun import freeze_time
+
 
 
 # ========= LOGIN =============
@@ -136,21 +140,25 @@ async def test_admin_can_list_customers(client: AsyncClient, db_session):
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [
-        {
-            "id": customer.id,
-            "name": "API Customer",
-            "phone": "09121231234",
-            "city": "",
-            "orders": 0,
-            "spend": 0,
-            "last": "-",
-            "tg": False,
-            "sms": False,
-            "tier": "new",
-            "note": "",
-        }
-    ]
+    assert response.json() == {
+        'users': [
+            {
+                'id': customer.id, 
+                'name': 'API Customer', 
+                'phone': '09121231234', 
+                'last_seen_at': customer.last_seen_at.isoformat().replace('+00:00', 'Z'),
+                'tier': 'new', 
+                'note': None, 
+                'tg': False, 
+                'sms': False
+            }
+        ],
+        'offset': 0, 
+        'limit': 150, 
+        'has_more': False
+    }
+
+    
 
 # test login endpoint when user is logged in
 @pytest.mark.anyio
@@ -308,7 +316,21 @@ async def test_forget_password_normal_flow(client: AsyncClient):
 
 
 
-# TODO: forget password for email that doesn't exists
+# forget password for email that doesn't exist
+@pytest.mark.anyio
+async def test_forget_password_nonexistent_email(client: AsyncClient):
+    with patch(
+        "app.routers.auth.send_password_reset_email",
+        new_callable=AsyncMock
+    ) as mock_send:
+
+        response = await client.post(
+            "/api/v1/auth/forget-password",
+            json={"email": "ghost@example.com"}
+        )
+
+        assert response.status_code == status.HTTP_202_ACCEPTED
+        mock_send.assert_not_awaited()
 
 
 # reset password flow
@@ -353,9 +375,58 @@ async def test_reset_password_normal_flow(client: AsyncClient):
 
 
 # reset password with wrong token
+@pytest.mark.anyio
+async def test_reset_password_wrong_token(client: AsyncClient):
+    email = "user@example.com"
+    await create_test_user(client, email=email)
+
+    response = await client.post(
+        "/api/v1/auth/reset-password",
+        json={
+            "new_password": "Pass@321321",
+            "password_repeat": "Pass@321321",
+            "token": "this-is-not-a-valid-token"
+        }
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    # the account's password must be untouched
+    token = await login_user(client, email=email, password="Pass@123456")
+    assert token
 
 
 # reset password with expired token
+@pytest.mark.anyio
+async def test_reset_password_expired_token(client: AsyncClient):
+    email = "user@example.com"
+    await create_test_user(client, email=email)
+
+    # request a reset token
+    with patch(
+        "app.routers.auth.send_password_reset_email",
+        new_callable=AsyncMock
+    ) as mock_send:
+        response = await client.post(
+            "/api/v1/auth/forget-password",
+            json={"email": email}
+        )
+        assert response.status_code == status.HTTP_202_ACCEPTED
+        token = mock_send.call_args.kwargs['token']
+
+    # make the token expired
+    with freeze_time(datetime.now(timezone.utc) + timedelta(days=7)):
+        response = await client.post(
+            "/api/v1/auth/reset-password",
+            json={
+                "new_password": "Pass@321321",
+                "password_repeat": "Pass@321321",
+                "token": token
+            }
+        )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    # old password still works
+    assert await login_user(client, email=email, password="Pass@123456")
 
 
 # test forget password endpoint when user is logged in

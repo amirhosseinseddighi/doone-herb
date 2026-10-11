@@ -1,6 +1,7 @@
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from redis import RedisError
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,10 +24,13 @@ from app.schemas.review import (
     ReviewUpdate,
 )
 import structlog
+from app.db.redis_cli import redis_client
 
 logger = structlog.get_logger()
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
+
+
 
 
 # --------------------------------------------------------------------------
@@ -117,6 +121,35 @@ async def _validate_order_for_review(
         )
 
 
+# --------- cache -------
+REVIEWS_CACHE_TTL = 60
+
+def _reviews_ver_key(product_id: int) -> str:
+    return f"reviews:product:{product_id}:ver"
+
+
+def _reviews_page_key(product_id: int, version: str, offset: int, limit: int) -> str:
+    return f"reviews:product:{product_id}:v{version}:o{offset}:l{limit}"
+
+
+async def _get_reviews_version(product_id: int) -> str:
+    try:
+        raw = await redis_client.get(_reviews_ver_key(product_id))
+    except RedisError:
+        logger.warning("Redis unavailable (version read)", product_id=product_id)
+        return "0"
+    if raw is None:
+        return "0"
+    return raw.decode() if isinstance(raw, bytes) else str(raw)
+
+
+async def _invalidate_product_reviews(product_id: int) -> None:
+    """Call AFTER the DB commit."""
+    try:
+        await redis_client.incr(_reviews_ver_key(product_id))
+    except RedisError:
+        logger.warning("Review cache invalidation failed", product_id=product_id)
+
 # --------------------------------------------------------------------------
 # Routes
 # --------------------------------------------------------------------------
@@ -131,6 +164,18 @@ async def get_product_reviews(
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieve top-level reviews and nested replies for a specific product."""
+
+    version = await _get_reviews_version(product_id)
+    cache_key = _reviews_page_key(product_id, version, offset, limit)
+
+    try:
+        cached = await redis_client.get(cache_key)
+    except RedisError:
+        cached = None
+    if cached is not None:
+        return Response(content=cached, media_type="application/json")
+
+
     product = await db.get(Product, product_id)
     if not product:
         raise HTTPException(
@@ -158,13 +203,17 @@ async def get_product_reviews(
     result = await db.execute(query)
     reviews = result.scalars().all()
 
-    return PaginatedReviewResponse(
-        items=reviews,
-        total=total,
-        offset=offset,
-        limit=limit,
+    payload = PaginatedReviewResponse(
+        items=reviews, total=total, offset=offset, limit=limit
     )
+    body = payload.model_dump_json()
 
+    try:
+        await redis_client.set(cache_key, body, ex=REVIEWS_CACHE_TTL)
+    except RedisError:
+        logger.warning("Redis unavailable (cache write)", product_id=product_id)
+
+    return Response(content=body, media_type="application/json")
 
 @router.get("/me", response_model=PaginatedReviewResponse)
 @limiter.limit("2/second")

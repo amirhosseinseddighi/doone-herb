@@ -4,14 +4,17 @@ import uuid
 from datetime import UTC, datetime
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from sqlalchemy import func, select
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from pydantic import TypeAdapter
+from redis.exceptions import RedisError
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.deps import CurrentAdmin, CurrentUser, get_db
 from app.core.rate_limiter import limiter
+from app.db.redis_cli import redis_client
 from app.models.identity import Roles
 from app.models.cart import Cart, CartItem
 from app.models.category import ProductVariant
@@ -65,6 +68,10 @@ ORDER_DETAIL_OPTIONS = (
     selectinload(Order.delivery_slot),
 )
 
+DELIVERY_SLOTS_KEY = "orders:delivery-slots"
+DELIVERY_SLOTS_TTL = 300
+_slots_adapter = TypeAdapter(list[DeliverySlotRead])
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -107,6 +114,38 @@ def _ensure_owner_or_staff(order: Order, user) -> None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
 
+async def _paginate_orders(
+    db: AsyncSession,
+    filters: list,
+    offset: int,
+    limit: int,
+) -> OrderListResponse:
+    stmt = (
+        select(Order)
+        .options(selectinload(Order.user))
+        .where(*filters)
+        .order_by(Order.placed_at.desc(), Order.id.desc())
+        .offset(offset)
+        .limit(limit + 1)
+    )
+    rows = (await db.execute(stmt)).scalars().unique().all()
+
+    has_more = len(rows) > limit
+    rows = rows[:limit]
+
+    return OrderListResponse(
+        items=[OrderSummary.model_validate(o) for o in rows],
+        offset=offset,
+        limit=limit,
+        has_more=has_more,
+    )
+
+
+async def invalidate_delivery_slots_cache() -> None:
+    try:
+        await redis_client.delete(DELIVERY_SLOTS_KEY)
+    except RedisError:
+        logger.warning("Delivery slots cache invalidation failed")
 
 
 # ---------------------------------------------------------------------------
@@ -116,10 +155,26 @@ def _ensure_owner_or_staff(order: Order, user) -> None:
 @router.get("/delivery-slots", response_model=list[DeliverySlotRead])
 @limiter.limit("2/second")
 async def list_delivery_slots(request: Request, db: AsyncSession = Depends(get_db)):
+    try:
+        cached = await redis_client.get(DELIVERY_SLOTS_KEY)
+    except RedisError:
+        cached = None
+    if cached is not None:
+        return Response(content=cached, media_type="application/json")
+
     result = await db.execute(
         select(DeliverySlot).where(DeliverySlot.active.is_(True)).order_by(DeliverySlot.cutoff_time)
     )
-    return result.scalars().all()
+    body = _slots_adapter.dump_json(
+        [DeliverySlotRead.model_validate(s) for s in result.scalars().all()]
+    )
+
+    try:
+        await redis_client.set(DELIVERY_SLOTS_KEY, body, ex=DELIVERY_SLOTS_TTL)
+    except RedisError:
+        logger.warning("Delivery slots cache write failed")
+
+    return Response(content=body, media_type="application/json")
 
 
 # ---------------------------------------------------------------------------
@@ -279,25 +334,14 @@ async def list_my_orders(
     request: Request,
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
     status_filter: Optional[OrderStatus] = Query(None, alias="status"),
 ):
-    stmt = select(Order).where(Order.user_id == current_user.id)
+    filters = [Order.user_id == current_user.id]
     if status_filter:
-        stmt = stmt.where(Order.status == status_filter)
-
-    total = (await db.execute(select(func.count()).select_from(stmt.subquery()))).scalar_one()
-
-    stmt = stmt.order_by(Order.placed_at.desc()).offset((page - 1) * page_size).limit(page_size)
-    rows = (await db.execute(stmt)).scalars().all()
-
-    return OrderListResponse(
-        items=[OrderSummary.model_validate(o) for o in rows],
-        total=total,
-        page=page,
-        page_size=page_size,
-    )
+        filters.append(Order.status == status_filter)
+    return await _paginate_orders(db, filters, offset, limit)
 
 
 @router.get("/code/{order_no}", response_model=OrderRead)
@@ -397,30 +441,9 @@ async def list_all_orders(
     filters = []
     if status_filter:
         filters.append(Order.status == status_filter)
-    if user_id:
+    if user_id is not None:
         filters.append(Order.user_id == user_id)
-
-    stmt = (
-        select(Order)
-        .options(selectinload(Order.user))
-        .where(*filters)
-        .order_by(Order.placed_at.desc())
-        .offset(offset)
-        .limit(limit)
-    )
-    rows = (await db.execute(stmt)).scalars().unique().all()
-
-    count_stmt = select(func.count()).select_from(Order).where(*filters)
-    total_orders = (await db.execute(count_stmt)).scalar() or 0
-
-    has_more = offset + limit < total_orders
-
-    return OrderListResponse(
-        items=[OrderSummary.model_validate(o) for o in rows],
-        offset=offset,
-        limit=limit,
-        has_more=has_more,
-    )
+    return await _paginate_orders(db, filters, offset, limit)
 
 
 @router.patch("/{order_id}/status", response_model=OrderRead)

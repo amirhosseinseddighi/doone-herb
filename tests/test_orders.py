@@ -10,9 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.category import Category, Product, ProductVariant
 from app.models.identity import Roles, User
-from app.models.order import DeliverySlot, DeliverySlotKind
+from app.models.order import DeliverySlot, DeliverySlotKind, Order, OrderStatus
 from tests.conftest import auth_header, create_test_user, login_user
 
+
+
+# =========== HELPERS ============
 
 async def create_test_variant(
     db_session: AsyncSession,
@@ -191,6 +194,11 @@ async def test_unauthenticated_order_routes_require_login(
     assert response.json()["detail"] == "Not authenticated"
 
 
+
+
+# ========== TESTS ==============
+
+
 @pytest.mark.anyio
 async def test_authenticated_user_can_list_orders_when_empty(client: AsyncClient):
     await create_test_user(client)
@@ -199,12 +207,7 @@ async def test_authenticated_user_can_list_orders_when_empty(client: AsyncClient
     response = await client.get("/api/v1/orders", headers=auth_header(token))
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {
-        "items": [],
-        "total": 0,
-        "page": 1,
-        "page_size": 20,
-    }
+    assert response.json() == {'items': [], 'offset': 0, 'limit': 20, 'has_more': False}
 
 
 
@@ -256,7 +259,6 @@ async def test_authenticated_user_can_checkout_read_and_cancel_order(
 
     list_response = await client.get("/api/v1/orders", headers=headers)
     assert list_response.status_code == status.HTTP_200_OK
-    assert list_response.json()["total"] == 1
     assert list_response.json()["items"][0]["order_no"] == order["order_no"]
 
     detail_response = await client.get(f"/api/v1/orders/{order['id']}", headers=headers)
@@ -273,6 +275,70 @@ async def test_authenticated_user_can_checkout_read_and_cancel_order(
     )
     assert cancel_response.status_code == status.HTTP_200_OK
     assert cancel_response.json()["status"] == "cancelled"
+
+
+
+
+
+
+
+@pytest.mark.anyio
+async def test_user_can_cancel_the_uncancellable_order(
+    client: AsyncClient,
+    db_session: AsyncSession,
+):
+
+
+    admin_token, product = await create_admin_product(
+        client,
+        db_session,
+        stock_qty=5,
+    )
+    variant_id = product["variants"][0]["id"]
+    user_token, address_id = await create_user_address_and_cart(
+        client,
+        variant_id=variant_id,
+    )
+    slot = await create_test_delivery_slot(db_session)
+    user_headers = auth_header(user_token)
+    admin_headers = auth_header(admin_token)
+    
+    checkout_response = await client.post(
+        "/api/v1/orders/checkout",
+        headers=user_headers,
+        json=checkout_payload(address_id, slot.id),
+    )
+    assert checkout_response.status_code == status.HTTP_201_CREATED
+    # admin change order status to an uncancellable status
+    order = checkout_response.json()
+
+
+    async def change_status(new_status):
+        await db_session.flush()
+        db_session.expunge_all()
+
+        status_change_response = await client.patch(
+            f'/api/v1/orders/{order['id']}/status', 
+            headers=admin_headers,
+            json={"status": new_status, "note": "string"},
+        )
+    
+        assert status_change_response.status_code == status.HTTP_200_OK
+    
+
+    await change_status("packing")
+    await change_status("shipped")
+    # try to cancel
+    cancel_response = await client.post(
+        f"/api/v1/orders/{order['id']}/cancel", headers=user_headers
+    )
+    assert cancel_response.status_code == status.HTTP_409_CONFLICT
+    assert cancel_response.json()["detail"] == f"Order in status 'shipped' can no longer be cancelled"
+
+
+
+
+
 
 
 @pytest.mark.anyio
@@ -394,7 +460,6 @@ async def test_deleting_variant_after_checkout_does_not_affect_existing_order(
 
     list_response = await client.get("/api/v1/orders", headers=auth_header(user_token))
     assert list_response.status_code == status.HTTP_200_OK
-    assert list_response.json()["total"] == 1
 
 
 @pytest.mark.anyio
@@ -440,3 +505,7 @@ async def test_deleting_product_after_checkout_does_not_affect_existing_order(
     )
     assert code_response.status_code == status.HTTP_200_OK
     assert code_response.json()["id"] == order["id"]
+
+
+
+# TODO: test order snapshot being showed after deleting the product that some customer had ordered in past

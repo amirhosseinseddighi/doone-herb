@@ -25,14 +25,6 @@ os.environ["DATABASE_URL"] = "postgresql+asyncpg://app:13fa426dc009d12935779579c
 os.environ["GUEST_CART_MAX_AGE"] = "2592000"
 os.environ["RESET_TOKEN_PREFIX"] = "pwd_reset:"
 
-
-os.environ["MAIL_SERVER"] = "sandbox.smtp.mailtrap.io"
-os.environ["MAIL_USERNAME"] = "93e19593f04007"
-os.environ["MAIL_PASSWORD"] = "795573522596ec"
-os.environ["MAIL_PORT"] = "2525"
-os.environ["MAIL_FROM"] = "from@example.com"
-
-
 # ============= OTHER =================
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -105,6 +97,21 @@ async def db_session(
              await conn.close()
 
 
+
+
+@pytest.fixture(scope="session", autouse=True)
+def fast_password_hashing():
+    from pwdlib import PasswordHash
+    from pwdlib.hashers.argon2 import Argon2Hasher
+    from app.core import security
+
+    fast_hash = PasswordHash(
+        (Argon2Hasher(time_cost=1, memory_cost=8, parallelism=1),)
+    )
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(security, "password_hash", fast_hash)
+        yield
 
 # =========== DEPENDENCY OVERRIDE ===============
 
