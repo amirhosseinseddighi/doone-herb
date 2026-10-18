@@ -72,6 +72,9 @@ async def _load_review_for_response(db: AsyncSession, review_id: int) -> Review:
         .options(
             selectinload(Review.user),
             selectinload(Review.replies).selectinload(Review.user),
+            # ReviewResponse serializes `replies` recursively, so each reply's
+            # own (empty) replies collection must be loaded too.
+            selectinload(Review.replies).selectinload(Review.replies),
         )
         .where(Review.id == review_id)
     )
@@ -194,6 +197,9 @@ async def get_product_reviews(
         .options(
             selectinload(Review.user),
             selectinload(Review.replies).selectinload(Review.user),
+            # ReviewResponse serializes `replies` recursively, so each reply's
+            # own (empty) replies collection must be loaded too.
+            selectinload(Review.replies).selectinload(Review.replies),
         )
         .where(Review.product_id == product_id, Review.parent_id.is_(None))
         .order_by(Review.created_at.desc())
@@ -236,6 +242,9 @@ async def get_my_reviews(
         .options(
             selectinload(Review.user),
             selectinload(Review.replies).selectinload(Review.user),
+            # ReviewResponse serializes `replies` recursively, so each reply's
+            # own (empty) replies collection must be loaded too.
+            selectinload(Review.replies).selectinload(Review.replies),
         )
         .where(Review.user_id == current_user.id, Review.parent_id.is_(None))
         .order_by(Review.created_at.desc())
