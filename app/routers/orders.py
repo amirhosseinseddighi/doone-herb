@@ -403,8 +403,6 @@ async def cancel_order(
             variant.stock_qty += item.qty
 
     order.status = OrderStatus.CANCELLED
-    # OrderStatusEventActor has no "customer" option, so a customer-triggered
-    # cancellation is logged as SYSTEM with a note explaining who asked for it.
     order.status_events.append(
         OrderStatusEvent(
             status=OrderStatus.CANCELLED,

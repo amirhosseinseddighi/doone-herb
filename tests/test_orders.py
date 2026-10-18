@@ -508,4 +508,44 @@ async def test_deleting_product_after_checkout_does_not_affect_existing_order(
 
 
 
-# TODO: test order snapshot being showed after deleting the product that some customer had ordered in past
+@pytest.mark.anyio
+async def test_order_snapshot_fields_visible_after_product_deletion(
+    client: AsyncClient,
+    db_session: AsyncSession,
+):
+    admin_token, product = await create_admin_product(
+        client,
+        db_session,
+        stock_qty=5,
+    )
+    variant_id = product["variants"][0]["id"]
+    user_token, address_id = await create_user_address_and_cart(
+        client,
+        variant_id=variant_id,
+    )
+    slot = await create_test_delivery_slot(db_session)
+
+    checkout_response = await client.post(
+        "/api/v1/orders/checkout",
+        headers=auth_header(user_token),
+        json=checkout_payload(address_id, slot.id),
+    )
+    assert checkout_response.status_code == status.HTTP_201_CREATED
+    order = checkout_response.json()
+
+    delete_response = await client.delete(
+        f"/api/v1/products/{product['id']}",
+        headers=auth_header(admin_token),
+    )
+    assert delete_response.status_code == status.HTTP_204_NO_CONTENT
+
+    detail_response = await client.get(
+        f"/api/v1/orders/{order['id']}", headers=auth_header(user_token)
+    )
+    assert detail_response.status_code == status.HTTP_200_OK
+    item = detail_response.json()["items"][0]
+    assert item["name_snapshot"] == product["name"]
+    assert item["size_label_snapshot"] == "100g"
+    assert item["unit_price_snapshot"] == 1500
+    assert item["qty"] == 1
+    assert item["line_total"] == 1500
