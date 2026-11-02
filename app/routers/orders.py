@@ -430,7 +430,7 @@ async def cancel_order(
 @limiter.limit("10/minute")
 async def list_all_orders(
     request: Request,
-    _staff: Annotated[User, Depends(require_perm(Permissions.USERS_READ))],
+    _staff: Annotated[User, Depends(require_perm(Permissions.ORDERS_READ_ALL))],
     db: SessionDep,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
