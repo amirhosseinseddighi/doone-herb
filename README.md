@@ -238,7 +238,3 @@ Endpoints are rate limited with **slowapi**, keyed by client IP (e.g. login 5/mi
 ## Image uploads
 
 Product and category images are processed with Pillow and written to `media/` (configured via `PRODUCT_IMAGE_UPLOAD_DIRECTORY`, default `media/products`). The compose file mounts `media` into the app container so uploads persist across restarts. Max size is `MAX_IMAGE_SIZE_MEGA_BYTE` (default 5 MB).
-
-## License
-
-This project is private/internal. No license is currently specified.
