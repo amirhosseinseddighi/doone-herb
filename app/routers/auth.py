@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import func, select, delete as sql_delete
+from sqlalchemy import func, or_, select, delete as sql_delete
 from sqlalchemy.exc import IntegrityError
 from app.core.permissions import MANAGEABLE_ROLES, Permissions
 from app.models.identity import ResetPasswordToken, Roles, User
@@ -194,33 +194,52 @@ async def read_admin_users(
     request: Request,
     _admin: Annotated[User, Depends(require_perm(Permissions.USERS_READ))],
     db: SessionDep,
+    search: Annotated[
+        str | None,
+        Query(
+            min_length=1,
+            max_length=100,
+            description="Search customers by name, phone or email",
+        ),
+    ] = None,
     offset: Annotated[int, Query(ge=0)] = 0,
-    limit: Annotated[int, Query(ge=1, le=150)] = 150,
+    limit: Annotated[int, Query(ge=1, le=150)] = 50,
 ):
+    conditions = [User.role == Roles.CUSTOMER]
+
+    if search is not None:
+        term = search.strip()
+        if term:
+            escaped = term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            pattern = f"%{escaped}%"
+            conditions.append(
+                or_(
+                    User.name.ilike(pattern, escape="\\"),
+                    User.phone.ilike(pattern, escape="\\"),
+                    User.email.ilike(pattern, escape="\\"),
+                )
+            )
+
     result = await db.execute(
         select(User)
-        .offset(offset).limit(limit)
-        .where(User.role == Roles.CUSTOMER)
-        .order_by(User.created_at.desc())
+        .where(*conditions)
+        .order_by(User.created_at.desc(), User.id.desc())
+        .offset(offset)
+        .limit(limit)
     )
     users = result.scalars().all()
 
-    total_users_req = await db.execute(
-        select(func.count())
-        .select_from(User)
-        .where(User.role == Roles.CUSTOMER)
-    )
-
-    total_users = total_users_req.scalar() or 0
-
-    has_more = offset + limit < total_users
+    total_users = (
+        await db.execute(select(func.count()).select_from(User).where(*conditions))
+    ).scalar() or 0
 
     return PaginatedUserResponse(
-        users = [UserInfoForAdmin.model_validate(user) for user in users],
+        users=[UserInfoForAdmin.model_validate(user) for user in users],
         offset=offset,
         limit=limit,
-        has_more=has_more
+        has_more=offset + limit < total_users,
     )
+
 
 
 @router.patch("/admin/users/{user_id}", response_model=ChangeUserRoleResponse)

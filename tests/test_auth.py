@@ -145,7 +145,8 @@ async def test_admin_can_list_customers(client: AsyncClient, db_session):
             {
                 'id': customer.id, 
                 'name': 'API Customer', 
-                'phone': '09121231234', 
+                'phone': '09121231234',
+                'email': 'customer@example.com', 
                 'last_seen_at': customer.last_seen_at.isoformat().replace('+00:00', 'Z'),
                 'tier': 'new', 
                 'note': None, 
@@ -154,7 +155,7 @@ async def test_admin_can_list_customers(client: AsyncClient, db_session):
             }
         ],
         'offset': 0, 
-        'limit': 150, 
+        'limit': 50, 
         'has_more': False
     }
 

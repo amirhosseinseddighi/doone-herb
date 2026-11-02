@@ -46,6 +46,7 @@ class CurrentUserInfoResponse(BaseModel):
 
 class UserInfoForAdmin(BaseModel):
     id: int
+    email: str
     name: str
     phone: str
     last_seen_at: datetime
