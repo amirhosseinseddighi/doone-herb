@@ -12,10 +12,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.deps import CurrentAdmin, CurrentUser, get_db
+from app.core.deps import CurrentUser, SessionDep, require_perm
+from app.core.permissions import Permissions
 from app.core.rate_limiter import limiter
 from app.db.redis_cli import redis_client
-from app.models.identity import Roles
+from app.models.identity import Roles, User
 from app.models.cart import Cart, CartItem
 from app.models.category import ProductVariant
 from app.models.order import (
@@ -154,7 +155,7 @@ async def invalidate_delivery_slots_cache() -> None:
 
 @router.get("/delivery-slots", response_model=list[DeliverySlotRead])
 @limiter.limit("2/second")
-async def list_delivery_slots(request: Request, db: AsyncSession = Depends(get_db)):
+async def list_delivery_slots(request: Request, db: SessionDep):
     try:
         cached = await redis_client.get(DELIVERY_SLOTS_KEY)
     except RedisError:
@@ -187,7 +188,7 @@ async def checkout(
     request: Request,
     payload: OrderCreate,
     current_user: CurrentUser,
-    db: AsyncSession = Depends(get_db),
+    db: SessionDep,
 ):
     # --- address must belong to the caller ---
     address = await db.get(Address, payload.address_id)
@@ -333,7 +334,7 @@ async def checkout(
 async def list_my_orders(
     request: Request,
     current_user: CurrentUser,
-    db: AsyncSession = Depends(get_db),
+    db: SessionDep,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     status_filter: Optional[OrderStatus] = Query(None, alias="status"),
@@ -350,7 +351,7 @@ async def get_order_by_order_no(
     request: Request,
     order_no: str,
     current_user: CurrentUser,
-    db: AsyncSession = Depends(get_db),
+    db: SessionDep,
 ):
     order = await _load_order_by_order_no_or_404(order_no, db)
     _ensure_owner_or_staff(order, current_user)
@@ -363,7 +364,7 @@ async def get_order(
     request: Request,
     order_id: int,
     current_user: CurrentUser,
-    db: AsyncSession = Depends(get_db),
+    db: SessionDep,
 ):
     order = await _load_order_or_404(order_id, db)
     _ensure_owner_or_staff(order, current_user)
@@ -376,7 +377,7 @@ async def cancel_order(
     request: Request,
     order_id: int,
     current_user: CurrentUser,
-    db: AsyncSession = Depends(get_db),
+    db: SessionDep,
 ):
     order = await _load_order_or_404(order_id, db)
     _ensure_owner_or_staff(order, current_user)
@@ -429,8 +430,8 @@ async def cancel_order(
 @limiter.limit("10/minute")
 async def list_all_orders(
     request: Request,
-    _staff: CurrentAdmin,
-    db: AsyncSession = Depends(get_db),
+    _staff: Annotated[User, Depends(require_perm(Permissions.USERS_READ))],
+    db: SessionDep,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
     status_filter: Optional[OrderStatus] = Query(None, alias="status"),
@@ -450,8 +451,9 @@ async def update_order_status(
     request: Request,
     order_id: int,
     payload: OrderStatusUpdate,
-    staff: CurrentAdmin,
-    db: AsyncSession = Depends(get_db),
+    staff: Annotated[User, Depends(require_perm(Permissions.ORDERS_UPDATE_STATUS)
+    )],
+    db: SessionDep,
 ):
     order = await _load_order_or_404(order_id, db)
 
@@ -500,8 +502,8 @@ async def update_order_fulfillment(
     request: Request,
     order_id: int,
     payload: OrderFulfillmentUpdate,
-    staff: CurrentAdmin,
-    db: AsyncSession = Depends(get_db),
+    staff: Annotated[User, Depends(require_perm(Permissions.ORDERS_FULFILL))],
+    db: SessionDep,
 ):
     """Attach/update tracking details — no status change."""
     order = await _load_order_or_404(order_id, db)

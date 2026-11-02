@@ -5,6 +5,7 @@ from fastapi import Cookie, status
 from fastapi import Depends, HTTPException
 from sqlalchemy import select
 import structlog
+from app.core.permissions import Permissions, has_perm
 from app.core.security import oauth2_scheme, verify_access_token, oauth2_scheme_optional
 from app.db.database import AsyncSession
 from app.db.database import Base, AsyncSessionLocal
@@ -18,7 +19,7 @@ async def get_db():
 
 async def get_optional_current_user(
     token: Annotated[Optional[str], Depends(oauth2_scheme_optional)],
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
 ) -> Optional[User]:
     """return authenticated User if a valid token is provided, otherwise None."""
     if not token:
@@ -46,7 +47,7 @@ async def get_optional_current_user(
 
 async def get_current_user(
         token: Annotated[str, Depends(oauth2_scheme)],
-        db: Annotated[AsyncSession, Depends(get_db)]
+        db: SessionDep
 ):
     user_id = verify_access_token(token=token)
     if not user_id:
@@ -85,19 +86,6 @@ async def get_current_user(
 
 
 
-def require_role(*allowed_roles: Roles):
-    """Dependency factory for role-based access control."""
-    async def check_role(user: Annotated[User, Depends(get_current_user)]) -> User:
-        if user.role not in allowed_roles:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, 
-                detail="Insufficient permissions", 
-                headers={"WWW-Authenticate": "Bearer"}
-            )
-        return user
-    return check_role
-
-
 async def get_optional_admin(
     current_user: OptionalUser,
 ) -> Optional[User]:
@@ -111,13 +99,18 @@ async def get_optional_admin(
         return current_user
     return None
  
+
+
+def require_perm(*perms: Permissions):
+    async def checker(user: Annotated[User, Depends(get_current_user)]) -> User:
+        if not all(has_perm(user, p) for p in perms):
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient permissions")
+        return user
+    return checker
  
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
-CurrentAdmin = Annotated[User, Depends(require_role(Roles.OWNER, Roles.PACKER, Roles.MANAGER))]
-CurrentOwner = Annotated[User, Depends(require_role(Roles.OWNER))]
-CurrentManagerOrOwner = Annotated[User, Depends(require_role(Roles.OWNER, Roles.MANAGER))]
 CurrentAdminOptional = Annotated[Optional[User], Depends(get_optional_admin)]
 OptionalUser = Annotated[Optional[User], Depends(get_optional_current_user)]
 
@@ -156,4 +149,4 @@ async def require_cart_identity(
 CartIdentityDep = Annotated[CartIdentity, Depends(get_cart_identity)]
 RequiredCartIdentityDep = Annotated[CartIdentity, Depends(require_cart_identity)]
 
-
+SessionDep = Annotated[AsyncSession, Depends(get_db)]

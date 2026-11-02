@@ -23,7 +23,7 @@ async def create_admin(client: AsyncClient, db_session: AsyncSession) -> str:
         select(User).where(User.email == "admin@example.com")
     )
     assert admin is not None
-    admin.role = Roles.MANAGER
+    admin.role = Roles.OWNER
     await db_session.flush()
     return await login_user(client, email="admin@example.com")
 

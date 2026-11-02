@@ -6,20 +6,72 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import func, select, delete as sql_delete
 from sqlalchemy.exc import IntegrityError
+from app.core.permissions import MANAGEABLE_ROLES, Permissions
 from app.models.identity import ResetPasswordToken, Roles, User
-from app.core.deps import CurrentUser, CurrentAdmin, OptionalUser, get_db
+from app.core.deps import CurrentUser, OptionalUser, SessionDep, get_db, require_perm
 from app.db.database import AsyncSession
 from app.core import security
 from app.core.config import settings
 from app.core.rate_limiter import limiter
 from app.routers.cart import merge_guest_cart_to_user
-from app.schemas.auth import ChangePasswordRequest, CurrentUserInfoResponse, ForgetPasswordRequest, NewUserCreate, PaginatedUserResponse, ResetPasswordRequest, Token, UpdateProfileRequest, UserInfoForAdmin
+from app.schemas.auth import (
+    ChangePasswordRequest, 
+    ChangeUserRoleRequest, 
+    ChangeUserRoleResponse, 
+    CurrentUserInfoResponse, 
+    ForgetPasswordRequest, 
+    NewUserCreate, 
+    PaginatedUserResponse, 
+    ResetPasswordRequest, 
+    Token, 
+    UpdateProfileRequest,
+    UserInfoForAdmin
+)
 from app.utils.email_utils import send_password_reset_email
 import structlog
 
 logger = structlog.get_logger()
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+# ============ HELPERS ===============
+async def check_user_exists(user_id, db: AsyncSession):
+    req = await db.execute(select(User).where(User.id == user_id))
+    user = req.scalar_one_or_none()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="not found"
+        )
+
+    return user
+
+
+
+def _ensure_can_change_role(actor: User, target: User, new_role: Roles) -> None:
+    """ Check if actor change change the target user role """
+    if actor.id == target.id:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "You cannot change your own role"
+        )
+
+    manageable = MANAGEABLE_ROLES.get(actor.role, frozenset())
+
+  
+    if target.role not in manageable:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            f"You are not allowed to change the role of a {target.role.value}",
+        )
+
+
+    if new_role not in manageable:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            f"You are not allowed to assign the {new_role.value} role",
+        )
+
 
 
 
@@ -29,7 +81,7 @@ async def login(
     request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     response: Response,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     current_user: OptionalUser,
     guest_cart_token: Optional[str] = Cookie(None, alias="guest_cart_token"),
 ):
@@ -100,7 +152,7 @@ async def update_users_me(
     request: Request,
     profile_update: UpdateProfileRequest,
     current_user: CurrentUser,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
 ):
     """Partial profile update. Email is not editable (see UpdateProfileRequest)."""
     update_data = profile_update.model_dump(exclude_unset=True)
@@ -137,11 +189,11 @@ async def update_users_me(
 
 
 @router.get("/admin/users", response_model=PaginatedUserResponse)
-@limiter.limit("10/minute")
+@limiter.limit("60/minute")
 async def read_admin_users(
     request: Request,
-    _admin: CurrentAdmin,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    _admin: Annotated[User, Depends(require_perm(Permissions.USERS_READ))],
+    db: SessionDep,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=150)] = 150,
 ):
@@ -171,13 +223,49 @@ async def read_admin_users(
     )
 
 
+@router.patch("/admin/users/{user_id}", response_model=ChangeUserRoleResponse)
+@limiter.limit("60/minute")
+async def change_user_role(
+    request: Request,
+    user_id: int,
+    current_admin: Annotated[
+        User, Depends(require_perm(Permissions.USERS_CHANGE_ROLE))
+    ],
+    db: SessionDep,
+    change_role_request: ChangeUserRoleRequest,
+):
+
+    user = await check_user_exists(user_id, db)
+    new_role = change_role_request.role
+
+    _ensure_can_change_role(current_admin, user, new_role)
+
+    if user.role == new_role:
+        return user
+
+    old_role = user.role
+    user.role = new_role
+    await db.commit()
+    await db.refresh(user)
+
+    logger.info(
+        "User role changed",
+        target_user_id=user.id,
+        old_role=old_role.value,
+        new_role=new_role.value,
+        admin_id=current_admin.id,
+        admin_role=current_admin.role.value,
+    )
+    return user
+
+
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/hour")
 async def create_new_user(
     request: Request,
     new_user: NewUserCreate,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     current_user: OptionalUser
 ):
     # check user is not logged in
@@ -245,7 +333,7 @@ async def create_new_user(
 @limiter.limit("3/hour")
 async def forget_password(
     request: Request,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     current_user: OptionalUser,
     background_task: BackgroundTasks,
     forget_password_request: ForgetPasswordRequest
@@ -318,7 +406,7 @@ async def reset_password(
     request: Request,
     reset_password_request: ResetPasswordRequest,
     current_user: OptionalUser,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    db: SessionDep
 ):
 
     # check user is not logged in
@@ -388,7 +476,7 @@ async def change_password(
     request: Request,
     change_password_request: ChangePasswordRequest,
     current_user: CurrentUser,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
 ):
     """Authenticated user password update endpoint."""
     

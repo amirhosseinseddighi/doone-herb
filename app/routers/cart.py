@@ -1,10 +1,10 @@
 import uuid
-from typing import Annotated, Optional
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, HTTPException, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from app.core.deps import CartIdentityDep, CurrentUser, OptionalUser, RequiredCartIdentityDep, get_db
+from app.core.deps import CartIdentityDep, CurrentUser, OptionalUser, RequiredCartIdentityDep, SessionDep, get_db
 from app.db.database import AsyncSession
 from app.models.category import ProductVariant
 from app.models.cart import Cart, CartItem
@@ -243,7 +243,7 @@ async def merge_guest_cart_to_user(
 @limiter.limit("2/second")
 async def get_cart(
     request: Request,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     response: Response,
     identity: CartIdentityDep,
 ):
@@ -260,7 +260,7 @@ async def get_cart(
 @limiter.limit("30/minute")
 async def add_item_to_cart(
     request: Request,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     cart_request: AddCartItemRequest,
     response: Response,
     identity: CartIdentityDep,
@@ -328,7 +328,7 @@ async def add_item_to_cart(
 async def delete_cart_item(
     request: Request,
     cart_item_id: int,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     identity: RequiredCartIdentityDep,
 ):
     """Delete one item from cart."""
@@ -364,7 +364,7 @@ async def delete_cart_item(
 @limiter.limit("10/minute")
 async def clear_cart(
     request: Request,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     identity: RequiredCartIdentityDep,
 ):
     """Clear entire cart."""
@@ -401,7 +401,7 @@ async def update_cart_item(
     request: Request,
     cart_item_id: int,
     update_request: UpdateCartItemRequest,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     identity: RequiredCartIdentityDep,
 ):
     """Update the quantity of an existing cart item."""

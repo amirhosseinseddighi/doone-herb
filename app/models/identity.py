@@ -35,6 +35,9 @@ class Roles(str, enum.Enum):
     PACKER = 'packer'
 
 
+
+# ================= DB MODELS =================
+
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True,unique=True)
@@ -66,13 +69,15 @@ class User(Base):
     sms_opt_in: Mapped[bool] = mapped_column(Boolean, default=False)
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
 
     addresses: Mapped[list["Address"]] = relationship("Address", back_populates="user")
     reviews: Mapped[list["Review"]] = relationship("Review", back_populates="user")
     cart: Mapped[Optional["Cart"]] = relationship("Cart", back_populates="user")
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="user")
     reset_password_tokens :Mapped[list["ResetPasswordToken"]] = relationship("ResetPasswordToken", back_populates="user")
-
+    
 
 class Address(Base):
     __tablename__ = "addresses"

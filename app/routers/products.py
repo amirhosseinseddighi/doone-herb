@@ -19,11 +19,13 @@ from sqlalchemy import and_, func, or_, select, update, delete as sql_delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload, with_loader_criteria
 
-from app.core.deps import CurrentManagerOrOwner, get_db
+from app.core.deps import SessionDep, require_perm
+from app.core.permissions import Permissions
 from app.core.rate_limiter import limiter
 from app.db.database import AsyncSession
 from app.models.cart import CartItem
 from app.models.category import Category, Offer, Product, ProductImage, ProductVariant
+from app.models.identity import User
 from app.schemas.products import ImageUploadResponse, NewProductRequest, NewProductVariantRequest, PaginatedProductResponse, ProductResponse, ProductVariantResponse, UpdateProductImageRequest, UpdateProductRequest, UpdateProductVariantRequest
 from app.utils.image_utils import process_product_image
 from app.utils.product_utils import generate_sku
@@ -57,7 +59,7 @@ async def _get_active_product(product_id: int, db: AsyncSession) -> Product:
 async def get_product_images(
     request: Request,
     product_id: int,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    db: SessionDep
 ):
     product = await db.execute(
         select(Product)
@@ -80,8 +82,8 @@ async def upload_product_image(
     request: Request,
     product_id: int,
     file: UploadFile,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    admin: Annotated[User, Depends(require_perm(Permissions.PRODUCT_WRITE))],
+    db: SessionDep
 ):
     await _get_active_product(product_id, db)
 
@@ -163,8 +165,8 @@ async def update_product_image(
     product_id: int,
     image_id: int,
     data: UpdateProductImageRequest,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    admin: Annotated[User, Depends(require_perm(Permissions.PRODUCT_WRITE))],
+    db: SessionDep
 ):
     await _get_active_product(product_id, db)
 
@@ -213,8 +215,10 @@ async def delete_product_image(
     request: Request,
     product_id: int,
     image_id: int,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    admin: Annotated[User, Depends(
+        require_perm(Permissions.PRODUCT_DELETE, Permissions.PRODUCT_WRITE)
+    )],
+    db: SessionDep
 ):
     await _get_active_product(product_id, db)
 
@@ -263,7 +267,7 @@ async def delete_product_image(
 @limiter.limit("2/second")
 async def get_all_products(
     request: Request,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     search: Annotated[
         str | None,
         Query(
@@ -335,7 +339,7 @@ async def get_all_products(
 
 @router.get("/{product_slug}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
 @limiter.limit("2/second")
-async def show_product_details(request: Request, product_slug: str, db: Annotated[AsyncSession, Depends(get_db)]):
+async def show_product_details(request: Request, product_slug: str, db: SessionDep):
     now = datetime.now(UTC)
     product_result = await db.execute(
         select(Product)
@@ -374,9 +378,9 @@ async def show_product_details(request: Request, product_slug: str, db: Annotate
 @limiter.limit("20/minute")
 async def add_product(
     request: Request,
-    admin: CurrentManagerOrOwner,
+    admin: Annotated[User, Depends(require_perm(Permissions.PRODUCT_WRITE))],
     new_product: NewProductRequest,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    db: SessionDep
 ):
     category_result = await db.execute(
         select(Category).where((Category.id == new_product.category_id) & (Category.is_deleted.is_(False)))
@@ -450,8 +454,10 @@ async def add_product(
 async def delete_product(
     request: Request,
     product_id: int,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    admin: Annotated[User, Depends(
+        require_perm(Permissions.PRODUCT_WRITE, Permissions.PRODUCT_DELETE)
+    )],
+    db: SessionDep
 ):
     result = await db.execute(
         select(Product)
@@ -497,8 +503,8 @@ async def update_product(
     request: Request,
     product_id: int,
     product_update: UpdateProductRequest,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    admin: Annotated[User, Depends(require_perm(Permissions.PRODUCT_WRITE))],
+    db: SessionDep
 ):
     # check existance of product and check if it's not soft-deleted
     stmt = (
@@ -598,8 +604,8 @@ async def add_product_variant(
     request: Request,
     product_id: int,
     variant_data: NewProductVariantRequest,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    admin: Annotated[User, Depends(require_perm(Permissions.PRODUCT_WRITE))],
+    db: SessionDep,
 ):
     # Verify product existence
     product_stmt = select(Product).where(
@@ -675,8 +681,10 @@ async def delete_product_variant(
     request: Request,
     product_id: int,
     variant_id: int,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    admin: Annotated[User, Depends(
+        require_perm(Permissions.PRODUCT_WRITE, Permissions.PRODUCT_DELETE)
+    )],
+    db: SessionDep
 ):
     # check product exists and is not soft-deleted
     product_stmt = select(Product).where(
@@ -750,8 +758,8 @@ async def update_product_variant(
     product_id: int,
     variant_id: int,
     variant_update: UpdateProductVariantRequest,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    admin: Annotated[User, Depends(require_perm(Permissions.PRODUCT_WRITE))],
+    db: SessionDep,
 ):
     # check the product exists and isn't soft-deleted
     product_result = await db.execute(

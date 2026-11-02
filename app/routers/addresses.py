@@ -1,10 +1,10 @@
 from __future__ import annotations
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status
 from sqlalchemy import select, update
 
-from app.core.deps import CurrentUser, get_db
+from app.core.deps import CurrentUser, SessionDep
 from app.core.rate_limiter import limiter
 from app.db.database import AsyncSession
 from app.models.identity import Address
@@ -14,9 +14,6 @@ import structlog
 logger = structlog.get_logger()
 
 router = APIRouter(prefix="/addresses", tags=["addresses"])
-
-DbDep = Annotated[AsyncSession, Depends(get_db)]
-
 
 async def _get_owned_address(db: AsyncSession, user_id: int, address_id: int) -> Address:
     result = await db.execute(
@@ -47,7 +44,7 @@ async def _unset_other_defaults(db: AsyncSession, user_id: int, exclude_id: int 
 
 @router.get("", response_model=list[AddressRead])
 @limiter.limit("2/second")
-async def list_addresses(request: Request, current_user: CurrentUser, db: DbDep):
+async def list_addresses(request: Request, current_user: CurrentUser, db: SessionDep):
     result = await db.execute(
         select(Address)
         .where(Address.user_id == current_user.id)
@@ -58,7 +55,7 @@ async def list_addresses(request: Request, current_user: CurrentUser, db: DbDep)
 
 @router.get("/{address_id}", response_model=AddressRead)
 @limiter.limit("2/second")
-async def get_address(request: Request, address_id: int, current_user: CurrentUser, db: DbDep):
+async def get_address(request: Request, address_id: int, current_user: CurrentUser, db: SessionDep):
     return await _get_owned_address(db, current_user.id, address_id)
 
 
@@ -68,7 +65,7 @@ async def create_address(
     request: Request,
     payload: AddressCreate,
     current_user: CurrentUser,
-    db: DbDep,
+    db: SessionDep,
 ):
     # first address for a user is always the default,regardless of input
     result = await db.execute(
@@ -105,7 +102,7 @@ async def update_address(
     address_id: int,
     payload: AddressUpdate,
     current_user: CurrentUser,
-    db: DbDep,
+    db: SessionDep,
 ):
     address = await _get_owned_address(db, current_user.id, address_id)
 
@@ -140,7 +137,7 @@ async def update_address(
 
 @router.delete("/{address_id}", status_code=status.HTTP_204_NO_CONTENT)
 @limiter.limit("10/minute")
-async def delete_address(request: Request, address_id: int, current_user: CurrentUser, db: DbDep):
+async def delete_address(request: Request, address_id: int, current_user: CurrentUser, db: SessionDep):
     address = await _get_owned_address(db, current_user.id, address_id)
     was_default = address.is_default
 
@@ -174,7 +171,7 @@ async def set_default_address(
     request: Request,
     address_id: int,
     current_user: CurrentUser,
-    db: DbDep,
+    db: SessionDep,
 ):
     address = await _get_owned_address(db, current_user.id, address_id)
     if not address.is_default:

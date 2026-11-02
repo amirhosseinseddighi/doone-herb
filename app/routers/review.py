@@ -8,13 +8,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.deps import (
-    CurrentAdminOptional,
-    CurrentManagerOrOwner,
     CurrentUser,
+    SessionDep,
     get_db,
+    require_perm,
 )
+from app.core.permissions import Permissions, has_perm
 from app.core.rate_limiter import limiter
 from app.models.category import Product, Review
+from app.models.identity import User
 from app.models.order import Order, OrderItem
 from app.schemas.review import (
     PaginatedReviewResponse,
@@ -84,13 +86,16 @@ async def _load_review_for_response(db: AsyncSession, review_id: int) -> Review:
 ReviewOrNotFound = Annotated[Review, Depends(get_review_or_404)]
 
 
-def _ensure_can_modify(review: Review, current_user: CurrentUser, admin: Optional[object]) -> None:
-    """Author of the review, or an admin/manager, may modify it."""
-    if review.user_id != current_user.id and admin is None:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to modify this review",
-        )
+def _ensure_can_modify(review: Review, user: User) -> bool:
+    """Allow the review's author or a moderator. Returns True if acting as moderator."""
+    if review.user_id == user.id:
+        return False
+    if has_perm(user, Permissions.REVIEWS_MODERATE):
+        return True
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Not authorized to modify this review",
+    )
 
 
 async def _validate_order_for_review(
@@ -162,9 +167,9 @@ async def _invalidate_product_reviews(product_id: int) -> None:
 async def get_product_reviews(
     request: Request,
     product_id: int,
+    db: SessionDep,
     offset: int = Query(0, ge=0),
     limit: int = Query(25, ge=1, le=100),
-    db: AsyncSession = Depends(get_db),
 ):
     """Retrieve top-level reviews and nested replies for a specific product."""
 
@@ -225,10 +230,11 @@ async def get_product_reviews(
 @limiter.limit("2/second")
 async def get_my_reviews(
     request: Request,
+    db: SessionDep,
     current_user: CurrentUser,
     offset: int = Query(0, ge=0),
     limit: int = Query(25, ge=1, le=100),
-    db: AsyncSession = Depends(get_db),
+    
 ):
     """List the current user's own top-level reviews, with any replies on them."""
     total_query = select(func.count(Review.id)).where(
@@ -266,9 +272,9 @@ async def get_my_reviews(
 @limiter.limit("10/hour")
 async def create_review(
     request: Request,
+    db: SessionDep,
     payload: ReviewCreate,
     current_user: CurrentUser,
-    db: AsyncSession = Depends(get_db),
 ):
     """Submit a top-level product review."""
     product = await db.get(Product, payload.product_id)
@@ -337,8 +343,8 @@ async def reply_to_review(
     request: Request,
     payload: ReviewReplyCreate,
     parent_review: ReviewOrNotFound,
-    admin_user: CurrentManagerOrOwner,
-    db: AsyncSession = Depends(get_db),
+    admin_user: Annotated[User, Depends(require_perm(Permissions.REVIEWS_MODERATE))],
+    db: SessionDep,
 ):
     """Post an admin/manager reply to a top-level review."""
     if parent_review.parent_id is not None:
@@ -374,11 +380,11 @@ async def update_review(
     payload: ReviewUpdate,
     review: ReviewOrNotFound,
     current_user: CurrentUser,
-    current_admin: CurrentAdminOptional,
-    db: AsyncSession = Depends(get_db),
+    db: SessionDep,
 ):
     """Update an existing review or reply (by author or admin/staff)."""
-    _ensure_can_modify(review, current_user, current_admin)
+        
+    by_moderator = _ensure_can_modify(review, current_user)
 
     update_data = payload.model_dump(exclude_unset=True)
     if review.parent_id is not None and "stars" in update_data:
@@ -398,7 +404,7 @@ async def update_review(
         product_id=review.product_id,
         user_id=current_user.id,
         fields=sorted(update_data.keys()),
-        by_admin=current_admin is not None,
+        by_admin=by_moderator is not None,
     )
     return await _load_review_for_response(db, review.id)
 
@@ -409,11 +415,10 @@ async def delete_review(
     request: Request,
     review: ReviewOrNotFound,
     current_user: CurrentUser,
-    current_admin: CurrentAdminOptional,
-    db: AsyncSession = Depends(get_db),
+    db: SessionDep,
 ):
     """Delete a review or reply (by author or admin/staff)."""
-    _ensure_can_modify(review, current_user, current_admin)
+    by_moderator = _ensure_can_modify(review, current_user)
 
     deleted_review_id = review.id
     deleted_product_id = review.product_id
@@ -426,5 +431,5 @@ async def delete_review(
         review_id=deleted_review_id,
         product_id=deleted_product_id,
         user_id=current_user.id,
-        by_admin=current_admin is not None,
+        by_admin=by_moderator is not None,
     )

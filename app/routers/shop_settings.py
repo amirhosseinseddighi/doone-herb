@@ -10,10 +10,11 @@ from fastapi import (
 )
 from sqlalchemy import select
 
-from app.core.deps import CurrentManagerOrOwner, get_db
+from app.core.deps import SessionDep, require_perm
+from app.core.permissions import Permissions
 from app.core.rate_limiter import limiter
-from app.db.database import AsyncSession
 from app.models.general import ShopSettings
+from app.models.identity import User
 from app.schemas.shop_settings import (
     BulkUpdateShopSettingRequest,
     NewShopSettingRequest,
@@ -32,7 +33,7 @@ router = APIRouter(prefix="/settings", tags=["settings"])
 @limiter.limit("2/second")
 async def get_all_settings(
     request: Request,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     search: Annotated[
         str | None,
         Query(
@@ -60,7 +61,7 @@ async def get_all_settings(
 async def get_setting_by_key(
     request: Request,
     key: str,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
 ):
     setting = await db.scalar(select(ShopSettings).where(ShopSettings.key == key))
     if not setting:
@@ -77,9 +78,9 @@ async def get_setting_by_key(
 @limiter.limit("20/minute")
 async def create_setting(
     request: Request,
-    admin: CurrentManagerOrOwner,
+    admin: Annotated[User, Depends(require_perm(Permissions.SETTINGS_WRITE))],
     new_setting: NewShopSettingRequest,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
 ):
     existing = await db.scalar(
         select(ShopSettings).where(ShopSettings.key == new_setting.key)
@@ -103,9 +104,9 @@ async def create_setting(
 @limiter.limit("10/minute")
 async def bulk_upsert_settings(
     request: Request,
-    admin: CurrentManagerOrOwner,
+    admin: Annotated[User, Depends(require_perm(Permissions.SETTINGS_WRITE))],
     payload: BulkUpdateShopSettingRequest,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
 ):
     updated_settings: list[ShopSettings] = []
 
@@ -140,8 +141,8 @@ async def update_setting(
     request: Request,
     key: str,
     setting_update: UpdateShopSettingRequest,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    admin: Annotated[User, Depends(require_perm(Permissions.SETTINGS_WRITE))],
+    db: SessionDep,
 ):
     setting = await db.scalar(select(ShopSettings).where(ShopSettings.key == key))
     if not setting:
@@ -163,8 +164,8 @@ async def update_setting(
 async def delete_setting(
     request: Request,
     key: str,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    admin: Annotated[User, Depends(require_perm(Permissions.SETTINGS_WRITE))],
+    db: SessionDep,
 ):
     setting = await db.scalar(select(ShopSettings).where(ShopSettings.key == key))
     if not setting:

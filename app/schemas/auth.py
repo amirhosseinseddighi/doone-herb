@@ -216,3 +216,17 @@ class ChangePasswordRequest(PasswordMixin):
         if self.current_password == self.new_password:
             raise ValueError("New password must be different from current password")
         return self
+
+
+
+class ChangeUserRoleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    role: Roles
+
+
+class ChangeUserRoleResponse(BaseModel):
+    id: int
+    name: str
+    role: Roles
+
+    model_config = ConfigDict(from_attributes=True)

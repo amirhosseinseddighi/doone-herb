@@ -7,10 +7,12 @@ from fastapi.concurrency import run_in_threadpool
 from slugify import slugify
 from sqlalchemy import and_, func, select
 
-from app.core.deps import CurrentManagerOrOwner, get_db
+from app.core.deps import SessionDep, get_db, require_perm
+from app.core.permissions import Permissions
 from app.core.rate_limiter import limiter
 from app.db.database import AsyncSession
 from app.models.category import Category, Product, ProductVariant
+from app.models.identity import User
 from app.schemas.categories import CategoryDetails, CategoryImageUploadResponse, CategoryResponse, NewCategoryRequest, PaginatedCategoryResponse, UpdateCategoryRequest
 from sqlalchemy.orm import selectinload
 from app.core.config import settings
@@ -24,6 +26,9 @@ logger = structlog.get_logger()
 router = APIRouter(prefix="/categories", tags=["categories"])
 
 
+CategoryAdminUser = Annotated[User, Depends(require_perm(Permissions.CATALOG_WRITE))]
+
+
 # ============= CATEGORY IMAGE UPLOAD ===================
 @router.post("/{category_id}/image", response_model=CategoryResponse)
 @limiter.limit("20/minute")
@@ -31,8 +36,8 @@ async def upload_category_image(
     request: Request,
     category_id: int,
     file: UploadFile,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    admin: CategoryAdminUser,
+    db: SessionDep
 ):
     # check if category exists
     category = await db.get(Category, category_id)
@@ -114,8 +119,8 @@ async def upload_category_image(
 async def delete_category_image(
     request: Request,
     category_id: int,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    admin: CategoryAdminUser,
+    db: SessionDep
 ):
     category = await db.get(Category, category_id)
     if not category:
@@ -160,7 +165,7 @@ async def delete_category_image(
 @limiter.limit("2/second")
 async def get_all_categories(
     request: Request,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: SessionDep,
     search: Annotated[
         str | None,
         Query(
@@ -206,7 +211,7 @@ async def get_all_categories(
 async def get_category_details(
     request: Request,
     category_id: int,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    db: SessionDep
 ):
     stmt = (
         select(Category)
@@ -241,9 +246,9 @@ async def get_category_details(
 @limiter.limit("20/minute")
 async def add_category(
     request: Request,
-    admin: CurrentManagerOrOwner,
+    admin: CategoryAdminUser,
     new_category: NewCategoryRequest,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    db: SessionDep
 ):
     slug = slugify(new_category.name, allow_unicode=True)
     counter = 1
@@ -283,8 +288,8 @@ async def update_category(
     request: Request,
     category_id: int,
     category_update: UpdateCategoryRequest,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    admin: CategoryAdminUser,
+    db: SessionDep
 ):
     result = await db.execute(
         select(Category).where((Category.id == category_id) & (Category.is_deleted.is_(False)))
@@ -329,8 +334,8 @@ async def update_category(
 async def delete_category(
     request: Request,
     category_id: int,
-    admin: CurrentManagerOrOwner,
-    db: Annotated[AsyncSession, Depends(get_db)]
+    admin: CategoryAdminUser,
+    db: SessionDep
 ):
     result = await db.execute(
         select(Category).where((Category.id == category_id) & (Category.is_deleted.is_(False)))
