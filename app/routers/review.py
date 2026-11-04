@@ -267,7 +267,6 @@ async def get_my_reviews(
         limit=limit,
     )
 
-
 @router.post("", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("10/hour")
 async def create_review(
@@ -326,6 +325,8 @@ async def create_review(
             detail="You have already reviewed this product",
         )
 
+    await _invalidate_product_reviews(payload.product_id)
+
     logger.info(
         "Review created",
         review_id=review.id,
@@ -363,6 +364,8 @@ async def reply_to_review(
     db.add(reply)
     await db.commit()
 
+    await _invalidate_product_reviews(parent_review.product_id)
+
     logger.info(
         "Review reply created",
         review_id=reply.id,
@@ -398,6 +401,8 @@ async def update_review(
 
     await db.commit()
 
+    await _invalidate_product_reviews(review.product_id)
+
     logger.info(
         "Review updated",
         review_id=review.id,
@@ -425,6 +430,8 @@ async def delete_review(
 
     await db.delete(review)
     await db.commit()
+
+    await _invalidate_product_reviews(deleted_product_id)
 
     logger.info(
         "Review deleted",
