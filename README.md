@@ -107,9 +107,8 @@ Copy `.env.example` to `.env`. The main variables:
 | `GUEST_CART_MAX_AGE` | Guest cart cookie lifetime (seconds) | `2592000` |
 | `PRODUCT_IMAGE_UPLOAD_DIRECTORY` | Image storage path | `media/products` |
 | `MAX_IMAGE_SIZE_MEGA_BYTE` | Max upload size in MB | `5` |
-| `EXPORT_SECRET` | Secret used for exports | long random string |
 
-> **Security:** never commit `.env`, and replace `JWT_SECRET` and `EXPORT_SECRET` with strong random values outside local development.
+> **Security:** never commit `.env`, and replace `JWT_SECRET` with strong random values outside local development.
 
 ## Development
 
@@ -232,3 +231,7 @@ All routes are mounted under `/api/v1`. Full request/response schemas are availa
 ├── pyproject.toml
 └── .env.example
 ```
+
+# TODO
+- upload images to object storage(MinIO)
+- add AI Shop assistant
