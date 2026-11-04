@@ -105,7 +105,7 @@ def _api_endpoints():
             yield route
 
 
-EXPECTED_API_ROUTE_COUNT = 59
+EXPECTED_API_ROUTE_COUNT = 60
 
 
 def test_every_api_route_is_decorated():

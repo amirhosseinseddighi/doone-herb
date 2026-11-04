@@ -54,8 +54,6 @@ class Settings(BaseSettings):
 
     FRONTEND_URL: str = "http://localhost:7000"
 
-    EXPORT_SECRET: SecretStr
-
     @property
     def database_url(self) -> PostgresDsn:
         return PostgresDsn.build(
